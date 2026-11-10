@@ -1,0 +1,1876 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Note Cards</title>
+<meta name="description" content="Practice flashcards for modes, arpeggios, triads and 7th chords. Works offline; ratings stay on this device.">
+<meta name="theme-color" content="#F2F3F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0F15" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Woodshed">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Woodshed: Note Cards is one of the apps inside Woodshed, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<style>
+@font-face{font-family:"Figtree";font-style:normal;font-weight:300 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;src:url(data:font/woff2;base64,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) format("woff2")}
+@font-face{font-family:"Noto Music";font-style:normal;font-weight:400;font-display:swap;unicode-range:U+266D-266F;src:url(data:font/woff2;base64,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) format("woff2")}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+/* Layout: an app shell. A sticky top bar, a progress summary and a list of deck cards that
+   open to show their options, with a floating start button. Practice deals one big card at a
+   time over a fixed bar of rating buttons. */
+:root{
+  --bg:#F2F3F8;          /* app background */
+  --surface:#FFFFFF;     /* cards, sheets */
+  --surface-2:#F3F4F8;   /* chips, inset tiles */
+  --surface-3:#E3E6EE;   /* tracks, switch off */
+  --text:#141722;
+  --muted:#626979;
+  --line:#E6E8EF;
+  --edge:rgb(20 24 44 / .07);
+  --accent:#4D45E3;      /* brand indigo: primary actions, selection */
+  --accent-text:#4038D4;
+  --accent-soft:#ECEBFF;
+  --on-accent:#FFFFFF;
+  --ink:var(--accent-text);
+  --hit:#4D45E3;
+  --key-w:#FFFFFF;
+  --key-b:#1E2128;
+  --key-edge:#B7BECB;
+  --fretline:#9AA2B1;
+  /* chord-degree colors: root, 3rd, 5th, 7th, other scale tones */
+  --d-r:#F08A24; --d-r-text:#1F1305;
+  --d-3:#2F6BDB; --d-3-text:#FFFFFF;
+  --d-5:#1F8F4E; --d-5-text:#FFFFFF;
+  --d-7:#D93636; --d-7-text:#FFFFFF;
+  --d-nk:#BAC1D1;
+  --dot-edge:rgb(20 24 40 / .22);
+  --mark:#FFFFFF; --mark-edge:#14161B;
+  /* progress: rust, steel, gold (text on surface) and their fills */
+  --st-rusty:#B5522B; --st-solid:#4A6283; --st-nailed:#8A6300;
+  --sf-rusty:#D9764C; --sf-solid:#7F97B8; --sf-nailed:#E8B23A; --sf-new:#E3E6EE;
+  /* decks: icon tile, card wash, tag text */
+  --k-modes:#15A06B;    --w-modes:#DDF4EA;    --tt-modes:#0B7149;
+  --k-arps:#2F7BEA;     --w-arps:#E0ECFD;     --tt-arps:#1D58B8;
+  --k-triads:#F0941A;   --w-triads:#FDEDD6;   --tt-triads:#975400;
+  --k-sevenths:#8A5CF5; --w-sevenths:#EEE7FE; --tt-sevenths:#6439D0;
+  --shadow:22 26 52;
+  --sh-1:0 0 0 1px var(--edge),0 1px 2px rgb(var(--shadow) / .06);
+  --sh-card:0 0 0 1px var(--edge),0 1px 2px rgb(var(--shadow) / .05),0 10px 28px -14px rgb(var(--shadow) / .2);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+  --f-ui:"Figtree","Noto Music",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --t-hero:clamp(2.5rem, 1.6rem + 4.4vw, 4.25rem);
+  --t-note:clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem);
+  --t-label:.75rem;
+  --gut-l:max(16px, env(safe-area-inset-left, 0px));
+  --gut-r:max(16px, env(safe-area-inset-right, 0px));
+  --safe-b:env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E0F15; --surface:#191B23; --surface-2:#22252F; --surface-3:#2E3240; --text:#ECEEF4; --muted:#9BA1B0;
+    --line:#2A2E3A; --edge:rgb(255 255 255 / .06); --accent:#5E57F2; --accent-text:#ABA7FF; --accent-soft:#272654; --on-accent:#FFFFFF; --hit:#8F89FF;
+    --key-w:#D8DCE4; --key-b:#0B0C0F; --key-edge:#5B6271; --fretline:#4E5666;
+    --d-r:#FF9F4A; --d-r-text:#1F1305; --d-3:#71A5FF; --d-3-text:#0C1426; --d-5:#52CC88; --d-5-text:#0A1B12;
+    --d-7:#FF7070; --d-7-text:#240A0A; --d-nk:#78829A; --dot-edge:rgb(0 0 0 / .4); --mark:#FFFFFF; --mark-edge:#0B0C0F;
+    --st-rusty:#EE9670; --st-solid:#A3B8D4; --st-nailed:#F2C557;
+    --sf-rusty:#D9764C; --sf-solid:#7F97B8; --sf-nailed:#E9B840; --sf-new:#2E3240;
+    --k-modes:#1AAE75; --w-modes:#132E24; --tt-modes:#6BDDAC;
+    --k-arps:#3B82F0; --w-arps:#14243F; --tt-arps:#93BBFF;
+    --k-triads:#EF9420; --w-triads:#33250F; --tt-triads:#FFC46B;
+    --k-sevenths:#8E62F6; --w-sevenths:#251E42; --tt-sevenths:#C0A9FF;
+    --shadow:0 0 0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E0F15; --surface:#191B23; --surface-2:#22252F; --surface-3:#2E3240; --text:#ECEEF4; --muted:#9BA1B0;
+  --line:#2A2E3A; --edge:rgb(255 255 255 / .06); --accent:#5E57F2; --accent-text:#ABA7FF; --accent-soft:#272654; --on-accent:#FFFFFF; --hit:#8F89FF;
+  --key-w:#D8DCE4; --key-b:#0B0C0F; --key-edge:#5B6271; --fretline:#4E5666;
+  --d-r:#FF9F4A; --d-r-text:#1F1305; --d-3:#71A5FF; --d-3-text:#0C1426; --d-5:#52CC88; --d-5-text:#0A1B12;
+  --d-7:#FF7070; --d-7-text:#240A0A; --d-nk:#78829A; --dot-edge:rgb(0 0 0 / .4); --mark:#FFFFFF; --mark-edge:#0B0C0F;
+  --st-rusty:#EE9670; --st-solid:#A3B8D4; --st-nailed:#F2C557;
+  --sf-rusty:#D9764C; --sf-solid:#7F97B8; --sf-nailed:#E9B840; --sf-new:#2E3240;
+  --k-modes:#1AAE75; --w-modes:#132E24; --tt-modes:#6BDDAC;
+  --k-arps:#3B82F0; --w-arps:#14243F; --tt-arps:#93BBFF;
+  --k-triads:#EF9420; --w-triads:#33250F; --tt-triads:#FFC46B;
+  --k-sevenths:#8E62F6; --w-sevenths:#251E42; --tt-sevenths:#C0A9FF;
+  --shadow:0 0 0;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--f-ui);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+:focus-visible{outline:2.5px solid var(--hit);outline-offset:2px}
+.shell{overflow-x:clip;min-height:100vh;min-height:100dvh}
+.page{max-width:44rem;margin:0 auto;padding:.5rem var(--gut-r) calc(7.5rem + var(--safe-b)) var(--gut-l)}
+
+/* ---------- App bar ---------- */
+.appbar{position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top, 0px);
+  background:color-mix(in srgb, var(--bg) 84%, transparent);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);
+  box-shadow:0 1px 0 transparent;transition:box-shadow .2s}
+.appbar.scrolled{box-shadow:0 1px 0 var(--line)}
+.appbar-in{max-width:44rem;margin:0 auto;min-height:3.75rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.5rem var(--gut-r) .5rem var(--gut-l)}
+/* Woodshed: fade between the home screen and this app instead of a hard page flash. */
+@media (prefers-reduced-motion: no-preference){ @view-transition{navigation:auto} }
+.appbar-in .home{margin-right:-.15rem;text-decoration:none}
+.appbar-in .home svg{width:1.25rem;height:1.25rem}
+.brand{display:flex;align-items:center;gap:.65rem;margin:0 auto 0 0;font-size:1.3125rem;font-weight:800;letter-spacing:-.015em;line-height:1}
+.brand svg{width:2.25rem;height:2.25rem;flex:none;filter:drop-shadow(0 3px 6px rgb(77 69 227 / .3))}
+.bar-mid{flex:1;min-width:0;text-align:center;display:grid;line-height:1.2}
+.bar-mid b{font-size:1rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-mid small{font-size:.75rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;border:0;background:var(--surface);color:var(--text);display:inline-grid;place-items:center;cursor:pointer;flex:none;box-shadow:var(--sh-1);transition:transform .12s}
+.icon-btn:active{transform:scale(.92)}
+.icon-btn svg{width:1.15rem;height:1.15rem}
+.pill-btn{height:2.5rem;border-radius:999px;border:0;background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:.4rem;padding:0 .9rem 0 .75rem;cursor:pointer;flex:none;box-shadow:var(--sh-1);font-size:.9375rem;font-weight:700;font-variant-numeric:tabular-nums}
+.pill-btn svg{width:1.1rem;height:1.1rem;color:var(--muted)}
+.pill-btn[data-on] {background:var(--accent-soft);color:var(--accent-text)}
+.pill-btn[data-on] svg{color:currentColor}
+
+/* ---------- Library ---------- */
+.section-title{margin:1.75rem .25rem .75rem;font-size:1.25rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+.section-title small{font-size:.875rem;font-weight:600;color:var(--muted);letter-spacing:0}
+.hero{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-card);padding:1.1rem;display:grid;gap:1.1rem}
+.hero-top{display:flex;align-items:center;gap:1.1rem}
+.ring{position:relative;width:5.75rem;height:5.75rem;flex:none}
+.ring svg{display:block;width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:11}
+.ring .ring-bg{stroke:var(--sf-new)}
+.ring .f-nailed{stroke:var(--sf-nailed)}
+.ring .f-solid{stroke:var(--sf-solid)}
+.ring .f-rusty{stroke:var(--sf-rusty)}
+.ring-c{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1}
+.ring-c b{font-size:1.375rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ring-c small{margin-top:.2rem;font-size:.6875rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.hero-text{display:grid;gap:.2rem;min-width:0}
+.eyebrow{margin:0;font-size:var(--t-label);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hero-big{margin:0;font-size:1.0625rem;font-weight:600;color:var(--muted);line-height:1.3}
+.hero-big b{display:block;font-size:1.75rem;line-height:1.15;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.hero-big b span{color:var(--muted);font-weight:700}
+.hero-sub{margin:0;font-size:.875rem;color:var(--muted);text-wrap:pretty}
+.stats-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:-.5rem}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem}
+.stat{position:relative;border:0;border-radius:var(--r-md);padding:.7rem .7rem .65rem;text-align:left;display:grid;gap:.1rem;cursor:pointer;min-width:0;
+  background:color-mix(in srgb, var(--sc) 11%, var(--surface));box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--sc) 30%, transparent);transition:background-color .15s,box-shadow .15s,transform .12s}
+.stat:active{transform:scale(.97)}
+.stat .lvl{color:var(--sc);width:1.05rem;height:.9rem;margin-bottom:.3rem}
+.stat-n{font-size:1.3125rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis}
+.stat-l{font-size:.8125rem;font-weight:700;color:var(--muted)}
+.stat::after{content:"";position:absolute;top:.6rem;right:.6rem;width:1.1rem;height:1.1rem;border-radius:50%;
+  background:var(--sc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.4 6.8 11 12 5.4' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 80% no-repeat}
+.stat[aria-pressed="false"]{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.stat[aria-pressed="false"] .stat-n,.stat[aria-pressed="false"] .stat-l,.stat[aria-pressed="false"] .lvl{opacity:.45}
+.stat[aria-pressed="false"]::after{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted);opacity:.6}
+.decks{display:grid;gap:.75rem}
+.deck{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-card);overflow:hidden}
+.deck[data-deck="modes"],.icard[data-deck="modes"]{--k:var(--k-modes);--w:var(--w-modes);--tt:var(--tt-modes)}
+.deck[data-deck="arps"],.icard[data-deck="arps"]{--k:var(--k-arps);--w:var(--w-arps);--tt:var(--tt-arps)}
+.deck[data-deck="triads"],.icard[data-deck="triads"]{--k:var(--k-triads);--w:var(--w-triads);--tt:var(--tt-triads)}
+.deck[data-deck="sevenths"],.icard[data-deck="sevenths"]{--k:var(--k-sevenths);--w:var(--w-sevenths);--tt:var(--tt-sevenths)}
+.deck-row{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem .7rem .7rem}
+.deck-main{flex:1;min-width:0;display:flex;align-items:center;gap:.85rem;border:0;background:none;padding:.2rem;margin:0;text-align:left;cursor:pointer;border-radius:var(--r-sm)}
+.dicon{width:3rem;height:3rem;border-radius:14px;display:grid;place-items:center;background:var(--k);color:#fff;flex:none;
+  box-shadow:inset 0 -3px 0 rgb(0 0 0 / .1),0 4px 10px -4px color-mix(in srgb, var(--k) 70%, transparent);transition:filter .15s,opacity .15s}
+.dicon svg{width:1.6rem;height:1.6rem}
+.dtext{display:grid;gap:.1rem;min-width:0;flex:1}
+.dtitle{font-size:1.0625rem;font-weight:800;line-height:1.25}
+.dsub{font-size:.875rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dtext .sbar{margin-top:.4rem;max-width:14rem}
+.chev{width:1.1rem;height:1.1rem;color:var(--muted);flex:none;transition:transform .2s}
+.deck[data-open] .chev{transform:rotate(90deg)}
+.deck[data-off] .dicon{filter:grayscale(1);opacity:.45}
+.deck[data-off] .dtitle{color:var(--muted)}
+.deck-body{display:grid;gap:1.1rem;padding:1rem 1rem 1.15rem;border-top:1px solid var(--line)}
+.deck-note{margin:0;color:var(--muted);font-size:.9375rem;text-wrap:pretty}
+.deck[data-off] .group,.deck[data-off] .deck-note{opacity:.45}
+.sbar{display:flex;height:.375rem;border-radius:999px;overflow:hidden;background:var(--sf-new)}
+.sbar i{display:block;height:100%}
+.sbar .f-nailed{background:var(--sf-nailed)}
+.sbar .f-solid{background:var(--sf-solid)}
+.sbar .f-rusty{background:var(--sf-rusty)}
+.group{display:grid;gap:.5rem}
+.group-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.group-label{font-size:var(--t-label);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.group-tools{display:flex;gap:.15rem;margin-right:-.45rem}
+.link{background:none;border:0;padding:.3rem .5rem;border-radius:8px;color:var(--accent-text);font-size:.875rem;font-weight:700;cursor:pointer}
+.link:hover:not(:disabled){background:var(--accent-soft)}
+.link:disabled{cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{border:0;background:var(--surface-2);color:var(--text);padding:.45rem .9rem;border-radius:999px;font-size:.9375rem;font-weight:600;line-height:1.2;min-height:2.5rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.4rem;box-shadow:inset 0 0 0 1px var(--line);transition:background-color .12s,color .12s,box-shadow .12s}
+.chip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-text);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--accent)}
+.chip:disabled{cursor:not-allowed}
+.chip-sm{min-height:2.125rem;padding:.25rem .8rem;font-size:.875rem}
+.switch{flex:none;width:3.25rem;height:2rem;border-radius:999px;border:0;background:var(--surface-3);position:relative;cursor:pointer;transition:background-color .2s}
+.switch::after{content:"";position:absolute;top:.1875rem;left:.1875rem;width:1.625rem;height:1.625rem;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgb(0 0 0 / .2),0 0 0 .5px rgb(0 0 0 / .04);transition:transform .2s cubic-bezier(.3,.7,.4,1)}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(1.25rem)}
+.foot{margin:1.5rem .25rem 0;font-size:.8125rem;color:var(--muted);text-align:center}
+
+/* floating start button */
+.startbar{position:fixed;left:0;right:0;bottom:0;z-index:9;padding:1.5rem var(--gut-r) calc(.85rem + var(--safe-b)) var(--gut-l);
+  background:linear-gradient(to bottom, color-mix(in srgb, var(--bg) 0%, transparent), var(--bg) 1.4rem);pointer-events:none}
+.startbar-inner{max-width:44rem;margin:0 auto;display:grid;gap:.5rem;pointer-events:auto}
+.total{margin:0;font-size:.875rem;color:var(--muted);text-align:center;text-wrap:balance}
+
+/* ---------- Buttons ---------- */
+.btn{border-radius:var(--r-md);padding:.85rem 1.35rem;min-height:3.25rem;font-weight:800;font-size:1.0625rem;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:0;transition:transform .12s,background-color .15s,opacity .15s}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn-primary{background:var(--accent);color:var(--on-accent);box-shadow:0 10px 24px -10px color-mix(in srgb, var(--accent) 80%, transparent),inset 0 1px 0 rgb(255 255 255 / .15)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn-block{width:100%;min-height:3.6rem;border-radius:18px;font-size:1.125rem}
+.btn-secondary{background:var(--surface);color:var(--accent-text);box-shadow:var(--sh-1)}
+.btn-quiet{background:var(--surface-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+.btn svg{width:1.1em;height:1.1em;flex:none}
+.start-n{display:inline-block;padding:.15rem .6rem;border-radius:999px;background:rgb(255 255 255 / .2);font-size:.875rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ghost{background:var(--surface-2);border:0;border-radius:999px;padding:.45rem .9rem;display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;color:var(--text);font-size:.9375rem;font-weight:700;box-shadow:inset 0 0 0 1px var(--line)}
+.ghost svg{width:1em;height:1em;flex:none}
+.ghost.small{padding:.25rem .8rem;font-size:.875rem;min-height:2.125rem}
+.ghost.play{background:var(--accent);color:var(--on-accent);box-shadow:none}
+
+/* progress level icon: one, two or three bars */
+.lvl{width:1rem;height:.85rem;flex:none}
+.lvl rect{fill:currentColor;opacity:.25}
+.lvl rect.on{opacity:1}
+.s-rusty{--sc:var(--st-rusty)}
+.s-solid{--sc:var(--st-solid)}
+.s-nailed{--sc:var(--st-nailed)}
+.s-new{--sc:var(--muted)}
+
+/* ---------- Sheets ---------- */
+.sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:32rem;max-height:calc(100dvh - 3rem);background:var(--surface);color:var(--text);
+  border-radius:26px 26px 0 0;box-shadow:0 -10px 40px rgb(0 0 0 / .2);overflow:auto;overscroll-behavior:contain}
+.sheet::backdrop{background:rgb(8 10 20 / .42)}
+.sheet[open]{animation:sheet-up .26s cubic-bezier(.2,.9,.3,1)}
+.sheet[open]::backdrop{animation:fade-in .2s ease-out}
+@keyframes sheet-up{from{transform:translateY(40%);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fade-in{from{opacity:0}}
+@media (min-width:40rem){.sheet{margin:auto;border-radius:26px}}
+.sheet-in{padding:.6rem 1.25rem calc(1.25rem + var(--safe-b));display:grid;gap:1rem}
+.grab{justify-self:center;width:2.5rem;height:.3rem;border-radius:999px;background:var(--surface-3)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.sheet-title{margin:0;font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
+.sheet p{margin:0}
+.sheet-text{color:var(--muted);font-size:.9375rem;text-wrap:pretty}
+.list{display:grid;border-radius:var(--r-md);background:var(--surface-2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.row{display:flex;align-items:center;gap:.85rem;width:100%;border:0;background:none;padding:.8rem 1rem;text-align:left;cursor:pointer;min-height:3.5rem}
+.row + .row{box-shadow:0 -1px 0 var(--line)}
+.row:active{background:var(--surface-3)}
+.row-ic{width:2rem;height:2rem;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:#fff;flex:none}
+.row-ic svg{width:1.05rem;height:1.05rem}
+.row-t{display:grid;flex:1;min-width:0;line-height:1.25}
+.row-t b{font-weight:700}
+.row-t small{font-size:.8125rem;color:var(--muted)}
+.row-check{width:1.25rem;height:1.25rem;color:var(--accent-text);visibility:hidden;flex:none}
+.row[aria-checked="true"] .row-check{visibility:visible}
+.row[aria-checked="true"] .row-t b{color:var(--accent-text)}
+.sync{display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:var(--muted)}
+.sync::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:var(--sf-new);flex:none}
+.sync[data-state="on"]::before{background:var(--d-5)}
+.sync[data-state="off"]::before,.sync[data-state="error"]::before{background:var(--sf-rusty)}
+.steps{margin:0;padding:0;list-style:none;display:grid;gap:.6rem;counter-reset:s}
+.steps li{display:flex;gap:.75rem;align-items:flex-start;font-size:.9375rem;color:var(--muted)}
+.steps li::before{counter-increment:s;content:counter(s);flex:none;width:1.5rem;height:1.5rem;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-text);font-weight:800;font-size:.8125rem;margin-top:.05rem}
+.steps b{color:var(--text)}
+
+.sheet-sec{display:grid;gap:.6rem}
+.sheet-sub{margin:.35rem 0 0;font-size:var(--t-label);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sync[data-state="local"]::before{background:var(--muted);opacity:.5}
+.sync[data-state="syncing"]::before{background:var(--accent);animation:pulse .8s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.25}}
+.code-form{display:grid;gap:.45rem}
+.field-label{font-size:.875rem;font-weight:600;color:var(--muted)}
+.code-row{display:flex;gap:.5rem}
+.field{flex:1;min-width:0;height:3rem;border:0;border-radius:var(--r-sm);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);padding:0 .9rem;
+  font:inherit;font-size:1rem;font-weight:600;color:var(--text)}
+.field::placeholder{color:var(--muted);opacity:.55;font-weight:600}
+.field:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+.field-err{margin:0;font-size:.8125rem;font-weight:600;color:var(--st-rusty)}
+.btn-sm{min-height:2.5rem;padding:.5rem 1rem;font-size:.9375rem;border-radius:var(--r-sm)}
+.code-row .btn-sm{min-height:3rem}
+.row.static{cursor:default}
+.row.static:active{background:none}
+.sheet-text.small{font-size:.8125rem}
+.sheet-text a,.token-help a{color:var(--accent-text);font-weight:700}
+.token-help{border-radius:var(--r-md);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);padding:.75rem 1rem}
+.token-help summary{cursor:pointer;font-weight:700;color:var(--accent-text)}
+.token-help[open] summary{margin-bottom:.75rem}
+.row-ic.muted{background:var(--surface-3);color:var(--text)}
+.row.warn b{color:var(--st-rusty)}
+.foot{display:flex;justify-content:center;width:100%;border:0;background:none;cursor:pointer;margin:1.5rem 0 0;padding:.5rem;font-size:.8125rem;text-align:center;border-radius:var(--r-sm)}
+.install-banner{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;padding:.7rem .6rem .7rem .8rem;border-radius:var(--r-lg);background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent)}
+.ib-ic{width:2.5rem;height:2.5rem;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:#fff;flex:none}
+.ib-ic svg{width:1.3rem;height:1.3rem}
+.ib-t{display:grid;flex:1;min-width:0;line-height:1.25}
+.ib-t b{font-weight:800}
+.ib-t small{font-size:.8125rem;color:var(--muted)}
+.ib-x{width:2rem;height:2rem;border:0;border-radius:50%;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib-x svg{width:1rem;height:1rem}
+.toast{position:fixed;left:50%;bottom:calc(8.5rem + var(--safe-b));z-index:30;transform:translateX(-50%);width:max-content;max-width:calc(100% - 2rem);
+  padding:.7rem 1.1rem;border-radius:999px;background:var(--text);color:var(--bg);font-size:.9375rem;font-weight:600;box-shadow:0 12px 30px rgb(0 0 0 / .25);animation:toast-in .2s ease-out}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,8px)}}
+
+/* ---------- Practice ---------- */
+.practice-page{padding-top:.75rem;padding-bottom:calc(10.5rem + var(--safe-b))}
+.stack{position:relative;margin-bottom:1.5rem}
+.stack::before,.stack::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4rem;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-card)}
+.stack::before{transform:translateY(.55rem) scaleX(.94);opacity:.8}
+.stack::after{transform:translateY(1.1rem) scaleX(.88);opacity:.5}
+.icard{position:relative;z-index:1;background:var(--surface);border-radius:var(--r-lg);overflow:hidden;
+  box-shadow:0 0 0 1px var(--edge),0 2px 4px rgb(var(--shadow) / .05),0 28px 56px -28px rgb(var(--shadow) / .4)}
+.icard-front{position:relative;min-height:clamp(16rem, 46vh, 25rem);display:flex;flex-direction:column;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  background:linear-gradient(to bottom, var(--w) 0%, var(--surface) 78%)}
+.icard-head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:1rem 1rem 0}
+.head-l{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;min-width:0}
+.tag{display:inline-flex;align-items:center;gap:.4rem;font-size:var(--t-label);font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:.35rem .7rem .35rem .45rem;border-radius:999px;background:var(--surface);color:var(--tt);box-shadow:var(--sh-1)}
+.tag::before{content:"";width:.6rem;height:.6rem;border-radius:50%;background:var(--k)}
+.spill{display:inline-flex;align-items:center;gap:.35rem;font-size:.8125rem;font-weight:700;color:var(--sc);white-space:nowrap;padding:.3rem .7rem;border-radius:999px;background:color-mix(in srgb, var(--surface) 70%, transparent)}
+.spill .when{font-weight:500;color:var(--muted)}
+.fuse{position:absolute;top:0;left:0;right:0;height:4px;z-index:2}
+.fuse i{position:absolute;inset:0;background:var(--k);transform-origin:left center;transform:scaleX(0)}
+.icard-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:.3rem;padding:1.5rem 1.25rem 1rem}
+.ptitle{font-weight:800;font-size:var(--t-hero);line-height:1.02;letter-spacing:-.03em;color:var(--text);margin:0;text-wrap:balance;overflow-wrap:anywhere}
+.psub{margin:0;color:var(--muted);font-size:1.0625rem;font-weight:600}
+.plines{display:flex;flex-wrap:wrap;justify-content:center;gap:.45rem;margin-top:.9rem}
+.pline{margin:0;font-weight:700;font-size:clamp(1rem, .9rem + .5vw, 1.1875rem);line-height:1.2;color:var(--text);padding:.45rem .95rem;border-radius:999px;background:var(--surface);box-shadow:var(--sh-1)}
+.taphint{display:flex;align-items:center;justify-content:center;gap:.4rem;margin:0;padding:0 1rem 1rem;color:var(--muted);font-size:.8125rem;font-weight:600}
+.taphint svg{width:1rem;height:1rem}
+.stampmark{position:absolute;right:1rem;bottom:1rem;z-index:3;display:inline-flex;align-items:center;gap:.45rem;padding:.5rem 1rem;border-radius:999px;background:var(--sc);color:#fff;
+  font-weight:800;font-size:clamp(1.0625rem, .95rem + .6vw, 1.375rem);letter-spacing:.02em;line-height:1.1;transform:rotate(-6deg);opacity:0;pointer-events:none;box-shadow:0 10px 24px -8px rgb(0 0 0 / .35)}
+.stampmark .lvl rect{opacity:.4}
+.stampmark .lvl rect.on{opacity:1}
+.stampmark.on{opacity:1}
+.answer{border-top:1px solid var(--line);padding:1.1rem 1.1rem 1.35rem;display:grid;grid-template-columns:minmax(0,1fr);gap:1.15rem}
+.ahead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.6rem 1rem}
+.atools{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.alabel{font-size:var(--t-label);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem}
+.alabel svg{width:1.6em;height:.8em}
+
+/* degree badges: root orange, 3rd blue, 5th green, 7th red, other scale tones outlined; color tones are diamonds */
+.d-r{--dc:var(--d-r);--dt:var(--d-r-text)}
+.d-3{--dc:var(--d-3);--dt:var(--d-3-text)}
+.d-5{--dc:var(--d-5);--dt:var(--d-5-text)}
+.d-7{--dc:var(--d-7);--dt:var(--d-7-text)}
+.d-n{--dc:transparent;--dt:var(--ink);--db:var(--ink)}
+.deg{display:inline-grid;place-items:center;min-width:1.7rem;height:1.45rem;padding:0 .35rem;border-radius:999px;font-size:.8125rem;font-weight:800;line-height:1;background:var(--dc);color:var(--dt);border:1.5px solid var(--db, transparent)}
+.deg.ct{position:relative;isolation:isolate;width:1.85rem;height:1.85rem;min-width:0;padding:0;background:transparent;border-color:transparent}
+.deg.ct::before{content:"";position:absolute;inset:.25rem;z-index:-1;transform:rotate(45deg);border-radius:2px;background:var(--dc);border:1.5px solid var(--db, var(--text))}
+.voices{display:flex;align-items:flex-start;padding:.85rem .75rem;border-radius:var(--r-md);background:var(--surface-2)}
+.v{display:grid;justify-items:center;gap:.3rem;min-width:2.5rem}
+.v b{font-size:var(--t-note);line-height:1.15;font-weight:800;color:var(--text)}
+.v.oct b{color:var(--muted);font-weight:500}
+.v.oct .deg{opacity:.5}
+.gap{flex:1 1 0;min-width:1.75rem;position:relative;text-align:center;font-size:.75rem;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;padding-top:.05rem}
+.gap::after{content:"";position:absolute;left:.3rem;right:.3rem;top:1.3rem;border-top:1.5px solid var(--surface-3)}
+.gap i{font-style:normal}
+.voices.scale{padding-inline:.5rem}
+.voices.scale .v{min-width:1.5rem}
+.voices.scale .v b{font-size:clamp(1.125rem, .95rem + .9vw, 1.5rem)}
+.voices.scale .deg{min-width:1.45rem;padding:0 .2rem;font-size:.75rem}
+.voices.scale .deg.ct{width:1.7rem;height:1.7rem;min-width:0;padding:0}
+.voices.scale .gap{min-width:.75rem}
+.voices.scale .gap::after{top:1.15rem}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:.45rem 1rem;margin:0;align-items:center}
+.facts div{display:contents}
+.facts dt{color:var(--muted);font-size:.9375rem}
+.facts dd{margin:0;font-weight:700;display:flex;align-items:center;gap:.45rem}
+
+.diagrams{display:flex;flex-wrap:wrap;align-items:flex-start;gap:1.25rem 1.75rem}
+.diagrams.stacked{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem}
+.diagrams.stacked > *{min-width:0}
+.gslot{flex:none;min-width:0;max-width:100%}
+.pslot{flex:1 1 15rem;min-width:0}
+.gtr{margin:0;display:grid;gap:.5rem;justify-items:start}
+.gbox{display:block;width:10.75rem;height:auto}
+.gnav{display:flex;align-items:center;gap:.6rem}
+.gnav .icon-btn{width:2.25rem;height:2.25rem}
+.gnav-text{display:grid;line-height:1.25}
+.gnav-text b{font-size:.875rem}
+.gnav-text small{font-size:.8125rem;color:var(--muted)}
+.gnone{margin:0;color:var(--muted);font-size:.9375rem;max-width:22rem}
+.neck-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.neck{display:block;width:100%;min-width:23rem;max-width:32rem;height:auto}
+.gbox .str,.gbox .fret,.neck .str,.neck .fret{stroke:var(--fretline);stroke-width:1}
+.gbox .nut,.neck .nut{stroke:var(--text);stroke-width:4}
+.gbox .mute{stroke:var(--muted);stroke-width:1.6;stroke-linecap:round}
+.gbox text,.neck text{font-family:var(--f-ui)}
+.dot{stroke:var(--dot-edge);stroke-width:1}
+.dot.d-r{fill:var(--d-r)}
+.dot.d-3{fill:var(--d-3)}
+.dot.d-5{fill:var(--d-5)}
+.dot.d-7{fill:var(--d-7)}
+.dot.d-n{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.dot.ct{stroke:var(--text);stroke-width:1.8}
+.dl{font-size:10.5px;font-weight:800;text-anchor:middle;dominant-baseline:central}
+.dl.sm{font-size:9px}
+.dl.d-r{fill:var(--d-r-text)}
+.dl.d-3{fill:var(--d-3-text)}
+.dl.d-5{fill:var(--d-5-text)}
+.dl.d-7{fill:var(--d-7-text)}
+.dl.d-n{fill:var(--ink)}
+.nn{font-size:11px;font-weight:700;fill:var(--text);text-anchor:middle}
+.fr,.fnum,.sn{font-size:10px;font-weight:700;fill:var(--muted)}
+.fnum,.sn{text-anchor:middle;dominant-baseline:central}
+.fr{text-anchor:end;dominant-baseline:central}
+.kb{width:100%;max-width:calc(var(--n) * 2.75rem)}
+.kb svg{display:block;width:100%;height:auto}
+.wk{fill:var(--key-w);stroke:var(--key-edge);stroke-width:1}
+.bk{fill:var(--key-b)}
+.wk.d-r,.bk.d-r{fill:var(--d-r)}
+.wk.d-3,.bk.d-3{fill:var(--d-3)}
+.wk.d-5,.bk.d-5{fill:var(--d-5)}
+.wk.d-7,.bk.d-7{fill:var(--d-7)}
+.wk.d-n,.bk.d-n{fill:var(--d-nk)}
+.ctmark{fill:var(--mark);stroke:var(--mark-edge);stroke-width:1.2}
+.kb-labels{position:relative;height:1.3rem;margin-top:.3rem}
+.kb-labels span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font-size:.8125rem;font-weight:700;color:var(--text)}
+
+/* fixed action bar: rate (records and moves on), flip, skip */
+.actions{position:fixed;left:0;right:0;bottom:0;z-index:9;padding:1.4rem var(--gut-r) calc(.75rem + var(--safe-b)) var(--gut-l);
+  background:linear-gradient(to bottom, color-mix(in srgb, var(--bg) 0%, transparent), var(--bg) 1.3rem);pointer-events:none}
+.actions-in{max-width:44rem;margin:0 auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"reveal rate skip";gap:.5rem;pointer-events:auto}
+#reveal{grid-area:reveal}
+#next{grid-area:skip}
+.rate{grid-area:rate;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+.rate-btn{display:flex;align-items:center;justify-content:center;gap:.45rem;min-width:0;min-height:3.25rem;border-radius:var(--r-md);border:0;
+  background:color-mix(in srgb, var(--sc) 13%, var(--surface));color:var(--sc);font-weight:800;font-size:1.0625rem;line-height:1.2;padding:.8rem .5rem;cursor:pointer;
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--sc) 28%, transparent),0 1px 2px rgb(var(--shadow) / .06);transition:background-color .12s,box-shadow .12s,transform .12s}
+.rate-btn:hover{background:color-mix(in srgb, var(--sc) 19%, var(--surface))}
+.rate-btn:active{transform:scale(.96)}
+.rate-btn[data-current]{box-shadow:inset 0 0 0 2.5px var(--sc)}
+.rate-btn kbd{display:none;font-family:inherit;font-size:.6875rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 .3rem;background:var(--surface)}
+@media (hover:hover) and (pointer:fine){.rate-btn kbd{display:inline-block}}
+@media (max-width:40rem){
+  .actions-in{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"rate rate" "reveal skip"}
+  .actions .btn{min-height:3rem;padding-block:.7rem}
+}
+.savenote{margin:0 0 .75rem;padding:.7rem 1rem;border-radius:var(--r-sm);background:color-mix(in srgb, var(--sf-rusty) 14%, var(--surface));color:var(--st-rusty);font-size:.875rem;font-weight:600}
+.hint{display:none;margin:.25rem 0 0;color:var(--muted);font-size:.8125rem;text-align:center}
+.hint kbd{font-family:inherit;font-size:.75rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:.05rem .35rem;background:var(--surface);color:var(--text)}
+@media (hover:hover) and (pointer:fine){.hint{display:block}}
+@media (max-width:30rem){
+  .deck-body{padding-inline:.9rem}
+  .icard-body,.answer{padding-left:.95rem;padding-right:.95rem}
+  .btn{padding-inline:1rem}
+  .rate-btn{font-size:1rem;padding-inline:.35rem}
+  .stats{gap:.4rem}
+  .stat{padding:.6rem .55rem .55rem}
+  .stat-n{font-size:1.125rem}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+
+<div class="shell" id="shell">
+  <main id="library">
+    <header class="appbar">
+      <div class="appbar-in">
+        <a class="icon-btn home" href="../" aria-label="Woodshed home, all apps"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.3h9.6V8.2"/></svg></a>
+        <h1 class="brand"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="bmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6D63FF"/><stop offset="1" stop-color="#3A33CF"/></linearGradient>
+<filter id="bms" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#14104F" flood-opacity=".35"/></filter></defs><rect width="512" height="512" rx="114" fill="url(#bmg)"/><g transform="rotate(-8 256 258)"><rect x="88.0" y="147.0" width="336" height="222" rx="24" fill="#fff" filter="url(#bms)"/>
+<g stroke="#D9DFEB" stroke-width="6" stroke-linecap="round"><line x1="122.0" x2="390.0" y1="206" y2="206"/><line x1="122.0" x2="390.0" y1="240" y2="240"/><line x1="122.0" x2="390.0" y1="274" y2="274"/><line x1="122.0" x2="390.0" y1="308" y2="308"/></g><ellipse cx="180.0" cy="308" rx="23" ry="17.5" transform="rotate(-22 180.0 308)" fill="#F08A24"/><ellipse cx="231.0" cy="274" rx="23" ry="17.5" transform="rotate(-22 231.0 274)" fill="#2F6BDB"/><ellipse cx="282.0" cy="240" rx="23" ry="17.5" transform="rotate(-22 282.0 240)" fill="#1F8F4E"/><ellipse cx="333.0" cy="206" rx="23" ry="17.5" transform="rotate(-22 333.0 206)" fill="#D93636"/></g></svg>Note Cards</h1>
+        <button class="icon-btn" id="menu-btn" type="button" aria-label="Ratings and help" aria-haspopup="dialog" aria-controls="menu"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4.5" cy="10" r="1.7" fill="currentColor"/><circle cx="10" cy="10" r="1.7" fill="currentColor"/><circle cx="15.5" cy="10" r="1.7" fill="currentColor"/></svg></button>
+      </div>
+    </header>
+    <div class="page">
+      <div class="install-banner" id="install-banner" hidden>
+        <span class="ib-ic" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3" y="2.5" width="14" height="15" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6.5v6M7.3 9.8 10 12.5l2.7-2.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="ib-t"><b>Get the app</b><small id="install-banner-sub">Open Note Cards like any other app</small></span>
+        <button class="btn btn-primary btn-sm" type="button" id="install-go">Install</button>
+        <button class="ib-x" type="button" id="install-x" aria-label="Dismiss"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 6l8 8m0-8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-top">
+          <div class="ring" id="ring" role="img"></div>
+          <div class="hero-text">
+            <p class="eyebrow" id="hero-title">Your progress</p>
+            <p class="hero-big" id="hero-big"></p>
+            <p class="hero-sub">Cards in the decks you have on.</p>
+          </div>
+        </div>
+        <div class="stats-head"><span class="group-label" id="gl-status">Include in practice</span></div>
+        <div class="stats" id="stats" role="group" aria-labelledby="gl-status"></div>
+      </section>
+      <h2 class="section-title">Decks <small id="decks-on"></small></h2>
+      <div class="decks" id="decks"></div>
+      <button class="foot sync" type="button" id="foot" data-state="local"></button>
+    </div>
+  </main>
+
+  <main id="practice" hidden>
+    <header class="appbar">
+      <div class="appbar-in">
+        <button class="icon-btn" id="back" type="button" aria-label="Back to decks"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="bar-mid"><b id="count">1 / 1</b><small id="round">Practice</small></div>
+        <button class="pill-btn" id="timer-btn" type="button" aria-haspopup="dialog" aria-controls="timer-sheet"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 7.5V11l2.2 1.6M8 2.5h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="timer-val">Off</span></button>
+      </div>
+    </header>
+    <div class="page practice-page">
+      <p class="savenote" id="savenote" hidden></p>
+      <div class="stack">
+        <article class="icard" id="card" aria-live="polite">
+          <div class="icard-front" id="front" title="Tap to show or hide the notes">
+            <div class="fuse" aria-hidden="true"><i id="fuse"></i></div>
+            <div class="icard-head"><span class="head-l"><span class="tag" id="tag">Triads</span><span class="spill s-new" id="spill"></span></span></div>
+            <div class="icard-body">
+              <h2 class="ptitle" id="ptitle">C major</h2>
+              <p class="psub" id="psub" hidden></p>
+              <div class="plines" id="plines"></div>
+            </div>
+            <p class="taphint" id="taphint"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6M13.2 2.2v2.6h-2.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Play it, then tap to flip</p>
+            <div class="stampmark" id="stampmark" aria-hidden="true"></div>
+          </div>
+          <div class="answer" id="answer" hidden></div>
+        </article>
+      </div>
+      <p class="hint"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> rate &nbsp; <kbd>Space</kbd> skip &nbsp; <kbd>R</kbd> show notes &nbsp; <kbd>G</kbd> next guitar shape &nbsp; <kbd>P</kbd> play &nbsp; <kbd>Esc</kbd> back to decks</p>
+    </div>
+    <div class="actions">
+      <div class="actions-in">
+        <button class="btn btn-secondary" id="reveal" type="button" aria-expanded="false" aria-controls="answer">Show notes</button>
+        <div class="rate" role="group" aria-label="Rate how it went and go to the next card" id="rate"></div>
+        <button class="btn btn-quiet" id="next" type="button">Skip<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.5M8.5 3.5 13 8l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="importInput" accept="application/json,.json" hidden>
+<div class="startbar" id="startbar">
+  <div class="startbar-inner">
+    <p class="total" id="total" hidden>No cards selected. Turn on a deck or pick at least one option in each row.</p>
+    <button class="btn btn-primary btn-block" id="start" type="button"><span>Start practice</span><span class="start-n" id="start-n">0</span></button>
+  </div>
+</div>
+
+<dialog class="sheet" id="menu" aria-labelledby="menu-title">
+  <div class="sheet-in">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sheet-head"><h2 class="sheet-title" id="menu-title">Note Cards</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <section class="sheet-sec" aria-labelledby="sync-title">
+      <h3 class="sheet-sub" id="sync-title">Sync across devices</h3>
+      <p class="sync" id="sync" data-state="local"></p>
+      <div class="sheet-sec" id="sync-ui"></div>
+    </section>
+    <section class="sheet-sec" id="install-sec" aria-labelledby="install-title">
+      <h3 class="sheet-sub" id="install-title">Get the app</h3>
+      <div class="list">
+        <button class="row" type="button" id="install-row"><span class="row-ic"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2" width="11" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v5M5.8 7.9 8 10.1l2.2-2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="row-t"><b id="install-row-t">Install Note Cards</b><small>Open it from your Dock or Home Screen</small></span></button>
+      </div>
+    </section>
+    <section class="sheet-sec" aria-labelledby="backup-title">
+      <h3 class="sheet-sub" id="backup-title">Backup</h3>
+      <div class="list">
+        <button class="row" type="button" id="backup" data-backup><span class="row-ic"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10V2.5M5 5.2 8 2.3l3 2.9M3 9.5v3.2h10V9.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="row-t"><b>Back up ratings</b><small>Save a file you can import later</small></span></button>
+        <button class="row" type="button" id="import" data-import><span class="row-ic"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5V10M5 7.3 8 10.2l3-2.9M3 9.5v3.2h10V9.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="row-t"><b>Import ratings</b><small>Merge a backup file into this device</small></span></button>
+      </div>
+    </section>
+    <section class="sheet-sec" aria-labelledby="how-title">
+      <h3 class="sheet-sub" id="how-title">How it works</h3>
+      <ol class="steps">
+        <li><span><b>Pick your cards.</b> Turn decks on and open one to choose keys, qualities and voicings.</span></li>
+        <li><span><b>Play what comes up.</b> Tap the card to flip it and check the notes, shapes and sound.</span></li>
+        <li><span><b>Rate it</b> Nailed, Solid or Rusty. Ratings collect on the home screen so you can aim practice at what still needs work.</span></li>
+      </ol>
+    </section>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="install-sheet" aria-labelledby="install-sheet-title">
+  <div class="sheet-in">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sheet-head"><h2 class="sheet-title" id="install-sheet-title">Add to Dock</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <ol class="steps" id="install-steps"></ol>
+    <p class="sheet-text" id="install-note"></p>
+    <button class="btn btn-secondary" type="button" data-close>Done</button>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="timer-sheet" aria-labelledby="timer-title">
+  <div class="sheet-in">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sheet-head"><h2 class="sheet-title" id="timer-title">Auto-next</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <p class="sheet-text">Deal the next card on a timer. The bar along the top of the card counts down, and pauses while the notes are showing.</p>
+    <div class="list" role="radiogroup" aria-labelledby="timer-title" id="timer-seg"></div>
+  </div>
+</dialog>
+
+<script>
+// ===== THEORY START =====
+const LETTERS = ['C','D','E','F','G','A','B'];
+const NAT = [0,2,4,5,7,9,11];
+const MAJOR = NAT;
+const acc = a => a === 0 ? '' : (a > 0 ? '♯' : '♭').repeat(Math.abs(a));
+
+// Accidental of the note `steps` letters and `semis` semitones above root ({l: letter index, a: accidental}).
+function accOf(root, steps, semis) {
+  const li = root.l + steps, letter = ((li % 7) + 7) % 7, oct = Math.floor(li / 7);
+  return (NAT[root.l] + root.a + semis) - (NAT[letter] + 12 * oct);
+}
+function spell(root, steps, semis) {
+  return LETTERS[(((root.l + steps) % 7) + 7) % 7] + acc(accOf(root, steps, semis));
+}
+const rootName = root => LETTERS[root.l] + acc(root.a);
+const degLabel = (steps, semis) => acc(semis - MAJOR[steps]) + (steps + 1);
+// Color family of a degree label: root orange, 3rd blue, 5th green, 7th red, everything else neutral.
+const degClass = deg => {
+  const d = String(deg).replace(/[♭♯]/g, '');
+  return (d === 'R' || d === '1' || d === '8') ? 'd-r' : d === '3' ? 'd-3' : d === '5' ? 'd-5' : d === '7' ? 'd-7' : 'd-n';
+};
+
+function intervalName(steps, semis) {
+  const simple = ((steps % 7) + 7) % 7, oct = Math.floor(steps / 7);
+  const diff = semis - (MAJOR[simple] + 12 * oct);
+  const perfect = simple === 0 || simple === 3 || simple === 4;
+  const q = perfect ? ({'-2':'dd','-1':'d','0':'P','1':'A','2':'AA'})[diff]
+                    : ({'-3':'dd','-2':'d','-1':'m','0':'M','1':'A','2':'AA'})[diff];
+  return (q || '?') + (steps + 1);
+}
+
+// Root spellings for each pitch class. The first is preferred when two spellings tie.
+const PC_ROOTS = [
+  [{l:0,a:0}], [{l:1,a:-1},{l:0,a:1}], [{l:1,a:0}], [{l:2,a:-1},{l:1,a:1}], [{l:2,a:0}], [{l:3,a:0}],
+  [{l:3,a:1},{l:4,a:-1}], [{l:4,a:0}], [{l:5,a:-1},{l:4,a:1}], [{l:5,a:0}], [{l:6,a:-1},{l:5,a:1}], [{l:6,a:0}],
+];
+const KEY_LABELS = ['C','C♯/D♭','D','D♯/E♭','E','F','F♯/G♭','G','G♯/A♭','A','A♯/B♭','B'];
+// Fewest accidentals wins and double sharps/flats cost extra; ties go to the simpler tonic triad, then the preferred name.
+const spellCost = (root, ivs) => ivs.reduce((s, [st, se]) => { const a = Math.abs(accOf(root, st, se)); return s + a + (a > 1 ? 10 : 0); }, 0);
+function pickRoot(pc, ivs, tieIvs) {
+  let best = null;
+  PC_ROOTS[pc].forEach((r, i) => {
+    const k = [spellCost(r, ivs), spellCost(r, tieIvs), i];
+    if (!best || k[0] < best.k[0] || (k[0] === best.k[0] && (k[1] < best.k[1] || (k[1] === best.k[1] && k[2] < best.k[2])))) best = { r, k };
+  });
+  return best.r;
+}
+
+// Chord tones as [letter steps, semitones] above the root.
+const T = { R:[0,0], M2:[1,2], m3:[2,3], M3:[2,4], P4:[3,5], d5:[4,6], P5:[4,7], A5:[4,8], d7:[6,9], m7:[6,10], M7:[6,11] };
+const TRIADS = [
+  { id:'maj',  label:'Major',      word:'major',      tones:[T.R, T.M3, T.P5] },
+  { id:'min',  label:'Minor',      word:'minor',      tones:[T.R, T.m3, T.P5] },
+  { id:'aug',  label:'Augmented',  word:'augmented',  tones:[T.R, T.M3, T.A5] },
+  { id:'dim',  label:'Diminished', word:'diminished', tones:[T.R, T.m3, T.d5] },
+  { id:'sus2', label:'sus2',       sym:'sus2',        tones:[T.R, T.M2, T.P5] },
+  { id:'sus4', label:'sus4',       sym:'sus4',        tones:[T.R, T.P4, T.P5] },
+];
+const SEVENTHS = [
+  { id:'maj7',   label:'maj7',    sym:'maj7',    word:'major 7',           tones:[T.R, T.M3, T.P5, T.M7] },
+  { id:'dom7',   label:'dom7',    sym:'7',       word:'dominant 7',        tones:[T.R, T.M3, T.P5, T.m7] },
+  { id:'m7',     label:'m7',      sym:'m7',      word:'minor 7',           tones:[T.R, T.m3, T.P5, T.m7] },
+  { id:'m7b5',   label:'m7♭5',    sym:'m7♭5',    word:'half-diminished',   tones:[T.R, T.m3, T.d5, T.m7] },
+  { id:'dim7',   label:'dim7',    sym:'dim7',    word:'diminished 7',      tones:[T.R, T.m3, T.d5, T.d7] },
+  { id:'mmaj7',  label:'m(maj7)', sym:'m(maj7)', word:'minor-major 7',     tones:[T.R, T.m3, T.P5, T.M7] },
+  { id:'maj7s5', label:'maj7♯5',  sym:'maj7♯5',  word:'augmented major 7', tones:[T.R, T.M3, T.A5, T.M7] },
+];
+const ARP_QUALITIES = [...TRIADS.slice(0, 4), ...SEVENTHS];
+const ARP_STARTS = [
+  { id:'s1', chip:'Root', label:'From the root', idx:0 },
+  { id:'s3', chip:'3rd',  label:'From the 3rd',  idx:1 },
+  { id:'s5', chip:'5th',  label:'From the 5th',  idx:2 },
+  { id:'s7', chip:'7th',  label:'From the 7th',  idx:3 },
+];
+// Inversion = which chord tone is in the bass.
+const INVERSIONS = [
+  { id:'root', label:'Root position', bass:0 },
+  { id:'inv1', label:'1st inversion', bass:1 },
+  { id:'inv2', label:'2nd inversion', bass:2 },
+  { id:'inv3', label:'3rd inversion', bass:3 },
+];
+// drops: [voice number counted from the top, octaves down]
+const VOICINGS = [
+  { id:'close', label:'Close',                  drops:[] },
+  { id:'d2',    label:'Drop 2',                 drops:[[2,1]] },
+  { id:'d3',    label:'Drop 3',                 drops:[[3,1]] },
+  { id:'d23',   label:'Drop 2 & 3',             drops:[[2,1],[3,1]] },
+  { id:'d24',   label:'Drop 2 & 4',             drops:[[2,1],[4,1]], minVoices:4 },
+  { id:'dd23',  label:'Double drop 2 / drop 3', drops:[[2,2],[3,1]] },
+];
+const MODES = [
+  { id:'ionian',     name:'Ionian',     semis:[0,2,4,5,7,9,11], color:null },
+  { id:'dorian',     name:'Dorian',     semis:[0,2,3,5,7,9,10], color:5 },
+  { id:'phrygian',   name:'Phrygian',   semis:[0,1,3,5,7,8,10], color:1 },
+  { id:'lydian',     name:'Lydian',     semis:[0,2,4,6,7,9,11], color:3 },
+  { id:'mixolydian', name:'Mixolydian', semis:[0,2,4,5,7,9,10], color:6 },
+  { id:'aeolian',    name:'Aeolian',    semis:[0,2,3,5,7,8,10], color:5 },
+  { id:'locrian',    name:'Locrian',    semis:[0,1,3,5,6,8,10], color:4 },
+];
+
+// Find the close voicing that, after the drops, puts `bass` (tone index) on the bottom.
+function buildVoicing(tones, bass, voicing) {
+  const n = tones.length;
+  let hit = null;
+  for (let s = 0; s < n; s++) {
+    const vs = [];
+    for (let j = 0; j < n; j++) {
+      const k = s + j, ti = k % n, o = k >= n ? 1 : 0;
+      vs.push({ ti, dia: tones[ti][0] + 7 * o, semi: tones[ti][1] + 12 * o });
+    }
+    for (const [num, oct] of voicing.drops) {
+      const v = vs[n - num];
+      if (!v) throw new Error('No voice ' + num + ' in a ' + n + '-note chord');
+      v.dia -= 7 * oct; v.semi -= 12 * oct;
+    }
+    vs.sort((a, b) => a.semi - b.semi);
+    if (vs[0].ti === bass) {
+      if (hit) throw new Error('Ambiguous voicing');
+      hit = { source: s, voices: vs };
+    }
+  }
+  if (!hit) throw new Error('No voicing found');
+  return hit;
+}
+
+// Guitar: standard tuning, strings 6 → 1. Keeps the voicing's exact spacing, one note per string, low to high.
+const TUNING = [40, 45, 50, 55, 59, 64];
+const COMBOS = { 3: [], 4: [] };
+(function () {
+  const rec = (n, start, cur) => {
+    if (cur.length === n) { COMBOS[n].push(cur.slice()); return; }
+    for (let s = start; s < 6; s++) { cur.push(s); rec(n, s + 1, cur); cur.pop(); }
+  };
+  rec(3, 0, []); rec(4, 0, []);
+})();
+function guitarShapes(midis, maxSpan) {
+  const n = midis.length, out = [];
+  for (let k = -5; k <= 5; k++) {
+    const q = midis.map(m => m + 12 * k);
+    if (q[0] < TUNING[0] || q[n - 1] > TUNING[5] + 15) continue;
+    for (const strs of COMBOS[n]) {
+      const frets = q.map((m, i) => m - TUNING[strs[i]]);
+      if (frets.some(f => f < 0 || f > 15)) continue;
+      const fr = frets.filter(f => f > 0);
+      const minF = fr.length ? Math.min(...fr) : 0, maxF = fr.length ? Math.max(...fr) : 0, span = maxF - minF;
+      if (span > maxSpan) continue;
+      const skips = strs[n - 1] - strs[0] - (n - 1), opens = n - fr.length;
+      // Movable shapes first: open strings, skipped strings, wide stretches and very high frets all cost extra.
+      const cost = skips * 2 + Math.max(0, span - 2) * 1.5 + opens * 2.5 + Math.max(0, minF - 9) * .4 + (span >= 4 && minF <= 4 ? 1 : 0);
+      out.push({ strings: strs, frets, span, minF, maxF, cost });
+    }
+  }
+  return out.sort((a, b) => a.cost - b.cost || a.minF - b.minF);
+}
+function guitarFor(midis) {
+  let shapes = guitarShapes(midis, 4), stretch = false;
+  if (!shapes.length) { shapes = guitarShapes(midis, 5); stretch = shapes.length > 0; }
+  return { shapes: shapes.slice(0, 8), stretch };
+}
+
+function buildCards() {
+  const cards = [];
+  for (let pc = 0; pc < 12; pc++) {
+    MODES.forEach((m, mi) => {
+      const ivs = m.semis.map((s, i) => [i, s]);
+      const root = pickRoot(pc, ivs, [ivs[0], ivs[2], ivs[4]]);
+      const R = rootName(root), base = (pc <= 5 ? 60 : 48) + pc;
+      const notes = m.semis.map((s, i) => ({ name: spell(root, i, s), deg: degLabel(i, s), midi: base + s, tone: i === m.color }));
+      notes.push({ name: R, deg: '8', midi: base + 12, octave: true });
+      const gaps = notes.slice(1).map((n, i) => ({ 1:'H', 2:'W', 3:'W+H' })[n.midi - notes[i].midi]);
+      const parent = spell(root, -mi, -MAJOR[mi]);
+      cards.push({
+        key: 'modes-' + pc + '-' + m.id, deck: 'modes', tags: { key: String(pc), mode: m.id },
+        title: R + ' ' + m.name, sub: '', lines: [], notes, gaps,
+        parent: 'Mode ' + (mi + 1) + ' of ' + parent + ' major',
+        colorTone: m.color == null ? null : notes[m.color],
+      });
+    });
+
+    ARP_QUALITIES.forEach(q => {
+      const n = q.tones.length, root = pickRoot(pc, q.tones, q.tones.slice(0, 3)), R = rootName(root);
+      ARP_STARTS.forEach(st => {
+        if (st.idx >= n) return;
+        const seq = [];
+        for (let j = 0; j <= n; j++) {
+          const ti = (st.idx + j) % n, o = Math.floor((st.idx + j) / n);
+          seq.push({ ti, dia: q.tones[ti][0] + 7 * o, semi: q.tones[ti][1] + 12 * o });
+        }
+        const k = Math.round((60 - (60 + pc + seq[0].semi)) / 12);
+        const notes = seq.map((x, j) => {
+          const [s1, s2] = q.tones[x.ti];
+          return { name: spell(root, s1, s2), deg: x.ti === 0 ? 'R' : degLabel(s1, s2), midi: 60 + pc + x.semi + 12 * k, octave: j === n };
+        });
+        const gaps = seq.slice(1).map((x, i) => intervalName(x.dia - seq[i].dia, x.semi - seq[i].semi));
+        cards.push({ key: ['arps', pc, q.id, st.id].join('-'), deck: 'arps', tags: { key: String(pc), q: q.id, start: st.id },
+          title: n === 3 ? R + ' ' + q.word : R + q.sym, sub: n === 4 ? R + ' ' + q.word : '', lines: ['Arpeggio', st.label], notes, gaps });
+      });
+    });
+
+    const chord = (deck, q, root, inv, v, title, sub) => {
+      const { voices } = buildVoicing(q.tones, inv.bass, v);
+      const base = 60 + pc, lo = voices[0].semi, hi = voices[voices.length - 1].semi;
+      const k = Math.round((60 - (base + (lo + hi) / 2)) / 12);
+      const vs = voices.map(x => ({ ti: x.ti, dia: x.dia + 7 * k, semi: x.semi + 12 * k }));
+      const notes = vs.map(x => {
+        const [st, se] = q.tones[x.ti];
+        return { name: spell(root, st, se), deg: x.ti === 0 ? 'R' : degLabel(st, se), midi: base + x.semi };
+      });
+      const gaps = vs.slice(1).map((x, i) => intervalName(x.dia - vs[i].dia, x.semi - vs[i].semi));
+      cards.push({ key: [deck, pc, q.id, inv.id, v.id].join('-'), deck, tags: { key: String(pc), q: q.id, inv: inv.id, v: v.id },
+        title, sub, lines: [inv.label, v.label], notes, gaps });
+    };
+    TRIADS.forEach(q => {
+      const root = pickRoot(pc, q.tones, q.tones), R = rootName(root);
+      const title = q.word ? R + ' ' + q.word : R + q.sym;
+      INVERSIONS.slice(0, 3).forEach(inv => VOICINGS.forEach(v => { if (!(v.minVoices > 3)) chord('triads', q, root, inv, v, title, ''); }));
+    });
+    SEVENTHS.forEach(q => {
+      const root = pickRoot(pc, q.tones, q.tones.slice(0, 3)), R = rootName(root);
+      INVERSIONS.forEach(inv => VOICINGS.forEach(v => chord('sevenths', q, root, inv, v, R + q.sym, R + ' ' + q.word)));
+    });
+  }
+  return cards;
+}
+// ===== THEORY END =====
+
+const CARDS = buildCards();
+const BY_KEY = Object.fromEntries(CARDS.map(c => [c.key, c]));
+const TRIAD_VOICINGS = VOICINGS.filter(v => !(v.minVoices > 3));
+const TRIAD_INV = INVERSIONS.slice(0, 3);
+const KEY_ITEMS = KEY_LABELS.map((label, pc) => ({ id: String(pc), label }));
+const fmt = n => n.toLocaleString('en-US');
+const isLine = c => c.deck === 'modes' || c.deck === 'arps'; // played one note at a time
+
+// Progress: how you last rated each card. Cards you haven't rated count as new.
+const STATUSES = [
+  { id:'nailed', label:'Nailed', level:3 },
+  { id:'solid',  label:'Solid',  level:2 },
+  { id:'rusty',  label:'Rusty',  level:1 },
+];
+const STATUS = Object.fromEntries(STATUSES.map(s => [s.id, s]));
+const STATUS_GROUP = { key:'status', label:'Include cards marked',
+  items: [...STATUSES.map(s => ({ id:s.id, label:s.label, st:s.id })), { id:'new', label:'New', st:'new' }] };
+
+const DECKS = [
+  { id:'modes', label:'Modes', tag:'Modes',
+    blurb:'Every mode in all 12 keys. Flip a card for the notes, the step pattern and the parent major scale. The color tone that gives the mode its sound is marked with a diamond.',
+    groups:[
+      { key:'modeKeys', label:'Key',  items: KEY_ITEMS },
+      { key:'modes',    label:'Mode', items: MODES.map(m => ({ id:m.id, label:m.name })) },
+    ],
+    match:(c, s) => s.modeKeys.includes(c.tags.key) && s.modes.includes(c.tags.mode) },
+  { id:'arps', label:'Arpeggios', tag:'Arpeggios',
+    blurb:'Triad and 7th-chord arpeggios in all 12 keys. Starting on the root is on by default; turn on the 3rd, 5th or 7th to start somewhere else. Flip a card to see every chord tone on the neck.',
+    groups:[
+      { key:'arpKeys',  label:'Key',      items: KEY_ITEMS },
+      { key:'arpQ',     label:'Quality',  items: ARP_QUALITIES.map(q => ({ id:q.id, label:q.label })) },
+      { key:'arpStart', label:'Start on', items: ARP_STARTS.map(s => ({ id:s.id, label:s.chip })) },
+    ],
+    match:(c, s) => s.arpKeys.includes(c.tags.key) && s.arpQ.includes(c.tags.q) && s.arpStart.includes(c.tags.start) },
+  { id:'triads', label:'Triads', tag:'Triads',
+    blurb:'Inversions are named by the bass note, so root position always has the root on the bottom. Drop 2 & 4 needs a fourth voice, so triads skip it. Sus chords stay off until you turn them on.',
+    groups:[
+      { key:'triadKeys', label:'Key',       items: KEY_ITEMS },
+      { key:'triadQ',    label:'Quality',   items: TRIADS.map(q => ({ id:q.id, label:q.label })) },
+      { key:'triadInv',  label:'Inversion', items: TRIAD_INV.map(i => ({ id:i.id, label:i.label })) },
+      { key:'triadV',    label:'Voicing',   items: TRIAD_VOICINGS.map(v => ({ id:v.id, label:v.label })) },
+    ],
+    match:(c, s) => s.triadKeys.includes(c.tags.key) && s.triadQ.includes(c.tags.q) && s.triadInv.includes(c.tags.inv) && s.triadV.includes(c.tags.v) },
+  { id:'sevenths', label:'7th chords', tag:'7th chords',
+    blurb:'Root position is on by default: the root stays on the bottom and each voicing reorders the 3rd, 5th and 7th above it. Turn on inversions to put the 3rd, 5th or 7th in the bass.',
+    groups:[
+      { key:'sevKeys', label:'Key',       items: KEY_ITEMS },
+      { key:'sevQ',    label:'Quality',   items: SEVENTHS.map(q => ({ id:q.id, label:q.label })) },
+      { key:'sevInv',  label:'Inversion', items: INVERSIONS.map(i => ({ id:i.id, label:i.label })) },
+      { key:'sevV',    label:'Voicing',   items: VOICINGS.map(v => ({ id:v.id, label:v.label })) },
+    ],
+    match:(c, s) => s.sevKeys.includes(c.tags.key) && s.sevQ.includes(c.tags.q) && s.sevInv.includes(c.tags.inv) && s.sevV.includes(c.tags.v) },
+];
+const DECK = Object.fromEntries(DECKS.map(d => [d.id, d]));
+const TIMERS = [0, 5, 10, 15, 30];
+
+// ---------- settings (this browser only: deck choices, timer, diagrams) ----------
+const STORE = 'shed-deck:v1'; // storage keys keep the old name so saved settings and ratings carry over
+const OPTIONS = { status: STATUS_GROUP.items.map(it => it.id) };
+DECKS.forEach(d => d.groups.forEach(g => { OPTIONS[g.key] = g.items.map(it => it.id); }));
+const DEFAULTS = Object.assign({}, OPTIONS, { triadQ: ['maj','min','aug','dim'], sevInv: ['root'], arpStart: ['s1'] });
+function load() {
+  const st = { on: { modes:true, arps:true, triads:true, sevenths:true }, timer: 0, show: { guitar:true, piano:true } };
+  for (const k in OPTIONS) st[k] = DEFAULTS[k].slice();
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (s && typeof s === 'object') {
+      for (const k in OPTIONS) { if (Array.isArray(s[k])) st[k] = OPTIONS[k].filter(id => s[k].includes(id)); }
+      if (s.on && typeof s.on === 'object') { for (const d in st.on) { if (typeof s.on[d] === 'boolean') st.on[d] = s.on[d]; } }
+      if (s.show && typeof s.show === 'object') { for (const d in st.show) { if (typeof s.show[d] === 'boolean') st.show[d] = s.show[d]; } }
+      if (TIMERS.includes(s.timer)) st.timer = s.timer;
+    }
+  } catch (e) {}
+  return st;
+}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+const state = load();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[ch]);
+
+// ---------- progress store ----------
+// Ratings are saved on this device first. With sync on, they are also merged into a secret gist
+// on your GitHub account that every connected device reads and writes (see the sync section).
+const PROGRESS_KEY = 'shed-deck:progress:v1';
+const SAVED = new Map();    // card key -> { s, t }
+const PENDING = new Map();  // ratings not yet written to this device
+const entryOf = key => PENDING.get(key) || SAVED.get(key) || null;
+const statusOf = key => { const e = entryOf(key); return e ? e.s : 'new'; };
+let saveFailed = false;
+
+function loadProgress() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
+    if (raw && typeof raw === 'object') {
+      for (const k in raw) { const e = raw[k]; if (BY_KEY[k] && e && STATUS[e.s]) SAVED.set(k, { s: e.s, t: Number(e.t) || 0 }); }
+    }
+  } catch (e) {}
+}
+function saveProgress() {
+  let ok = true;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Object.fromEntries(SAVED))); }
+  catch (e) { ok = false; }
+  if (ok === saveFailed) { saveFailed = !ok; renderSaveNote(); }
+  return ok;
+}
+function renderSaveNote() {
+  $('savenote').hidden = !saveFailed;
+  $('savenote').textContent = "Ratings couldn't be saved. This device's storage may be full.";
+}
+function initStore() {
+  loadProgress();
+  progressChanged();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+  initSync();
+}
+function persist(c, entry) {
+  SAVED.set(c.key, entry);
+  if (saveProgress()) PENDING.delete(c.key);
+  queueSync();
+}
+
+// ---------- sync ----------
+// The same setup as Barline: every device connected to the same GitHub account shares one secret
+// gist ("Note Cards sync", file note-cards.json) holding all ratings. The newest rating for each
+// card wins. The GitHub token (gist access only) stays on the device; deck choices stay per device.
+const GH_KEY = 'shed-deck:ghToken', GH_USER = 'shed-deck:ghUser', GIST_KEY = 'shed-deck:gistId', SYNC_AT = 'shed-deck:syncedAt';
+const GIST_FILE = 'note-cards.json', GIST_DESC = 'Note Cards sync';
+const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Note%20Cards%20sync';
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+const ghToken = () => lsGet(GH_KEY) || '';
+const sync = { state: '', msg: '', busy: false, again: false, timer: null };
+
+class SyncError extends Error { constructor(msg, kind) { super(msg); this.kind = kind || ''; } }
+async function gh(path, opts = {}) {
+  const headers = { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + (opts.token || ghToken()) };
+  if (opts.body) headers['Content-Type'] = 'application/json';
+  let res;
+  try {
+    res = await fetch('https://api.github.com' + path, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: 'no-store' });
+  } catch (e) { throw new SyncError("You're offline. Ratings will sync when you're back online.", 'offline'); }
+  if (res.status === 401) throw new SyncError("GitHub didn't accept the sync token. Connect again in the ⋯ menu.", 'auth');
+  if (res.status === 404) throw new SyncError('Not found on GitHub.', 'notfound');
+  if (res.status === 403 || res.status === 429) {
+    const left = res.headers.get('x-ratelimit-remaining');
+    throw left === '0' ? new SyncError('GitHub is limiting requests for a while. Sync will try again later.', 'rate')
+      : new SyncError("This token can't use gists. Make one with the gist box ticked.", 'auth');
+  }
+  if (!res.ok) throw new SyncError('GitHub had a problem (' + res.status + '). Sync will try again later.', 'server');
+  return res.status === 204 ? null : res.json();
+}
+async function findGist() {
+  for (let page = 1; page <= 10; page++) {
+    const list = await gh('/gists?per_page=100&page=' + page);
+    const g = (list || []).find(x => x && x.description === GIST_DESC && x.files && x.files[GIST_FILE]);
+    if (g) return g.id;
+    if (!list || list.length < 100) break;
+  }
+  return null;
+}
+async function readGist(id) {
+  const g = await gh('/gists/' + id);
+  const f = g && g.files && g.files[GIST_FILE];
+  if (!f) return null;
+  let text = f.content;
+  if (f.truncated && f.raw_url) {
+    try { text = await (await fetch(f.raw_url, { cache: 'no-store' })).text(); }
+    catch (e) { throw new SyncError("You're offline. Ratings will sync when you're back online.", 'offline'); }
+  }
+  try { return JSON.parse(text); } catch (e) { return null; }
+}
+const payload = () => JSON.stringify({ app: 'note-cards', version: 1, savedAt: Date.now(), progress: Object.fromEntries(SAVED) });
+// Take any newer ratings from the gist, and report whether the gist is missing any of ours.
+function mergeRemote(remote) {
+  const rp = remote && remote.progress && typeof remote.progress === 'object' ? remote.progress : {};
+  let localChanged = false, remoteStale = !remote;
+  for (const k in rp) {
+    const e = rp[k];
+    if (!BY_KEY[k] || !e || !STATUS[e.s]) continue;
+    const t = Number(e.t) || 0, have = SAVED.get(k);
+    if (!have || t > have.t) { SAVED.set(k, { s: e.s, t }); localChanged = true; }
+  }
+  SAVED.forEach((e, k) => { const r = rp[k]; if (!r || r.s !== e.s || (Number(r.t) || 0) !== e.t) remoteStale = true; });
+  if (localChanged) { saveProgress(); progressChanged(); }
+  return { remoteStale };
+}
+async function syncNow() {
+  if (!ghToken()) return;
+  if (sync.busy) { sync.again = true; return; }
+  clearTimeout(sync.timer);
+  sync.busy = true;
+  setSyncState('syncing');
+  try {
+    let id = lsGet(GIST_KEY) || '', remote = null;
+    if (id) {
+      try { remote = await readGist(id); }
+      catch (e) { if (e.kind !== 'notfound') throw e; id = ''; }
+    }
+    if (!id) {
+      id = await findGist();
+      if (id) remote = await readGist(id);
+    }
+    const r = mergeRemote(remote);
+    if (!id) {
+      const g = await gh('/gists', { method: 'POST', body: { description: GIST_DESC, public: false, files: { [GIST_FILE]: { content: payload() } } } });
+      id = g.id;
+    } else if (r.remoteStale) {
+      await gh('/gists/' + id, { method: 'PATCH', body: { files: { [GIST_FILE]: { content: payload() } } } });
+    }
+    lsSet(GIST_KEY, id);
+    lsSet(SYNC_AT, String(Date.now()));
+    setSyncState('ok');
+  } catch (e) {
+    const err = e instanceof SyncError ? e : new SyncError("Sync didn't finish. It will try again.", '');
+    setSyncState(err.kind === 'offline' ? 'offline' : 'error', err.message);
+    if (err.kind === 'auth') toast(err.message);
+    else queueSync(err.kind === 'rate' ? 600000 : 30000);
+  } finally {
+    sync.busy = false;
+    if (sync.again) { sync.again = false; queueSync(800); }
+  }
+}
+function queueSync(ms) {
+  if (!ghToken()) return;
+  clearTimeout(sync.timer);
+  sync.timer = setTimeout(syncNow, ms == null ? 2500 : ms);
+}
+function disconnectSync() {
+  [GH_KEY, GH_USER, GIST_KEY, SYNC_AT].forEach(k => lsSet(k, null));
+  clearTimeout(sync.timer);
+  setSyncState('');
+}
+function initSync() {
+  setSyncState(ghToken() ? 'ok' : '');
+  if (ghToken()) syncNow();
+}
+function syncAgo(t) {
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + ' min ago';
+  if (s < 86400) return Math.floor(s / 3600) + ' hr ago';
+  return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+function syncMessage() {
+  if (!ghToken()) return 'Ratings are saved on this device only.';
+  if (sync.state === 'syncing') return 'Syncing…';
+  if (sync.state === 'offline') return "Offline. Ratings will sync when you're back online.";
+  if (sync.state === 'error') return 'Sync paused: ' + sync.msg;
+  const at = Number(lsGet(SYNC_AT)) || 0;
+  return at ? 'Synced ' + syncAgo(at) + '.' : 'Not synced yet.';
+}
+function setSyncState(st, msg) {
+  sync.state = st;
+  sync.msg = msg || '';
+  const on = !!ghToken(), dot = !on ? 'local' : st === 'ok' ? 'on' : st, text = syncMessage();
+  const el = $('sync');
+  if (el) { el.textContent = text; el.dataset.state = dot; }
+  const foot = $('foot');
+  if (foot) { foot.dataset.state = dot; foot.textContent = on ? text : 'Ratings are saved on this device. Sync them in the ⋯ menu.'; }
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  const el = document.createElement('div');
+  el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg;
+  document.body.appendChild(el);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.remove(), 2600);
+}
+function saveFile(name, text, mime) {
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+// Opens the share sheet (Save to Files, AirDrop…) where it can; otherwise saves a file.
+async function shareFile(name, text, mime) {
+  try {
+    const file = new File([text], name, { type: mime });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return 'shared'; }
+  } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
+  saveFile(name, text, mime);
+  return 'saved';
+}
+function backupRatings() {
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const data = { app: 'shed-deck', version: 1, exportedAt: d.toISOString(), progress: Object.fromEntries(SAVED) };
+  shareFile('note-cards-ratings-' + stamp + '.json', JSON.stringify(data, null, 2), 'application/json')
+    .then(r => { if (r === 'saved') toast('Backup saved.'); });
+}
+function importRatings(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); } catch (e) { toast("That file isn't a Note Cards backup."); return; }
+    const src = data && typeof data.progress === 'object' ? data.progress : data;
+    if (!src || typeof src !== 'object') { toast('No ratings found in that file.'); return; }
+    let added = 0, updated = 0;
+    const changed = [];
+    for (const k in src) {
+      const e = src[k];
+      if (!BY_KEY[k] || !e || !STATUS[e.s]) continue;
+      const entry = { s: e.s, t: Number(e.t) || 0 }, have = SAVED.get(k);
+      if (!have) { SAVED.set(k, entry); added++; }
+      else if (entry.t > have.t) { SAVED.set(k, entry); updated++; }
+      else continue;
+      changed.push(k);
+    }
+    saveProgress();
+    if (changed.length) queueSync(800);
+    progressChanged();
+    toast(added || updated ? 'Imported ' + (added + updated) + (added + updated === 1 ? ' rating.' : ' ratings.') : 'Those ratings are already here.');
+  };
+  reader.onerror = () => toast("Couldn't read that file.");
+  reader.readAsText(file);
+}
+function progressChanged() {
+  if (view === 'library') updateCounts();
+  else if (session) renderStatus();
+}
+
+// ---------- library ----------
+const LVL = n => `<svg class="lvl" viewBox="0 0 14 12" aria-hidden="true"><rect x="0" y="7" width="3.4" height="5" rx="1"${n >= 1 ? ' class="on"' : ''}/><rect x="5.3" y="3.5" width="3.4" height="8.5" rx="1"${n >= 2 ? ' class="on"' : ''}/><rect x="10.6" y="0" width="3.4" height="12" rx="1"${n >= 3 ? ' class="on"' : ''}/></svg>`;
+const CHEV = '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// Deck icons: a climbing scale, a broken chord, and three or four stacked chord tones.
+const DECK_ICON = {
+  modes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 19.5h4v-4h4v-4h4v-4h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  arps: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18.5 10 12l4 3.5 5-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/><circle cx="5" cy="18.5" r="2.6" fill="currentColor"/><circle cx="10" cy="12" r="2.6" fill="currentColor"/><circle cx="14" cy="15.5" r="2.6" fill="currentColor"/><circle cx="19" cy="6.5" r="2.6" fill="currentColor"/></svg>',
+  triads: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="18" rx="4.2" ry="3.1" fill="currentColor"/><ellipse cx="12" cy="12" rx="4.2" ry="3.1" fill="currentColor"/><ellipse cx="12" cy="6" rx="4.2" ry="3.1" fill="currentColor"/></svg>',
+  sevenths: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="19.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="14.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="9.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="4.5" rx="3.8" ry="2.7" fill="currentColor"/></svg>',
+};
+const openDecks = new Set();
+function groupHTML(g, off) {
+  return `
+    <div class="group">
+      <div class="group-head">
+        <span class="group-label" id="gl-${g.key}">${esc(g.label)}</span>
+        <span class="group-tools">
+          <button class="link" type="button" id="all-${g.key}" data-all="${g.key}"${off}>All</button>
+          <button class="link" type="button" id="none-${g.key}" data-none="${g.key}"${off}>None</button>
+        </span>
+      </div>
+      <div class="chips" role="group" aria-labelledby="gl-${g.key}">
+        ${g.items.map(it => `<button class="chip" type="button" id="chip-${g.key}-${it.id}" data-group="${g.key}" data-id="${it.id}" aria-pressed="${state[g.key].includes(it.id)}"${off}>${esc(it.label)}</button>`).join('')}
+      </div>
+    </div>`;
+}
+function renderLibrary() {
+  $('stats').innerHTML = STATUS_GROUP.items.map(it => {
+    const lvl = STATUS[it.id] ? STATUS[it.id].level : 0;
+    return `<button class="stat s-${it.st}" type="button" id="chip-status-${it.id}" data-group="status" data-id="${it.id}" aria-pressed="${state.status.includes(it.id)}">${LVL(lvl)}<span class="stat-n" id="n-${it.id}">0</span><span class="stat-l">${esc(it.label)}</span></button>`;
+  }).join('');
+  $('decks').innerHTML = DECKS.map(d => {
+    const on = state.on[d.id], off = on ? '' : ' disabled', open = openDecks.has(d.id);
+    return `
+    <section class="deck" data-deck="${d.id}"${on ? '' : ' data-off'}${open ? ' data-open' : ''}>
+      <div class="deck-row">
+        <button class="deck-main" type="button" id="open-${d.id}" data-expand="${d.id}" aria-expanded="${open}" aria-controls="body-${d.id}">
+          <span class="dicon">${DECK_ICON[d.id]}</span>
+          <span class="dtext"><span class="dtitle">${esc(d.label)}</span><span class="dsub" id="count-${d.id}"></span><span class="sbar" id="sbar-${d.id}" role="img"></span></span>
+          ${CHEV}
+        </button>
+        <button class="switch" type="button" role="switch" id="sw-${d.id}" data-switch="${d.id}" aria-checked="${on}" aria-label="Include ${esc(d.label)}"></button>
+      </div>
+      <div class="deck-body" id="body-${d.id}"${open ? '' : ' hidden'}>
+        <p class="deck-note">${esc(d.blurb)}</p>
+        ${d.groups.map(g => groupHTML(g, off)).join('')}
+      </div>
+    </section>`;
+  }).join('');
+  setSyncState(sync.state);
+  updateCounts();
+}
+const blank = () => ({ new: 0, rusty: 0, solid: 0, nailed: 0 });
+// Cards that match each deck's choices, broken down by status (the status filter decides which of them you drill).
+function tally() {
+  const t = { decks: {}, all: blank(), total: 0 };
+  DECKS.forEach(d => { t.decks[d.id] = { by: blank(), pick: 0 }; });
+  for (const c of CARDS) {
+    if (!DECK[c.deck].match(c, state)) continue;
+    const st = statusOf(c.key), r = t.decks[c.deck], take = state.status.includes(st);
+    r.by[st]++;
+    if (take) r.pick++;
+    if (state.on[c.deck]) { t.all[st]++; if (take) t.total++; }
+  }
+  return t;
+}
+const sumOf = by => by.new + by.rusty + by.solid + by.nailed;
+const byLabel = by => `${fmt(by.nailed)} nailed, ${fmt(by.solid)} solid, ${fmt(by.rusty)} rusty, ${fmt(by.new)} new`;
+function renderBar(el, by) {
+  const sum = sumOf(by);
+  el.innerHTML = sum ? ['nailed', 'solid', 'rusty'].map(k => by[k] ? `<i class="f-${k}" style="width:${(by[k] / sum * 100).toFixed(2)}%"></i>` : '').join('') : '';
+  el.setAttribute('aria-label', byLabel(by));
+}
+// Donut of how the cards you have on were last rated; the middle shows how many you've rated at all.
+function renderRing(by) {
+  const sum = sumOf(by), rated = sum - by.new;
+  let off = 0, arcs = '';
+  for (const k of ['nailed', 'solid', 'rusty']) {
+    if (!sum || !by[k]) continue;
+    const len = by[k] / sum * 100;
+    arcs += `<circle class="f-${k}" cx="50" cy="50" r="42" pathLength="100" stroke-dasharray="${len.toFixed(3)} ${(100 - len).toFixed(3)}" stroke-dashoffset="${(-off).toFixed(3)}"/>`;
+    off += len;
+  }
+  const pct = sum ? Math.round(rated / sum * 100) : 0;
+  $('ring').innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="ring-bg" cx="50" cy="50" r="42"/>${arcs}</svg><span class="ring-c"><b>${rated && pct === 0 ? '<1' : pct}%</b><small>Rated</small></span>`;
+  $('ring').setAttribute('aria-label', byLabel(by));
+  $('hero-big').innerHTML = `<b>${fmt(rated)} <span>of ${fmt(sum)}</span></b>${sum === 1 ? 'card' : 'cards'} rated`;
+}
+function updateCounts() {
+  const t = tally();
+  for (const d of DECKS) {
+    const r = t.decks[d.id];
+    $('count-' + d.id).textContent = state.on[d.id] ? (r.pick === 1 ? '1 card' : fmt(r.pick) + ' cards') : 'Off';
+    renderBar($('sbar-' + d.id), r.by);
+  }
+  renderRing(t.all);
+  const on = DECKS.filter(d => state.on[d.id]).length;
+  $('decks-on').textContent = on + ' of ' + DECKS.length + ' on';
+  STATUS_GROUP.items.forEach(it => { $('n-' + it.id).textContent = fmt(t.all[it.id]); });
+  $('start-n').textContent = fmt(t.total);
+  $('start-n').hidden = !t.total;
+  $('total').hidden = t.total > 0;
+  $('start').disabled = t.total === 0;
+}
+const pool = () => CARDS.filter(c => state.on[c.deck] && DECK[c.deck].match(c, state) && state.status.includes(statusOf(c.key))).map(c => c.key);
+function setGroup(key, ids) {
+  state[key] = OPTIONS[key].filter(id => ids.includes(id));
+  document.querySelectorAll(`[data-group="${key}"][data-id]`).forEach(ch => ch.setAttribute('aria-pressed', state[key].includes(ch.dataset.id)));
+  save(); updateCounts();
+}
+function toggleDeck(id) {
+  const sec = document.querySelector(`.deck[data-deck="${id}"]`), open = !openDecks.has(id);
+  if (open) openDecks.add(id); else openDecks.delete(id);
+  sec.toggleAttribute('data-open', open);
+  $('open-' + id).setAttribute('aria-expanded', open);
+  $('body-' + id).hidden = !open;
+  if (open && !reduceMotion() && $('body-' + id).animate) {
+    $('body-' + id).animate([{ opacity:0, transform:'translateY(-6px)' }, { opacity:1, transform:'none' }], { duration:180, easing:'ease-out' });
+  }
+}
+$('library').addEventListener('click', e => {
+  const ex = e.target.closest('[data-expand]');
+  if (ex) { toggleDeck(ex.dataset.expand); return; }
+  const sw = e.target.closest('[data-switch]');
+  if (sw) {
+    const id = sw.dataset.switch;
+    state.on[id] = !state.on[id];
+    sw.setAttribute('aria-checked', state.on[id]);
+    const sec = sw.closest('.deck');
+    sec.toggleAttribute('data-off', !state.on[id]);
+    sec.querySelectorAll('.chip, .link').forEach(el => { el.disabled = !state.on[id]; });
+    save(); updateCounts(); return;
+  }
+  const all = e.target.closest('[data-all]'), none = e.target.closest('[data-none]');
+  if (all && !all.disabled) { setGroup(all.dataset.all, OPTIONS[all.dataset.all]); return; }
+  if (none && !none.disabled) { setGroup(none.dataset.none, []); return; }
+  const chip = e.target.closest('[data-group][data-id]');
+  if (chip && !chip.disabled) {
+    const list = state[chip.dataset.group], id = chip.dataset.id, i = list.indexOf(id);
+    if (i >= 0) list.splice(i, 1); else list.push(id);
+    chip.setAttribute('aria-pressed', i < 0);
+    save(); updateCounts();
+  }
+});
+
+// ---------- sheets (menu, auto-next) ----------
+function openSheet(id) {
+  const d = $(id);
+  if (d.open) return;
+  if (timerAnim) timerAnim.pause();
+  if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+}
+function closeSheet(d) {
+  if (!d || !d.open) return;
+  if (d.close) d.close(); else { d.removeAttribute('open'); d.dispatchEvent(new Event('close')); }
+}
+document.querySelectorAll('dialog.sheet').forEach(d => {
+  // Tap outside the sheet (on the backdrop) or on a close button to dismiss it.
+  d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) closeSheet(d); });
+  d.addEventListener('close', () => { if (timerAnim && !revealed && view === 'practice') timerAnim.play(); });
+});
+$('menu-btn').addEventListener('click', () => { renderSyncUI(); renderInstall(); setSyncState(sync.state); openSheet('menu'); });
+$('timer-btn').addEventListener('click', () => openSheet('timer-sheet'));
+$('backup').addEventListener('click', () => { closeSheet($('menu')); backupRatings(); });
+$('import').addEventListener('click', () => { closeSheet($('menu')); $('importInput').click(); });
+
+// ---------- sync controls (in the ⋯ menu) ----------
+const ICON_CLOUD = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 12.5h7a2.9 2.9 0 0 0 .5-5.7 4 4 0 0 0-7.7-.7 3.2 3.2 0 0 0 .2 6.4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+const ICON_SYNC = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 6.5A5 5 0 0 0 3.7 5M3 9.5A5 5 0 0 0 12.3 11M3.5 2.3v2.9h2.9M12.5 13.7v-2.9H9.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.1 4.1l7.8 7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+function renderSyncUI() {
+  const who = lsGet(GH_USER) || '';
+  $('sync-ui').innerHTML = ghToken() ? `
+    <div class="list">
+      <div class="row static"><span class="row-ic">${ICON_CLOUD}</span><span class="row-t"><b>On with GitHub${who ? ' (' + esc(who) + ')' : ''}</b><small>Ratings sync through a secret gist</small></span></div>
+      <button class="row" type="button" data-sync="now"><span class="row-ic">${ICON_SYNC}</span><span class="row-t"><b>Sync now</b><small>It also syncs on its own as you practice</small></span></button>
+      <button class="row warn" type="button" data-sync="off"><span class="row-ic muted">${ICON_OFF}</span><span class="row-t"><b>Turn off sync on this device</b><small>Your ratings stay here and in the gist</small></span></button>
+    </div>` : `
+    <p class="sheet-text">Keep ratings the same on your phone and computer. Like Barline, they're kept in one secret gist on your GitHub account, and each device connects with a GitHub token.</p>
+    <form class="code-form" id="token-form" novalidate>
+      <label class="field-label" for="token-in">Paste a GitHub token with gist access. The one you use for Barline works.</label>
+      <div class="code-row"><input class="field" id="token-in" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_…"><button class="btn btn-primary btn-sm" type="submit" id="token-go">Connect</button></div>
+      <p class="field-err" id="token-err" hidden></p>
+    </form>
+    <details class="token-help">
+      <summary>Need a token?</summary>
+      <ol class="steps">
+        <li><span>Open <a href="${TOKEN_URL}" target="_blank" rel="noopener">GitHub's token page</a> and sign in.</span></li>
+        <li><span>Keep only <b>gist</b> ticked and pick an expiration ("No expiration" means you won't do this again). Tap <b>Generate token</b>.</span></li>
+        <li><span>Copy the token (it starts with ghp_) and paste it above. Use the same GitHub account on every device.</span></li>
+      </ol>
+    </details>
+    <p class="sheet-text small">The token can only read and write gists, and it stays on this device. A secret gist isn't listed on your profile or in search, but anyone with its link can open it.</p>`;
+}
+async function connectToken() {
+  const v = $('token-in').value.trim(), err = $('token-err'), go = $('token-go');
+  const fail = msg => { err.hidden = false; err.textContent = msg; go.disabled = false; go.textContent = 'Connect'; $('token-in').focus(); };
+  if (!/^(ghp_|github_pat_|gho_)[A-Za-z0-9_]{20,}$/.test(v)) { fail("That doesn't look like a GitHub token. They start with ghp_ or github_pat_."); return; }
+  go.disabled = true; go.textContent = 'Connecting…'; err.hidden = true;
+  try {
+    const me = await gh('/user', { token: v });
+    lsSet(GH_KEY, v);
+    lsSet(GH_USER, me && me.login ? String(me.login) : '');
+    lsSet(GIST_KEY, null);
+    lsSet(SYNC_AT, null);
+    renderSyncUI();
+    await syncNow();
+    if (sync.state === 'ok') toast('Sync is on' + (me && me.login ? ' for ' + me.login : '') + '.');
+  } catch (e) {
+    if (!ghToken()) fail(e.kind === 'auth' ? "GitHub didn't accept that token. Check it and try again." : e instanceof SyncError ? e.message : "Couldn't connect to GitHub.");
+  }
+}
+$('sync-ui').addEventListener('click', e => {
+  const b = e.target.closest('[data-sync]');
+  if (!b) return;
+  if (b.dataset.sync === 'now') syncNow().then(() => toast(sync.state === 'ok' ? 'Synced.' : (sync.msg || "Sync didn't finish.")));
+  else if (b.dataset.sync === 'off' && confirm('Turn off sync on this device? Your ratings stay here and in the gist.')) {
+    disconnectSync(); renderSyncUI(); toast('Sync is off on this device.');
+  }
+});
+$('sync-ui').addEventListener('submit', e => { e.preventDefault(); connectToken(); });
+$('sync-ui').addEventListener('input', e => { if (e.target.id === 'token-in') $('token-err').hidden = true; });
+document.addEventListener('visibilitychange', () => {
+  if (!ghToken()) return;
+  if (document.visibilityState === 'visible') { if (Date.now() - (Number(lsGet(SYNC_AT)) || 0) > 5000) syncNow(); }
+  else if (sync.timer) syncNow();  // leaving the app with a rating still queued: send it now
+});
+window.addEventListener('online', () => { if (ghToken()) syncNow(); });
+// While open, pick up ratings from other devices every couple of minutes and keep "Synced 3 min ago" current.
+setInterval(() => {
+  if (!ghToken()) return;
+  if (document.visibilityState === 'visible' && !sync.busy && Date.now() - (Number(lsGet(SYNC_AT)) || 0) > 115000 && sync.state === 'ok') syncNow();
+  else if (sync.state === 'ok') setSyncState('ok');
+}, 30000);
+
+// ---------- install (Add to Dock / Home Screen) ----------
+let installEvt = null;  // Chrome and Edge hand over their install prompt here
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+function installPlatform() {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  const safari = /Safari\//.test(ua) && !/Chrome\/|Chromium\/|Edg\/|OPR\/|Firefox\//.test(ua);
+  if (/Macintosh/.test(ua) && safari) return 'mac-safari';
+  if (/Firefox\//.test(ua)) return 'firefox';
+  if (/Chrome\/|Edg\//.test(ua)) return 'chrome';
+  return 'other';
+}
+const INSTALL = {
+  'mac-safari': { title: 'Add to Dock', sub: 'Open Note Cards from your Dock', steps: [
+      '<b>In the menu bar, choose File → Add to Dock…</b> Or click the Share button in Safari’s toolbar and choose Add to Dock.',
+      '<b>Click Add.</b> Note Cards opens in its own window from the Dock, Launchpad and Spotlight.'],
+    note: 'Needs macOS Sonoma or later. The Dock app keeps its ratings separate from Safari, so turn on sync to bring them along.' },
+  ios: { title: 'Add to Home Screen', sub: 'Open Note Cards from your Home Screen', steps: [
+      '<b>Tap the Share button</b> (the square with an arrow).',
+      '<b>Scroll down and tap Add to Home Screen.</b>',
+      '<b>Tap Add.</b> Note Cards opens full screen and works offline.'],
+    note: 'The Home Screen app keeps its ratings separate from Safari, so turn on sync to bring them along.' },
+  android: { title: 'Install Note Cards', sub: 'Open Note Cards from your Home screen', steps: [
+      '<b>Open the browser menu</b> (⋮).',
+      '<b>Tap Install app</b> or Add to Home screen.'], note: '' },
+  chrome: { title: 'Install Note Cards', sub: 'Open Note Cards in its own window', steps: [
+      '<b>Click the install icon</b> at the right end of the address bar. Or open the ⋮ menu and choose Cast, save and share → Install page as app…',
+      '<b>Click Install.</b> Note Cards opens in its own window and shows up with your other apps.'], note: '' },
+  firefox: { title: 'Install Note Cards', sub: '', steps: [
+      '<b>Open this page in Safari or Chrome.</b> Firefox can’t install web apps on a computer.',
+      '<b>Follow the steps there</b> to add Note Cards to your Dock.'], note: '' },
+  other: { title: 'Install Note Cards', sub: '', steps: [
+      '<b>Open your browser’s menu</b> and look for Install, Add to Dock or Add to Home Screen.'], note: '' },
+};
+function renderInstall() {
+  // Woodshed: installing happens from the Woodshed home screen, so these prompts stay hidden.
+  $('install-sec').hidden = true; $('install-banner').hidden = true; return;
+  const p = installPlatform(), info = INSTALL[p], standalone = isStandalone();
+  $('install-sec').hidden = standalone;
+  $('install-row-t').textContent = installEvt ? 'Install Note Cards' : info.title;
+  $('install-banner').hidden = standalone || lsGet('shed-deck:install-dismissed') === '1' || !(installEvt || p === 'ios' || p === 'mac-safari');
+  $('install-banner-sub').textContent = info.sub || 'Open Note Cards like any other app';
+  $('install-go').textContent = installEvt ? 'Install' : 'How';
+}
+function startInstall() {
+  if (installEvt) {
+    const ev = installEvt;
+    ev.prompt();
+    ev.userChoice.finally(() => { installEvt = null; renderInstall(); });
+    return;
+  }
+  const info = INSTALL[installPlatform()];
+  $('install-sheet-title').textContent = info.title;
+  $('install-steps').innerHTML = info.steps.map(t => `<li><span>${t}</span></li>`).join('');
+  $('install-note').textContent = info.note;
+  $('install-note').hidden = !info.note;
+  closeSheet($('menu'));
+  openSheet('install-sheet');
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; renderInstall(); });
+window.addEventListener('appinstalled', () => { installEvt = null; renderInstall(); });
+$('install-row').addEventListener('click', startInstall);
+$('install-go').addEventListener('click', startInstall);
+$('install-x').addEventListener('click', () => { lsSet('shed-deck:install-dismissed', '1'); renderInstall(); });
+$('foot').addEventListener('click', () => $('menu-btn').click());
+const onScroll = () => document.querySelectorAll('.appbar').forEach(b => b.classList.toggle('scrolled', window.scrollY > 4));
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// ---------- practice ----------
+let view = 'library', session = null, revealed = false, timerAnim = null, busy = false, shapeIdx = 0;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const current = () => session && BY_KEY[session.order[session.pos]];
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function showView(v) {
+  view = v;
+  $('library').hidden = v !== 'library';
+  $('startbar').hidden = v !== 'library';
+  $('practice').hidden = v !== 'practice';
+  $('shell').classList.toggle('is-practice', v === 'practice');
+  window.scrollTo(0, 0);
+  onScroll();
+  if (v === 'practice') wake(); else unwake();
+}
+function startSession() {
+  const keys = pool();
+  if (!keys.length) return;
+  session = { pool: keys, order: shuffle(keys.slice()), pos: 0, round: 1 };
+  showView('practice');
+  renderCard(); startTimer();
+  $('next').focus({ preventScroll: true });
+}
+function back() {
+  stopTimer();
+  showView('library');
+  updateCounts();
+}
+function advance() {
+  session.pos++;
+  if (session.pos >= session.order.length) {
+    const last = session.order[session.order.length - 1];
+    const o = shuffle(session.pool.slice());
+    if (o.length > 1 && o[0] === last) [o[0], o[1]] = [o[1], o[0]];
+    session.order = o; session.pos = 0; session.round++;
+  }
+}
+function nextCard() {
+  if (!session || busy) return;
+  stopTimer();
+  advance();
+  const card = $('card');
+  if (reduceMotion() || !card.animate) { renderCard(); startTimer(); return; }
+  busy = true;
+  const out = card.animate([{ transform:'none', opacity:1 }, { transform:'translate(-26px,6px) rotate(-3deg)', opacity:0 }],
+    { duration:150, easing:'cubic-bezier(.4,0,1,1)', fill:'forwards' });
+  out.onfinish = () => {
+    renderCard();
+    card.animate([{ transform:'translateY(12px) scale(.985)', opacity:0 }, { transform:'none', opacity:1 }],
+      { duration:220, easing:'cubic-bezier(0,0,.2,1)' });
+    out.cancel();
+    busy = false;
+    startTimer();
+  };
+}
+// Rate the card, stamp it, then deal the next one.
+function rate(id) {
+  const c = current();
+  if (!c || busy || !STATUS[id]) return;
+  busy = true;
+  stopTimer();
+  const entry = { s: id, t: Date.now() };
+  PENDING.set(c.key, entry);
+  persist(c, entry);
+  renderStatus();
+  const st = $('stampmark');
+  st.className = 'stampmark on s-' + id;
+  st.innerHTML = LVL(STATUS[id].level) + esc(STATUS[id].label);
+  if (!reduceMotion() && st.animate) {
+    st.animate([{ transform:'rotate(-6deg) scale(1.4)', opacity:0 }, { transform:'rotate(-6deg) scale(1)', opacity:1 }],
+      { duration:160, easing:'cubic-bezier(.2,.9,.25,1)' });
+  }
+  setTimeout(() => { busy = false; nextCard(); }, reduceMotion() ? 300 : 430);
+}
+function ago(t) {
+  if (!t) return '';
+  const a = new Date(), b = new Date(t);
+  a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0);
+  const days = Math.round((a - b) / 86400000);
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 14) return days + ' days ago';
+  if (days < 60) return Math.round(days / 7) + ' weeks ago';
+  return Math.round(days / 30) + ' months ago';
+}
+function renderStatus() {
+  const c = current();
+  if (!c) return;
+  const e = entryOf(c.key), pill = $('spill');
+  if (e) {
+    pill.className = 'spill s-' + e.s;
+    pill.innerHTML = `${LVL(STATUS[e.s].level)}${STATUS[e.s].label}<span class="when">· ${esc(ago(e.t))}</span>`;
+  } else {
+    pill.className = 'spill s-new';
+    pill.textContent = 'New';
+  }
+  $('rate').querySelectorAll('[data-rate]').forEach(b => b.toggleAttribute('data-current', !!e && b.dataset.rate === e.s));
+}
+
+const ARROW = '<svg viewBox="0 0 24 12" aria-hidden="true"><path d="M1 6h20M16 1.5 21.5 6 16 10.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SPEAKER = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6h2.5L8.5 3v10L5 10H2.5z" fill="currentColor"/><path d="M11 5.2a4 4 0 0 1 0 5.6M12.9 3.4a6.5 6.5 0 0 1 0 9.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+const CHEV_L = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHEV_R = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const isWhite = m => [0,2,4,5,7,9,11].includes(((m % 12) + 12) % 12);
+const badge = nt => `<span class="deg ${degClass(nt.deg)}${nt.tone ? ' ct' : ''}">${esc(nt.deg)}</span>`;
+const diamond = (cx, cy, r) => `<path class="ctmark" d="M${cx} ${cy - r}L${cx + r} ${cy}L${cx} ${cy + r}L${cx - r} ${cy}Z"/>`;
+// A note marker on a fretboard: a circle, or a diamond for a color tone.
+function marker(cx, cy, nt, r, small) {
+  const dc = degClass(nt.deg), s = r * 1.62;
+  const shape = nt.tone
+    ? `<rect class="dot ${dc} ct" x="${cx - s / 2}" y="${cy - s / 2}" width="${s}" height="${s}" rx="1.5" transform="rotate(45 ${cx} ${cy})"/>`
+    : `<circle class="dot ${dc}" cx="${cx}" cy="${cy}" r="${r}"/>`;
+  return shape + `<text class="dl${small ? ' sm' : ''} ${dc}" x="${cx}" y="${cy}">${esc(nt.deg)}</text>`;
+}
+
+// ---------- piano ----------
+function kbRange(midis) {
+  let lo = Math.min(...midis), hi = Math.max(...midis);
+  const mid = (lo + hi) / 2;
+  lo = Math.min(lo, Math.floor(mid - 12)); hi = Math.max(hi, Math.ceil(mid + 12));
+  while (![0,5].includes(((lo % 12) + 12) % 12)) lo--;
+  while (![4,11].includes(((hi % 12) + 12) % 12)) hi++;
+  return [lo, hi];
+}
+function keyboard(lo, hi, notes) {
+  while (!isWhite(lo)) lo--;
+  while (!isWhite(hi)) hi++;
+  const W = 24, H = 96, BW = 14, BH = 60, x = {};
+  let n = 0;
+  for (let m = lo; m <= hi; m++) if (isWhite(m)) x[m] = (n++) * W;
+  const hits = new Map();
+  notes.forEach(nt => { if (!hits.has(nt.midi)) hits.set(nt.midi, nt); });
+  let wk = '', bk = '', marks = '', labels = '';
+  for (let m = lo; m <= hi; m++) {
+    const h = hits.get(m), cls = h ? ' ' + degClass(h.deg) : '';
+    if (isWhite(m)) {
+      wk += `<rect class="wk${cls}" x="${x[m] + .5}" y=".5" width="${W - 1}" height="${H - 1}" rx="2.5"/>`;
+      if (h && h.tone) marks += diamond(x[m] + W / 2, H - 14, 6);
+    } else if (m > lo && m < hi) {
+      x[m] = x[m - 1] + W - BW / 2;
+      bk += `<rect class="bk${cls}" x="${x[m]}" y="0" width="${BW}" height="${BH}" rx="2"/>`;
+      if (h && h.tone) marks += diamond(x[m] + BW / 2, BH - 11, 5);
+    }
+  }
+  hits.forEach((nt, m) => {
+    if (x[m] == null) return;
+    const cx = x[m] + (isWhite(m) ? W / 2 : BW / 2);
+    labels += `<span style="left:${(cx / (n * W) * 100).toFixed(3)}%">${esc(nt.name)}</span>`;
+  });
+  return `<div class="kb" style="--n:${n}"><svg viewBox="0 0 ${n * W} ${H}" role="img" aria-label="Piano keyboard with ${esc(notes.map(nt => nt.name).join(', '))} highlighted">${wk}${bk}${marks}</svg><div class="kb-labels" aria-hidden="true">${labels}</div></div>`;
+}
+
+// ---------- guitar ----------
+const GUITAR = new Map();
+const guitarOf = c => { if (!GUITAR.has(c.key)) GUITAR.set(c.key, guitarFor(c.notes.map(n => n.midi))); return GUITAR.get(c.key); };
+function chordBox(c, sh) {
+  const S = 24, FH = 28, L = 34, TOP = 34, NF = 5;
+  const W = L + 5 * S + 16, H = TOP + NF * FH + 28;
+  const start = sh.maxF <= 5 ? 1 : sh.minF;
+  let g = '';
+  for (let j = 0; j <= NF; j++) { const y = TOP + j * FH; g += `<line class="${j === 0 && start === 1 ? 'nut' : 'fret'}" x1="${L}" x2="${L + 5 * S}" y1="${y}" y2="${y}"/>`; }
+  for (let s = 0; s < 6; s++) { const x = L + s * S; g += `<line class="str" x1="${x}" x2="${x}" y1="${TOP}" y2="${TOP + NF * FH}"/>`; }
+  if (start > 1) g += `<text class="fr" x="${L - 9}" y="${TOP + FH / 2}">${start}fr</text>`;
+  const at = new Map(sh.strings.map((s, i) => [s, i]));
+  for (let s = 0; s < 6; s++) {
+    const x = L + s * S, my = TOP - 13;
+    if (!at.has(s)) { g += `<path class="mute" d="M${x - 4} ${my - 4}l8 8M${x + 4} ${my - 4}l-8 8"/>`; continue; }
+    const i = at.get(s), f = sh.frets[i], nt = c.notes[i];
+    g += f === 0 ? marker(x, my, nt, 8.5, true) : marker(x, TOP + (f - start + .5) * FH, nt, 11, false);
+    g += `<text class="nn" x="${x}" y="${TOP + NF * FH + 18}">${esc(nt.name)}</text>`;
+  }
+  const desc = sh.strings.map((s, i) => 'string ' + (6 - s) + ' ' + (sh.frets[i] ? 'fret ' + sh.frets[i] : 'open')).join(', ');
+  return `<svg class="gbox" viewBox="0 0 ${W} ${H}" role="img" aria-label="Guitar chord diagram: ${desc}">${g}</svg>`;
+}
+function neckMap(c) {
+  const N = 12, SN = 14, OW = 24, FW = 26, SH = 19, TOP = 13;
+  const X0 = SN + OW, W = X0 + N * FW + 6, H = TOP + 5 * SH + 30;
+  const rows = [64, 59, 55, 50, 45, 40], names = ['E','B','G','D','A','E'];
+  const byPc = new Map();
+  c.notes.forEach(nt => { if (!nt.octave) byPc.set(((nt.midi % 12) + 12) % 12, nt); });
+  let g = '';
+  for (let j = 0; j <= N; j++) { const x = X0 + j * FW; g += `<line class="${j === 0 ? 'nut' : 'fret'}" x1="${x}" x2="${x}" y1="${TOP}" y2="${TOP + 5 * SH}"/>`; }
+  rows.forEach((_, r) => { const y = TOP + r * SH; g += `<line class="str" x1="${X0}" x2="${X0 + N * FW}" y1="${y}" y2="${y}"/><text class="sn" x="${SN / 2}" y="${y}">${names[r]}</text>`; });
+  [3, 5, 7, 9, 12].forEach(f => { g += `<text class="fnum" x="${X0 + (f - .5) * FW}" y="${TOP + 5 * SH + 18}">${f}</text>`; });
+  rows.forEach((open, r) => {
+    for (let f = 0; f <= N; f++) {
+      const nt = byPc.get((open + f) % 12);
+      if (nt) g += marker(f === 0 ? SN + OW / 2 : X0 + (f - .5) * FW, TOP + r * SH, nt, 8.5, true);
+    }
+  });
+  return `<svg class="neck" viewBox="0 0 ${W} ${H}" role="img" aria-label="Guitar neck, frets 0 to 12, with every ${esc(c.title)} note marked">${g}</svg>`;
+}
+function guitarHTML(c) {
+  if (isLine(c)) return `<div class="neck-wrap">${neckMap(c)}</div>`;
+  const { shapes, stretch } = guitarOf(c);
+  if (!shapes.length) return `<p class="gnone">This spacing doesn't fit on a guitar within a five-fret reach, so there's no shape for it.</p>`;
+  const i = ((shapeIdx % shapes.length) + shapes.length) % shapes.length, sh = shapes[i];
+  const strs = sh.strings.map(s => 6 - s).join(' ');
+  const many = shapes.length > 1;
+  return `<figure class="gtr">${chordBox(c, sh)}
+    <figcaption class="gnav">
+      ${many ? `<button class="icon-btn" type="button" id="shape-prev" data-shape="-1" aria-label="Previous guitar shape">${CHEV_L}</button>` : ''}
+      <span class="gnav-text"><b>${many ? 'Shape ' + (i + 1) + ' of ' + shapes.length : 'Guitar shape'}</b><small>Strings ${strs}${stretch ? ' · wide stretch' : ''}</small></span>
+      ${many ? `<button class="icon-btn" type="button" id="shape-next" data-shape="1" aria-label="Next guitar shape">${CHEV_R}</button>` : ''}
+    </figcaption></figure>`;
+}
+
+// ---------- card ----------
+function answerHTML(c) {
+  const line = isLine(c);
+  const voices = c.notes.map((nt, i) =>
+    (i ? `<span class="gap"><i>${esc(c.gaps[i - 1])}</i></span>` : '') +
+    `<span class="v${nt.octave ? ' oct' : ''}"><b>${esc(nt.name)}</b>${badge(nt)}</span>`).join('');
+  const midis = c.notes.map(nt => nt.midi);
+  const [lo, hi] = line ? [midis[0], midis[midis.length - 1]] : kbRange(midis);
+  const facts = c.deck === 'modes' ? `<dl class="facts">
+      <div><dt>Parent scale</dt><dd>${esc(c.parent)}</dd></div>
+      <div><dt>Color tone</dt><dd>${c.colorTone ? badge(c.colorTone) + esc(c.colorTone.name) : 'None. This is the major scale.'}</dd></div>
+    </dl>` : '';
+  return `
+    <div class="ahead">
+      <span class="alabel">${line ? 'Ascending ' + ARROW : 'Low ' + ARROW + ' high'}</span>
+      <div class="atools">
+        <button class="chip chip-sm" type="button" id="show-guitar" data-show="guitar" aria-pressed="${state.show.guitar}">Guitar</button>
+        <button class="chip chip-sm" type="button" id="show-piano" data-show="piano" aria-pressed="${state.show.piano}">Piano</button>
+        <button class="ghost small play" type="button" id="play" data-play>${SPEAKER}<span>Play</span></button>
+      </div>
+    </div>
+    <div class="voices${line ? ' scale' : ''}">${voices}</div>
+    ${facts}
+    <div class="diagrams${line ? ' stacked' : ''}">
+      <div class="gslot" id="gslot"${state.show.guitar ? '' : ' hidden'}>${guitarHTML(c)}</div>
+      <div class="pslot" id="pslot"${state.show.piano ? '' : ' hidden'}>${keyboard(lo, hi, c.notes)}</div>
+    </div>`;
+}
+function renderCard() {
+  const c = current();
+  if (!c) return;
+  shapeIdx = 0;
+  const card = $('card');
+  card.dataset.deck = c.deck;
+  $('tag').textContent = DECK[c.deck].tag;
+  $('count').textContent = fmt(session.pos + 1) + ' of ' + fmt(session.order.length);
+  $('round').textContent = session.round > 1 ? 'Round ' + session.round : 'Practice';
+  $('ptitle').textContent = c.title;
+  $('psub').textContent = c.sub;
+  $('psub').hidden = !c.sub;
+  $('plines').innerHTML = c.lines.map(l => `<p class="pline">${esc(l)}</p>`).join('');
+  $('answer').innerHTML = answerHTML(c);
+  $('stampmark').className = 'stampmark';
+  renderStatus();
+  setRevealed(false);
+}
+function setRevealed(on) {
+  revealed = on;
+  $('answer').hidden = !on;
+  $('reveal').textContent = on ? 'Hide notes' : 'Show notes';
+  $('taphint').hidden = on;
+  $('reveal').setAttribute('aria-expanded', on);
+  if (timerAnim) { if (on) timerAnim.pause(); else timerAnim.play(); }
+}
+function toggleReveal() {
+  if (!session) return;
+  setRevealed(!revealed);
+  if (revealed && !reduceMotion() && $('answer').animate) {
+    $('answer').animate([{ opacity:0, transform:'translateY(-6px)' }, { opacity:1, transform:'none' }], { duration:180, easing:'ease-out' });
+  }
+}
+function cycleShape(dir) {
+  const c = current();
+  if (!c || isLine(c) || guitarOf(c).shapes.length < 2) return;
+  shapeIdx += dir;
+  const focusId = document.activeElement && document.activeElement.id;
+  $('gslot').innerHTML = guitarHTML(c);
+  if (focusId === 'shape-prev' || focusId === 'shape-next') $(focusId).focus();
+}
+
+// ---------- timer (the red line burns down) ----------
+const CHECK = '<svg class="row-check" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5 8.3 14 15.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+$('timer-seg').innerHTML = TIMERS.map(t => `<button class="row" type="button" role="radio" id="t-${t}" data-t="${t}" aria-checked="false"><span class="row-t"><b>${t ? t + ' seconds' : 'Off'}</b><small>${t ? 'Next card after ' + t + 's' : 'Move on when you rate or skip'}</small></span>${CHECK}</button>`).join('');
+function renderTimerSeg() {
+  $('timer-seg').querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', Number(b.dataset.t) === state.timer));
+  $('timer-val').textContent = state.timer ? state.timer + 's' : 'Off';
+  $('timer-btn').toggleAttribute('data-on', !!state.timer);
+  $('timer-btn').setAttribute('aria-label', 'Auto-next: ' + (state.timer ? state.timer + ' seconds' : 'off'));
+}
+function stopTimer() {
+  if (timerAnim) { timerAnim.onfinish = null; timerAnim.cancel(); timerAnim = null; }
+}
+function startTimer() {
+  stopTimer();
+  if (!state.timer || view !== 'practice' || !$('fuse').animate) return;
+  timerAnim = $('fuse').animate([{ transform:'scaleX(1)' }, { transform:'scaleX(0)' }],
+    { duration: state.timer * 1000, easing:'linear', fill:'forwards' });
+  timerAnim.onfinish = () => { timerAnim = null; if (view === 'practice') nextCard(); };
+  if (revealed) timerAnim.pause();
+}
+$('timer-seg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-t]');
+  if (!b) return;
+  state.timer = Number(b.dataset.t);
+  save(); renderTimerSeg();
+  closeSheet($('timer-sheet'));
+  startTimer();
+});
+
+// ---------- sound ----------
+let actx = null;
+function audio() {
+  try {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+      actx = new AC();
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  } catch (e) { return null; }
+}
+// Scales and arpeggios play up and back down, one note at a time; chords roll up and ring.
+function play(c) {
+  const a = c && audio();
+  if (!a) return;
+  const line = isLine(c);
+  const up = c.notes.map(n => n.midi);
+  const midis = line ? up.concat(up.slice(0, -1).reverse()) : up;
+  const t0 = a.currentTime + .04, step = line ? .24 : .11;
+  const end = t0 + step * (midis.length - 1) + (line ? .6 : 1.9);
+  const out = a.createGain();
+  out.gain.value = line ? .3 : .45 / Math.sqrt(midis.length);
+  out.connect(a.destination);
+  midis.forEach((m, i) => {
+    const f = 440 * Math.pow(2, (m - 69) / 12), t = t0 + i * step, stop = line ? t + .5 : end;
+    const o1 = a.createOscillator(), o2 = a.createOscillator(), g2 = a.createGain(), lp = a.createBiquadFilter(), g = a.createGain();
+    o1.type = 'triangle'; o1.frequency.value = f;
+    o2.type = 'sine'; o2.frequency.value = f * 2; g2.gain.value = .14;
+    lp.type = 'lowpass'; lp.frequency.value = Math.min(5200, f * 5);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(1, t + .012);
+    g.gain.exponentialRampToValueAtTime(.4, t + .3);
+    g.gain.exponentialRampToValueAtTime(.0001, stop);
+    o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(out);
+    o1.start(t); o2.start(t); o1.stop(stop + .05); o2.stop(stop + .05);
+  });
+}
+
+// ---------- keep the screen awake while drilling ----------
+let lock = null;
+async function wake() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') lock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function unwake() { try { if (lock) lock.release(); } catch (e) {} lock = null; }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && view === 'practice') wake(); });
+
+// ---------- wiring ----------
+$('rate').innerHTML = STATUSES.map((s, i) =>
+  `<button class="rate-btn s-${s.id}" type="button" id="rate-${s.id}" data-rate="${s.id}">${LVL(s.level)}<span>${s.label}</span><kbd>${i + 1}</kbd></button>`).join('');
+$('rate').addEventListener('click', e => { const b = e.target.closest('[data-rate]'); if (b) rate(b.dataset.rate); });
+$('start').addEventListener('click', startSession);
+$('importInput').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) importRatings(f); e.target.value = ''; });
+$('back').addEventListener('click', back);
+$('next').addEventListener('click', nextCard);
+$('reveal').addEventListener('click', toggleReveal);
+$('front').addEventListener('click', toggleReveal);
+$('answer').addEventListener('click', e => {
+  if (e.target.closest('[data-play]')) { play(current()); return; }
+  const sh = e.target.closest('[data-shape]');
+  if (sh) { cycleShape(Number(sh.dataset.shape)); return; }
+  const tg = e.target.closest('[data-show]');
+  if (tg) {
+    const k = tg.dataset.show;
+    state.show[k] = !state.show[k];
+    tg.setAttribute('aria-pressed', state.show[k]);
+    $(k === 'guitar' ? 'gslot' : 'pslot').hidden = !state.show[k];
+    save();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (view !== 'practice' || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
+  const k = e.key;
+  if (k === ' ' || k === 'ArrowRight') { e.preventDefault(); nextCard(); }
+  else if (k === '1' || k === '2' || k === '3') { e.preventDefault(); rate(STATUSES[Number(k) - 1].id); }
+  else if (k === 'r' || k === 'R') { e.preventDefault(); toggleReveal(); }
+  else if (k === 'g' || k === 'G') { e.preventDefault(); if (revealed) cycleShape(1); }
+  else if (k === 'p' || k === 'P') { e.preventDefault(); play(current()); }
+  else if (k === 'Escape') { e.preventDefault(); back(); }
+});
+document.addEventListener('keyup', e => { if (view === 'practice' && e.key === ' ') e.preventDefault(); });
+
+function boot(data) {
+  renderLibrary();
+  renderInstall();
+  renderTimerSeg();
+  const s = data && data.session;
+  if (data && data.view === 'practice' && s && Array.isArray(s.order)) {
+    const order = s.order.filter(k => BY_KEY[k]), keys = (Array.isArray(s.pool) ? s.pool : order).filter(k => BY_KEY[k]);
+    if (order.length) {
+      session = { pool: keys.length ? keys : order, order, pos: Math.min(Math.max(0, s.pos | 0), order.length - 1), round: Math.max(1, s.round | 0) };
+      showView('practice'); renderCard(); startTimer();
+    }
+  }
+  initStore();
+}
+boot({});
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('../sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>

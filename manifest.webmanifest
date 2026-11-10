@@ -1,0 +1,33 @@
+{
+  "name": "Woodshed",
+  "short_name": "Woodshed",
+  "description": "Your music practice tools in one app: chord charts and flashcards. Works offline; everything stays on this device.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F1F2F5",
+  "theme_color": "#F1F2F5",
+  "categories": ["music", "education", "productivity"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Barline",
+      "description": "Chord charts with a click track",
+      "url": "barline/",
+      "icons": [{ "src": "barline/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Note Cards",
+      "description": "Flashcards for modes, arpeggios, triads and 7th chords",
+      "url": "note-cards/",
+      "icons": [{ "src": "note-cards/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
