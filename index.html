@@ -27,7 +27,7 @@
 }
 :root{
   --paper:#F1F2F5; --surface:#FFFFFF; --ink:#121419; --muted:#5C6370; --rule:#E1E4E9;
-  --amber:#F5A93B; --charcoal:#15171B; --focus:#B76A00;
+  --amber:#F5A93B; --charcoal:#15171B; --focus:#B76A00; --ok:#1F8F4E; --bad:#B3261E;
   --panel:#FFFFFF; --panel-ink:#121419; --panel-muted:#5C6370; --panel-track:#E6E8EE;
   --nailed:#E8B23A; --solid:#7F97B8; --rusty:#D9764C;
   --display:"Big Shoulders Display","Arial Narrow","Helvetica Neue",system-ui,sans-serif;
@@ -39,7 +39,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --paper:#0C0D10; --surface:#17191D; --ink:#ECEEF2; --muted:#A0A6B1; --rule:#262A30; --focus:#F5A93B;
+    --paper:#0C0D10; --surface:#17191D; --ink:#ECEEF2; --muted:#A0A6B1; --rule:#262A30; --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
     --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
     color-scheme:dark;
   }
@@ -71,6 +71,17 @@ a{color:inherit}
   font-size:.875rem;font-weight:600;flex:none;
 }
 .get:active{transform:scale(.96)}
+/* sync button: a cloud, with a dot that says how sync is doing */
+.cloud{position:relative;width:2.25rem;height:2.25rem;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface);box-shadow:0 0 0 1px var(--rule);color:var(--muted)}
+.cloud svg{width:1.2rem;height:1.2rem}
+.cloud:active{transform:scale(.94)}
+.cloud[data-state="on"],.cloud[data-state="syncing"],.cloud[data-state="error"]{color:var(--ink)}
+.cloud::after{content:"";position:absolute;top:.05rem;right:.05rem;width:.6rem;height:.6rem;border-radius:50%;box-shadow:0 0 0 2px var(--paper);display:none}
+.cloud[data-state="on"]::after{display:block;background:var(--ok)}
+.cloud[data-state="error"]::after{display:block;background:var(--bad)}
+.cloud[data-state="syncing"]::after{display:block;background:var(--amber)}
+@media (prefers-reduced-motion: no-preference){ .cloud[data-state="syncing"]::after{animation:pulse 1s ease-in-out infinite alternate} }
+@keyframes pulse{from{opacity:1}to{opacity:.25}}
 
 /* ---------- tiles ---------- */
 main{flex:1;padding-top:.5rem;padding-bottom:1.5rem}
@@ -153,6 +164,24 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 .steps b{color:var(--ink);font-weight:600}
 .sheet-note{margin:.9rem 0 0;padding-top:.8rem;border-top:1px solid var(--rule);font-size:.875rem;color:var(--muted)}
 .sheet-done{display:block;width:100%;height:2.75rem;margin-top:1rem;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:600}
+/* sync sheet */
+.sheet-text{margin:0 0 .9rem;font-size:.9375rem;color:var(--muted)}
+.sheet-text b{color:var(--ink);font-weight:600}
+.steps a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.token-row{display:flex;gap:.5rem;margin-top:1rem}
+.token-row input{flex:1;min-width:0;height:2.75rem;padding:0 .8rem;border-radius:.8rem;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font:inherit}
+.token-row button,.sheet-go{height:2.75rem;padding:0 1.1rem;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:600;flex:none}
+.token-row button:disabled,.sheet-go:disabled{opacity:.55}
+.sheet-err{margin:.5rem 0 0;font-size:.875rem;color:var(--bad);font-weight:600}
+.sync-list{margin:0 0 1rem;padding:0;list-style:none;border-radius:1rem;background:var(--paper)}
+.sync-list li{display:flex;align-items:baseline;gap:.75rem;padding:.7rem .9rem;font-size:.9375rem}
+.sync-list li + li{border-top:1px solid var(--rule)}
+.sync-list b{flex:none;font-weight:600}
+.sync-list span{flex:1;min-width:0;text-align:right;color:var(--muted)}
+.sync-list span.bad{color:var(--bad)}
+.sheet-go{display:block;width:100%}
+.sheet-plain{display:block;width:100%;height:2.75rem;margin-top:.5rem;border-radius:999px;font-weight:600;color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.sheet-plain.warn{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -161,6 +190,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   <div class="bar-in wrap">
     <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#15171B"/><path d="M214 116h84a18 18 0 0 1 17.500 13.800L378 386a18 18 0 0 1-17.500 22.200H151.500A18 18 0 0 1 134 386l62.500-256.200A18 18 0 0 1 214 116z" fill="#F5A93B"/><path d="M256 352 291 172" stroke="#15171B" stroke-width="18" stroke-linecap="round"/><rect x="253" y="210" width="56" height="32" rx="9" transform="rotate(11 281 226)" fill="#15171B"/><circle cx="256" cy="352" r="16" fill="#15171B"/></svg>
     <h1 class="wordmark">Music</h1>
+    <button class="cloud" id="sync-btn" type="button" data-state="off" aria-label="Sync between devices"></button>
     <button class="get" id="get" type="button" hidden>Install</button>
   </div>
 </header>
@@ -171,7 +201,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 </main>
 
 <footer class="foot wrap">
-  <p>Works offline. Your charts and ratings stay on this device.</p>
+  <p id="privacy">Works offline. Your charts and ratings stay on this device.</p>
   <p id="version"></p>
 </footer>
 
@@ -182,7 +212,14 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   <button class="sheet-done" id="sheet-done" type="button">Done</button>
 </dialog>
 
+<dialog id="sync-sheet" aria-labelledby="sync-title">
+  <h2 id="sync-title"></h2>
+  <div id="sync-body"></div>
+  <button class="sheet-plain" id="sync-close" type="button">Close</button>
+</dialog>
+
 <script src="apps.js"></script>
+<script src="shared/account.js"></script>
 <script>
 (function () {
   "use strict";
@@ -324,7 +361,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     if (/Chrome\/|Edg\//.test(ua)) return "chrome";
     return "other";
   }
-  const CARRY = "The installed app keeps its own storage, separate from Safari. To bring your charts and ratings along, turn on sync inside Barline and Note Cards, or import a backup.";
+  const CARRY = "The installed app keeps its own storage, separate from Safari. Turn on sync there (the cloud button on this screen) and your charts and ratings come along.";
   const INSTALL = {
     ios: { title: "Add to Home Screen", steps: [
       "<b>Tap the Share button</b> (the square with an arrow).",
@@ -371,6 +408,165 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     if (mq.addEventListener) mq.addEventListener("change", renderInstall);
   }
   renderInstall();
+
+  /* ---------- sync between devices ----------
+     One GitHub connection for the whole of Music (shared/account.js). Each tool that syncs keeps
+     its own secret gist and does its own merging whenever it is open. To sync everything from
+     here, the home screen opens each of those tools out of sight for a moment and lets it run its
+     normal sync; a tool marks the time it finished under the key apps.js lists as its sync.at. */
+  const account = self.MusicAccount;
+  const SYNCERS = REG.apps.filter((app) => app.sync && app.sync.at);
+  const SYNCED_AT = "music:syncedAt";                  // last time the home screen synced everything
+  const TOKEN_URL = "https://github.com/settings/tokens/new?scopes=gist&description=Music%20sync";
+  const CLOUD = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.600 12.500h7a2.900 2.900 0 0 0 .5-5.700 4 4 0 0 0-7.700-.7 3.200 3.200 0 0 0 .2 6.400Z" fill="none" stroke="currentColor" stroke-width="1.500" stroke-linejoin="round"/></svg>';
+  const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+  const escHtml = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+  const sync = { busy: false, problem: "", tool: {} };  // tool: app id -> "syncing" | "ok" | "failed"
+  const syncSheet = $("sync-sheet");
+
+  // Ask GitHub one small question. Tells apart: no connection, a token GitHub rejects, and a token without gist access.
+  async function github(path, token) {
+    let res;
+    try {
+      res = await fetch("https://api.github.com" + path, { headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token }, cache: "no-store" });
+    } catch (e) { throw { kind: "offline", message: "You’re offline. Sync will pick up when you’re back online." }; }
+    if (res.status === 401) throw { kind: "auth", message: "GitHub didn’t accept that token. Check it and try again." };
+    if (res.status === 403 || res.status === 429) {
+      throw res.headers.get("x-ratelimit-remaining") === "0"
+        ? { kind: "rate", message: "GitHub is limiting requests for a while. Try again later." }
+        : { kind: "auth", message: "This token can’t use gists. Make one with the gist box ticked." };
+    }
+    if (!res.ok) throw { kind: "server", message: "GitHub had a problem (" + res.status + "). Try again later." };
+    return res.json();
+  }
+
+  // Open one tool out of sight and wait for it to finish its own sync.
+  function syncTool(app) {
+    return new Promise((resolve) => {
+      const started = Date.now();
+      const frame = document.createElement("iframe");
+      frame.setAttribute("aria-hidden", "true"); frame.tabIndex = -1; frame.title = app.name + " sync";
+      frame.style.cssText = "position:absolute;width:0;height:0;border:0;visibility:hidden";
+      let done = false;
+      const finish = (ok) => {
+        if (done) return;
+        done = true; clearInterval(poll); clearTimeout(limit);
+        setTimeout(() => frame.remove(), 300);
+        resolve(ok);
+      };
+      const poll = setInterval(() => { if ((Number(lsGet(app.sync.at)) || 0) >= started) finish(true); }, 250);
+      const limit = setTimeout(() => finish(false), 25000);
+      frame.src = app.id + "/";
+      document.body.appendChild(frame);
+    });
+  }
+  async function syncAll() {
+    if (sync.busy || !account.token() || !SYNCERS.length) return;
+    sync.busy = true; sync.problem = ""; sync.tool = {};
+    renderSync();
+    try {
+      await github("/gists?per_page=1", account.token());
+      for (const app of SYNCERS) {
+        sync.tool[app.id] = "syncing"; renderSync();
+        sync.tool[app.id] = (await syncTool(app)) ? "ok" : "failed";
+        renderSync(); render();
+      }
+      if (SYNCERS.every((app) => sync.tool[app.id] === "ok")) lsSet(SYNCED_AT, String(Date.now()));
+      else sync.problem = "Sync didn’t finish for everything. Check your connection and try again.";
+    } catch (e) {
+      sync.problem = (e && e.message) || "Sync didn’t finish. Try again.";
+    }
+    sync.busy = false;
+    renderSync();
+  }
+  function toolStatus(app) {
+    const st = sync.tool[app.id];
+    if (st === "syncing") return ["Syncing…", false];
+    if (st === "failed") return ["Didn’t finish", true];
+    const at = Number(lsGet(app.sync.at)) || 0;
+    return [at ? "Synced " + relTime(at) : (sync.busy ? "Waiting…" : "Not synced yet"), false];
+  }
+  function renderSync() {
+    const on = !!account.token(), btn = $("sync-btn");
+    btn.dataset.state = !on ? "off" : sync.busy ? "syncing" : sync.problem ? "error" : "on";
+    btn.setAttribute("aria-label", !on ? "Sync between devices: off" : sync.busy ? "Sync between devices: syncing" : sync.problem ? "Sync between devices: needs attention" : "Sync between devices: on");
+    $("privacy").textContent = on ? "Works offline. Your charts and ratings sync through your GitHub account." : "Works offline. Your charts and ratings stay on this device.";
+    if (!syncSheet.open) return;
+    // Don't redraw the form while someone is typing a token into it.
+    if (!on && $("token-in")) return;
+    if (!on) {
+      $("sync-title").textContent = "Sync between devices";
+      $("sync-body").innerHTML =
+        '<p class="sheet-text">Keep your charts and ratings the same on your phone and computer. Each tool keeps its data in a secret gist on your GitHub account, and each device connects once with a GitHub token.</p>' +
+        '<ol class="steps">' +
+          '<li><span><b>Open <a href="' + TOKEN_URL + '" target="_blank" rel="noopener">GitHub’s token page</a></b> and sign in.</span></li>' +
+          '<li><span><b>Keep only gist ticked</b> and pick an expiration (“No expiration” means you won’t do this again). Tap Generate token.</span></li>' +
+          '<li><span><b>Copy the token and paste it here.</b> It starts with ghp_. A token you already use for Barline or Note Cards works too.</span></li>' +
+        "</ol>" +
+        '<form class="token-row" id="token-form" novalidate><input id="token-in" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_…" aria-label="GitHub token"><button type="submit" id="token-go">Connect</button></form>' +
+        '<p class="sheet-err" id="token-err" hidden></p>' +
+        '<p class="sheet-note">The token can only read and write gists, and it stays on this device. A secret gist isn’t listed on your profile or in search, but anyone with its link can open it.</p>';
+      return;
+    }
+    const who = account.user();
+    $("sync-title").textContent = "Sync is on";
+    $("sync-body").innerHTML =
+      '<p class="sheet-text">Connected to GitHub' + (who ? " as <b>" + escHtml(who) + "</b>" : "") + ". Each tool also syncs on its own while you use it.</p>" +
+      '<ul class="sync-list">' + SYNCERS.map((app) => { const s = toolStatus(app); return "<li><b>" + escHtml(app.name) + '</b><span' + (s[1] ? ' class="bad"' : "") + ">" + escHtml(s[0]) + "</span></li>"; }).join("") + "</ul>" +
+      (sync.problem ? '<p class="sheet-err">' + escHtml(sync.problem) + "</p>" : "") +
+      '<button class="sheet-go" type="button" id="sync-now"' + (sync.busy ? " disabled" : "") + ">" + (sync.busy ? "Syncing…" : "Sync now") + "</button>" +
+      '<button class="sheet-plain warn" type="button" id="sync-off">Turn off sync on this device</button>';
+  }
+  async function connect() {
+    const input = $("token-in"), go = $("token-go"), err = $("token-err");
+    const value = input.value.trim();
+    const fail = (msg) => { err.hidden = false; err.textContent = msg; go.disabled = false; go.textContent = "Connect"; input.focus(); };
+    if (!/^(ghp_|github_pat_|gho_)[A-Za-z0-9_]{20,}$/.test(value)) { fail("That doesn’t look like a GitHub token. They start with ghp_ or github_pat_."); return; }
+    go.disabled = true; go.textContent = "Connecting…"; err.hidden = true;
+    try {
+      const me = await github("/user", value);
+      await github("/gists?per_page=1", value);
+      account.connect(value, me && me.login ? String(me.login) : "");
+      // A new connection may be a different account: let each tool look up its gist again.
+      SYNCERS.forEach((app) => { lsSet(app.sync.at, null); if (app.sync.gist) lsSet(app.sync.gist, null); });
+      lsSet(SYNCED_AT, null);
+      $("sync-body").textContent = "";
+      renderSync();
+      syncAll();
+    } catch (e) { fail((e && e.message) || "Couldn’t connect to GitHub."); }
+  }
+  function disconnect() {
+    account.disconnect();
+    SYNCERS.forEach((app) => { lsSet(app.sync.at, null); if (app.sync.gist) lsSet(app.sync.gist, null); });
+    lsSet(SYNCED_AT, null);
+    sync.problem = ""; sync.tool = {};
+    $("sync-body").textContent = "";
+    renderSync();
+  }
+  $("sync-btn").innerHTML = CLOUD;
+  $("sync-btn").addEventListener("click", () => {
+    $("sync-body").textContent = "";
+    if (syncSheet.showModal) syncSheet.showModal(); else syncSheet.setAttribute("open", "");
+    renderSync();
+  });
+  $("sync-close").addEventListener("click", () => { if (syncSheet.close) syncSheet.close(); else syncSheet.removeAttribute("open"); });
+  syncSheet.addEventListener("click", (e) => {
+    if (e.target === syncSheet && syncSheet.close) { syncSheet.close(); return; }
+    if (e.target.closest("#sync-now")) syncAll();
+    else if (e.target.closest("#sync-off") && confirm("Turn off sync on this device for all of Music? Your charts and ratings stay here and in your gists.")) disconnect();
+  });
+  syncSheet.addEventListener("submit", (e) => { e.preventDefault(); connect(); });
+  syncSheet.addEventListener("input", (e) => { if (e.target.id === "token-in") $("token-err").hidden = true; });
+  window.addEventListener("storage", (e) => { if (e.key === account.TOKEN_KEY || e.key === null) renderSync(); });
+  window.addEventListener("online", () => { if (account.token() && sync.problem) syncAll(); });
+  renderSync();
+  // Opening Music syncs everything if that hasn't happened for a while (each tool still syncs itself while open).
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      if (account.token() && navigator.onLine !== false && Date.now() - (Number(lsGet(SYNCED_AT)) || 0) > 10 * 60 * 1000) syncAll();
+    }, 900);
+  });
 
   /* ---------- offline ---------- */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {

@@ -24,6 +24,7 @@ manifest.webmanifest   Name, icon and shortcuts for the installed app
 icon*.png, icon.svg    Music's own icon
 fonts/                 Big Shoulders Display, the home screen's headline typeface
 shared/theory.js       Music theory used by Note Cards and Library
+shared/account.js      The one GitHub connection every tool syncs with
 barline/               Barline, self-contained
 note-cards/            Note Cards (reads shared/theory.js)
 library/               Library (reads shared/theory.js)
@@ -49,7 +50,9 @@ ratings, so do not change how a key is built.
      (do not give the tool a service worker or manifest of its own);
    - add a Home button that links to `../`;
    - save data under keys that start with the tool's name (`ear-training:…`)
-     so tools never overwrite each other.
+     so tools never overwrite each other;
+   - if it syncs, load `../shared/account.js` and use `MusicAccount` for the
+     token instead of keeping its own (see Sync between devices).
 3. Add an entry to `apps.js` (name, one-line description, tile color, icon,
    and every file the tool needs). Files used by more than one tool go in
    `shared/` and are listed under `shared` in `apps.js`.
@@ -63,11 +66,29 @@ Raise `version` in `apps.js` whenever any file changes. Installed copies open
 from their saved files first and fetch the new ones in the background, so a
 change shows up the second time the app is opened after it is published.
 
+## Sync between devices
+
+Sync is set up once for the whole of Music, with the cloud button on the home
+screen (or from inside any tool). A device connects with a GitHub token that
+can only read and write gists; the token is saved on that device under
+`music:ghToken` (`shared/account.js`).
+
+Each tool that syncs keeps its own secret gist ("Barline sync", "Note Cards
+sync") and does its own merging whenever it is open. To sync everything at
+once, the home screen opens each of those tools out of sight for a moment and
+lets it run its normal sync. A tool takes part by listing `sync` in `apps.js`:
+`at` is the saved-data key where it notes the time of its last finished sync,
+and `gist` is the key where it remembers its gist. Its sync should run on load
+whenever `MusicAccount.token()` is set.
+
+The gists are the same ones the older standalone Barline and Note Cards use,
+so a device that connects here picks up everything those apps have synced.
+
 ## Bringing data over from the older separate apps
 
 Barline and Note Cards used to live at `/barline/` and `/shed-deck/`. They use
 the same saved-data names here, so in the same browser your charts and ratings
 are already there. An app installed to a phone's Home Screen or the Mac Dock
-keeps its own storage, so for those either turn on sync inside each tool on
-both the old and the new app, or export a backup from the old app and import
-it into the new one.
+keeps its own storage, so for those turn on sync in the old app, then connect
+Music with the same token. (Exporting a backup from the old app and importing
+it into the new one also works.)

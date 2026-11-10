@@ -609,6 +609,7 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 </dialog>
 
 <script src="../shared/theory.js"></script>
+<script src="../shared/account.js"></script>
 <script>
 // Music theory (note spelling, modes, chords, voicings, buildCards) lives in ../shared/theory.js,
 // loaded just above this script, so Library can use the same data.
@@ -739,7 +740,9 @@ function persist(c, entry) {
 // The same setup as Barline: every device connected to the same GitHub account shares one secret
 // gist ("Note Cards sync", file note-cards.json) holding all ratings. The newest rating for each
 // card wins. The GitHub token (gist access only) stays on the device; deck choices stay per device.
-const GH_KEY = 'shed-deck:ghToken', GH_USER = 'shed-deck:ghUser', GIST_KEY = 'shed-deck:gistId', SYNC_AT = 'shed-deck:syncedAt';
+// Music: the GitHub token is shared by every tool in Music (see ../shared/account.js), so connecting
+// or turning sync off here, on the home screen, or in another tool does it for all of them.
+const GH_KEY = MusicAccount.TOKEN_KEY, GH_USER = MusicAccount.USER_KEY, GIST_KEY = 'shed-deck:gistId', SYNC_AT = 'shed-deck:syncedAt';
 const GIST_FILE = 'note-cards.json', GIST_DESC = 'Note Cards sync';
 const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Note%20Cards%20sync';
 const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
@@ -1117,7 +1120,7 @@ function renderSyncUI() {
       <button class="row" type="button" data-sync="now"><span class="row-ic">${ICON_SYNC}</span><span class="row-t"><b>Sync now</b><small>It also syncs on its own as you practice</small></span></button>
       <button class="row warn" type="button" data-sync="off"><span class="row-ic muted">${ICON_OFF}</span><span class="row-t"><b>Turn off sync on this device</b><small>Your ratings stay here and in the gist</small></span></button>
     </div>` : `
-    <p class="sheet-text">Keep ratings the same on your phone and computer. Like Barline, they're kept in one secret gist on your GitHub account, and each device connects with a GitHub token.</p>
+    <p class="sheet-text">Keep ratings the same on your phone and computer. Like Barline, they're kept in one secret gist on your GitHub account, and each device connects with a GitHub token. One connection covers every tool in Music.</p>
     <form class="code-form" id="token-form" novalidate>
       <label class="field-label" for="token-in">Paste a GitHub token with gist access. The one you use for Barline works.</label>
       <div class="code-row"><input class="field" id="token-in" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_…"><button class="btn btn-primary btn-sm" type="submit" id="token-go">Connect</button></div>
@@ -1155,7 +1158,7 @@ $('sync-ui').addEventListener('click', e => {
   const b = e.target.closest('[data-sync]');
   if (!b) return;
   if (b.dataset.sync === 'now') syncNow().then(() => toast(sync.state === 'ok' ? 'Synced.' : (sync.msg || "Sync didn't finish.")));
-  else if (b.dataset.sync === 'off' && confirm('Turn off sync on this device? Your ratings stay here and in the gist.')) {
+  else if (b.dataset.sync === 'off' && confirm('Turn off sync on this device for all of Music? Your ratings stay here and in the gist.')) {
     disconnectSync(); renderSyncUI(); toast('Sync is off on this device.');
   }
 });

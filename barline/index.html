@@ -699,6 +699,7 @@
 <div class="bsheet" id="bsheet" role="dialog" aria-modal="true" hidden><div id="sheetBody"></div></div>
 <input type="file" id="importInput" hidden>
 
+<script src="../shared/account.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1975,7 +1976,9 @@
   // changed most recently wins. Deletions are remembered for 90 days so a chart deleted on one device
   // doesn't come back from another. The GitHub token (gist access only) and the AI key stay on the
   // device; settings like theme stay per device too.
-  const GH_KEY = "barline:ghToken", GH_USER = "barline:ghUser", GIST_KEY = "barline:gistId", SYNC_AT = "barline:syncedAt", TOMB_KEY = "barline:deleted";
+  // Music: the GitHub token is shared by every tool in Music (see ../shared/account.js), so connecting
+  // or turning sync off here, on the home screen, or in another tool does it for all of them.
+  const GH_KEY = MusicAccount.TOKEN_KEY, GH_USER = MusicAccount.USER_KEY, GIST_KEY = "barline:gistId", SYNC_AT = "barline:syncedAt", TOMB_KEY = "barline:deleted";
   const GIST_FILE = "barline.json", GIST_DESC = "Barline sync";
   const TOKEN_URL = "https://github.com/settings/tokens/new?scopes=gist&description=Barline%20sync";
   const ghToken = () => store.get(GH_KEY, "") || "";
@@ -2094,6 +2097,15 @@
     return { localChanged: localChanged, remoteStale: remoteStale, push: push, openGone: openGone, openReplaced: openReplaced };
   }
 
+  // A brand-new device only has the untouched example chart. When it joins a gist that already
+  // exists, drop the example so it isn't copied to every device. (Sync can now be switched on from
+  // the Music home screen, so this runs on a device's first sync, not only in the setup sheet.)
+  function dropUntouchedExample(){
+    const ids = Object.keys(charts);
+    if (ids.length === 1 && charts[ids[0]].title === "Example: Blues in C" && charts[ids[0]].updatedAt === charts[ids[0]].createdAt){
+      delete charts[ids[0]]; sync.applying = true; saveNow(); sync.applying = false;
+    }
+  }
   async function syncNow(){
     if (!ghToken()) return;
     if (sync.busy){ sync.again = true; return; }
@@ -2109,7 +2121,7 @@
       }
       if (!id){
         id = await findGist();
-        if (id) remote = await readGist(id);
+        if (id){ dropUntouchedExample(); remote = await readGist(id); }
       }
       const r = mergeRemote(remote);
       if (!id){
@@ -2166,7 +2178,7 @@
       const card = h("div", "bsheet-card");
       const head = h("div", "bsheet-head");
       head.appendChild(h("div", "bsheet-title", "Sync between devices"));
-      head.appendChild(h("div", "bsheet-msg", "Your charts and folders are kept in one secret gist on your GitHub account. Connect each device with a GitHub token and they stay the same."));
+      head.appendChild(h("div", "bsheet-msg", "Your charts and folders are kept in one secret gist on your GitHub account. Connect each device with a GitHub token and they stay the same. One connection covers every tool in Music."));
       card.appendChild(head);
       const box = h("div", "ai-body");
       const ol = h("ol", "sync-steps");
@@ -2221,7 +2233,7 @@
   function disconnectSync(){
     [GH_KEY, GH_USER, GIST_KEY, SYNC_AT].forEach((k) => { try { localStorage.removeItem(k); } catch(e){} });
     sync.status = ""; clearTimeout(sync.timer);
-    toast("Sync is off on this device. Your charts stay here and in the gist.");
+    toast("Sync is off on this device for all of Music. Your charts stay here and in the gist.");
     if (state.screen === "lib") renderLibrary();
   }
   document.addEventListener("visibilitychange", () => {

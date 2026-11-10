@@ -15,9 +15,9 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.1.0",
+  version: "1.2.0",
   // Files more than one app uses. Kept available offline like everything else.
-  shared: ["shared/theory.js"],
+  shared: ["shared/theory.js", "shared/account.js"],
   apps: [
     {
       id: "barline",                       // folder name, also the link from the home screen
@@ -25,6 +25,9 @@ self.MUSIC = {
       about: "Chord charts with a click track",
       color: "#0F766E",                    // tile color; white text sits on it
       icon: "icon-192.png",
+      // A tool that syncs through GitHub says where it notes the time of its last sync and which gist it
+      // uses, so the home screen can show its status and sync it along with everything else.
+      sync: { at: "barline:syncedAt", gist: "barline:gistId" },
       files: ["index.html", "icon-192.png", "vendor/abcjs-basic-min.js"]
     },
     {
@@ -33,6 +36,7 @@ self.MUSIC = {
       about: "Flashcards for modes, arpeggios, triads and 7th chords",
       color: "#4D45E3",
       icon: "icon-192.png",
+      sync: { at: "shed-deck:syncedAt", gist: "shed-deck:gistId" },
       files: ["index.html", "icon.svg", "icon-192.png"]
     },
     {
