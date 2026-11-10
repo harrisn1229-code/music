@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Library</title>
+<meta name="description" content="Look up modes, chords, arpeggios and voicings in any key. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Library is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<style>
+/* Library: a reference for the material Note Cards drills. Pick a key and every
+   mode and chord in it is listed with its notes; open one for the piano, the
+   guitar neck, the arpeggio and every inversion and voicing.
+   The page stays neutral grey so the degree colors carry the meaning:
+   root orange, 3rd blue, 5th green, 7th red (the same code Note Cards uses). */
+:root{
+  --bg:#F2F3F6; --surface:#FFFFFF; --surface-2:#F0F1F5; --surface-3:#E3E6EE;
+  --text:#14171F; --muted:#5F6675; --line:#E3E6EC;
+  --sel:#14171F; --on-sel:#FFFFFF; --focus:#9F2D3F;
+  --d-r:#F08A24; --d-r-text:#1F1305;
+  --d-3:#2F6BDB; --d-3-text:#FFFFFF;
+  --d-5:#1F8F4E; --d-5-text:#FFFFFF;
+  --d-7:#D93636; --d-7-text:#FFFFFF;
+  --d-nk:#BAC1D1; --dot-edge:rgb(20 24 40 / .22);
+  --mark:#FFFFFF; --mark-edge:#14161B;
+  --key-w:#FFFFFF; --key-b:#1E2128; --key-edge:#B7BECB; --fretline:#9AA2B1;
+  --sh:0 0 0 1px rgb(20 24 44 / .07), 0 1px 2px rgb(22 26 52 / .05);
+  --r-lg:1.25rem; --r-md:.875rem;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI","Noto Music",sans-serif;
+  --gut-l:max(16px, env(safe-area-inset-left, 0px));
+  --gut-r:max(16px, env(safe-area-inset-right, 0px));
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0D0E12; --surface:#181A20; --surface-2:#21242C; --surface-3:#2E323D;
+    --text:#ECEEF4; --muted:#9BA1B0; --line:#292D38;
+    --sel:#ECEEF4; --on-sel:#14171F; --focus:#F08A9B;
+    --d-r:#FF9F4A; --d-r-text:#1F1305;
+    --d-3:#71A5FF; --d-3-text:#0C1426;
+    --d-5:#52CC88; --d-5-text:#0A1B12;
+    --d-7:#FF7070; --d-7-text:#240A0A;
+    --d-nk:#78829A; --dot-edge:rgb(0 0 0 / .4);
+    --mark:#FFFFFF; --mark-edge:#0B0C0F;
+    --key-w:#D8DCE4; --key-b:#0B0C0F; --key-edge:#5B6271; --fretline:#4E5666;
+    --sh:0 0 0 1px rgb(255 255 255 / .06);
+    color-scheme:dark;
+  }
+}
+/* Fade between the Music home screen and this app instead of a hard page flash. */
+@media (prefers-reduced-motion: no-preference){ @view-transition{navigation:auto} }
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font:16px/1.45 var(--ui);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,p,ul,ol,dl,dd,figure{margin:0;padding:0}
+ul,ol{list-style:none}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+[hidden]{display:none !important}
+.wrap{width:100%;max-width:68rem;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
+
+/* ---------- top bar ---------- */
+.bar{position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top, 0px);background:color-mix(in srgb, var(--bg) 88%, transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.bar-in{display:flex;align-items:center;gap:.65rem;min-height:3.75rem}
+.icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;background:var(--surface);box-shadow:var(--sh);display:inline-grid;place-items:center;flex:none}
+.icon-btn:active{transform:scale(.92)}
+.icon-btn svg{width:1.25rem;height:1.25rem}
+.logo{width:2.25rem;height:2.25rem;border-radius:.6rem;flex:none;display:block}
+.brand{font-size:1.3125rem;font-weight:800;letter-spacing:-.015em;line-height:1}
+
+main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom, 0px))}
+
+/* ---------- index: search, key, lists ---------- */
+.search{display:flex;align-items:center;gap:.6rem;height:2.875rem;padding:0 .9rem;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--sh);color:var(--muted)}
+.search:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.search svg{width:1.05rem;height:1.05rem;flex:none}
+.search input{flex:1;min-width:0;height:100%;border:0;background:none;color:var(--text);font:inherit;outline:none;-webkit-appearance:none;appearance:none}
+.search input::placeholder{color:var(--muted)}
+
+.recent{display:flex;gap:.4rem;margin-top:.75rem;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.recent::-webkit-scrollbar{display:none}
+.pill{flex:none;height:2rem;padding:0 .8rem;border-radius:999px;background:var(--surface-3);display:inline-flex;align-items:center;font-size:.875rem;font-weight:600;white-space:nowrap}
+
+.label{display:block;margin:1.1rem 0 .5rem;font-size:.875rem;font-weight:700;color:var(--muted)}
+.keys{display:grid;grid-template-columns:repeat(6, minmax(0, 1fr));gap:.375rem}
+@media (min-width:48rem){ .keys{grid-template-columns:repeat(12, minmax(0, 1fr))} }
+.key{height:2.75rem;border-radius:.75rem;background:var(--surface);box-shadow:var(--sh);font-weight:700;font-size:1rem;display:grid;place-items:center;line-height:1.05;white-space:nowrap}
+.key.two{font-size:.75rem}
+.key[aria-checked="true"],.chip[aria-pressed="true"]{background:var(--sel);color:var(--on-sel);box-shadow:none}
+.key:active,.chip:active{transform:scale(.95)}
+
+.lists{display:grid;gap:0 1.5rem;align-items:start}
+@media (min-width:62rem){ .lists.cols{grid-template-columns:1.35fr 1fr 1fr} }
+.sec h2{margin:1.5rem .125rem .6rem;font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
+.sec .hint{margin:-.35rem .125rem .6rem}
+.hint{font-size:.875rem;color:var(--muted)}
+.rows{display:grid;gap:.5rem}
+.row{display:block;padding:.75rem .9rem .7rem;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--sh)}
+.row:active{transform:scale(.99)}
+.row-head{display:flex;align-items:baseline;gap:.5rem}
+.row-t{font-weight:800;font-size:1.0625rem}
+.row-s{flex:1;min-width:0;color:var(--muted);font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-go{flex:none;align-self:center;width:.9rem;height:.9rem;color:var(--muted);margin-left:auto}
+/* Each note sits over its degree; columns line up from row to row. */
+.cells{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0, 2.9rem);margin-top:.45rem}
+.cell{display:grid;gap:.05rem}
+.cell b{font-size:1.0625rem;font-weight:600}
+.cell small{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.cell.ct small{color:var(--text);font-weight:800}
+.row.plain{display:flex;align-items:center;gap:.5rem;font-weight:700}
+.empty{margin-top:1.5rem;padding:1.25rem;border-radius:var(--r-md);background:var(--surface-2);color:var(--muted)}
+
+/* ---------- entry page ---------- */
+.head{display:flex;align-items:flex-start;gap:1rem;margin:.5rem .125rem 0}
+.head-t{flex:1;min-width:0}
+.title{font-size:clamp(2rem, 1.5rem + 2.6vw, 2.75rem);font-weight:800;letter-spacing:-.025em;line-height:1.05}
+.sub{margin-top:.3rem;color:var(--muted)}
+.play{flex:none;height:2.5rem;padding:0 1rem 0 .8rem;border-radius:999px;background:var(--sel);color:var(--on-sel);font-weight:700;font-size:.9375rem;display:inline-flex;align-items:center;gap:.4rem}
+.play.small{height:2.125rem;padding:0 .8rem 0 .65rem;font-size:.875rem;background:var(--surface-3);color:var(--text)}
+.play:active{transform:scale(.96)}
+.play svg{width:1rem;height:1rem}
+.keystrip{display:flex;gap:.375rem;margin:1rem calc(-1 * var(--gut-r)) 0 calc(-1 * var(--gut-l));padding:2px var(--gut-r) 2px var(--gut-l);overflow-x:auto;scrollbar-width:none}
+.keystrip::-webkit-scrollbar{display:none}
+.keystrip .key{flex:none;min-width:2.75rem;padding:0 .7rem}
+
+.entry{display:grid;gap:.875rem;margin-top:1rem;align-items:start}
+.entry > *{min-width:0}
+@media (min-width:62rem){ .entry.two{grid-template-columns:minmax(0, 1fr) minmax(0, 1fr)} .entry .wide{grid-column:1 / -1} }
+.card{min-width:0;padding:1rem;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--sh);display:grid;gap:.9rem}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:2.125rem}
+.card h3{font-size:1.125rem;font-weight:800;letter-spacing:-.01em}
+.picker{display:grid;gap:.4rem}
+.picker-l{font-size:.8125rem;font-weight:700;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:.375rem}
+.chip{height:2.125rem;padding:0 .8rem;border-radius:999px;background:var(--surface-2);font-size:.875rem;font-weight:600;white-space:nowrap}
+.say{color:var(--muted);font-size:.9375rem}
+.say b{color:var(--text);font-weight:700}
+
+/* degree badges: root orange, 3rd blue, 5th green, 7th red, other tones outlined; a mode's color tone is a diamond */
+.d-r{--dc:var(--d-r);--dt:var(--d-r-text)}
+.d-3{--dc:var(--d-3);--dt:var(--d-3-text)}
+.d-5{--dc:var(--d-5);--dt:var(--d-5-text)}
+.d-7{--dc:var(--d-7);--dt:var(--d-7-text)}
+.d-n{--dc:transparent;--dt:var(--text);--db:var(--text)}
+.deg{display:inline-grid;place-items:center;min-width:1.7rem;height:1.45rem;padding:0 .35rem;border-radius:999px;font-size:.8125rem;font-weight:800;line-height:1;background:var(--dc);color:var(--dt);border:1.5px solid var(--db, transparent)}
+.deg.ct{position:relative;isolation:isolate;width:1.85rem;height:1.85rem;min-width:0;padding:0;background:transparent;border-color:transparent}
+.deg.ct::before{content:"";position:absolute;inset:.25rem;z-index:-1;transform:rotate(45deg);border-radius:2px;background:var(--dc);border:1.5px solid var(--db, var(--text))}
+
+/* notes in a row with the step or interval between each pair */
+.voices{display:flex;align-items:flex-start;padding:.85rem .75rem;border-radius:var(--r-md);background:var(--surface-2)}
+.v{display:grid;justify-items:center;gap:.3rem;min-width:2.5rem}
+.v b{font-size:clamp(1.375rem, 1.1rem + 1.2vw, 1.75rem);line-height:1.15;font-weight:800}
+.v.oct b{color:var(--muted);font-weight:500}
+.v.oct .deg{opacity:.5}
+.gap{flex:1 1 0;min-width:1.75rem;position:relative;text-align:center;font-size:.75rem;color:var(--muted);font-weight:700;padding-top:.05rem}
+.gap::after{content:"";position:absolute;left:.3rem;right:.3rem;top:1.3rem;border-top:1.5px solid var(--surface-3)}
+.card.wide .voices{max-width:40rem}
+.voices.scale{padding-inline:.5rem}
+.voices.scale .v{min-width:1.5rem}
+.voices.scale .v b{font-size:clamp(1.125rem, .95rem + .9vw, 1.5rem)}
+.voices.scale .deg{min-width:1.45rem;padding:0 .2rem;font-size:.75rem}
+.voices.scale .deg.ct{width:1.7rem;height:1.7rem;min-width:0;padding:0}
+.voices.scale .gap{min-width:.75rem}
+.voices.scale .gap::after{top:1.15rem}
+
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:.45rem 1rem;align-items:center}
+.facts div{display:contents}
+.facts dt{color:var(--muted);font-size:.9375rem}
+.facts dd{font-weight:700;display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+
+/* piano */
+.kb{width:100%;max-width:calc(var(--n) * 2.75rem)}
+.kb svg{display:block;width:100%;height:auto}
+.wk{fill:var(--key-w);stroke:var(--key-edge);stroke-width:1}
+.bk{fill:var(--key-b)}
+.wk.d-r,.bk.d-r{fill:var(--d-r)} .wk.d-3,.bk.d-3{fill:var(--d-3)} .wk.d-5,.bk.d-5{fill:var(--d-5)} .wk.d-7,.bk.d-7{fill:var(--d-7)} .wk.d-n,.bk.d-n{fill:var(--d-nk)}
+.kb-labels{position:relative;height:1.3rem;margin-top:.3rem}
+.kb-labels span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font-size:.8125rem;font-weight:700}
+
+/* guitar */
+.neck-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.neck{display:block;width:100%;min-width:23rem;max-width:36rem;height:auto}
+.shapes{display:flex;gap:.25rem;margin:0 -1rem;padding:0 1rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.shape{flex:none;display:grid;justify-items:center;gap:.1rem}
+.shape figcaption{font-size:.8125rem;color:var(--muted);text-align:center;line-height:1.3}
+.shape figcaption b{display:block;color:var(--text);font-size:.875rem}
+.gbox{display:block;width:9.75rem;height:auto}
+.gbox .str,.gbox .fret,.neck .str,.neck .fret{stroke:var(--fretline);stroke-width:1}
+.gbox .nut,.neck .nut{stroke:var(--text);stroke-width:4}
+.gbox .mute{stroke:var(--muted);stroke-width:1.6;stroke-linecap:round;fill:none}
+.gbox text,.neck text{font-family:var(--ui)}
+.dot{stroke:var(--dot-edge);stroke-width:1}
+.dot.d-r{fill:var(--d-r)} .dot.d-3{fill:var(--d-3)} .dot.d-5{fill:var(--d-5)} .dot.d-7{fill:var(--d-7)}
+.dot.d-n{fill:var(--surface);stroke:var(--text);stroke-width:1.5}
+.dot.ct{stroke:var(--text);stroke-width:1.8}
+.dl{font-size:10.5px;font-weight:800;text-anchor:middle;dominant-baseline:central}
+.dl.sm{font-size:9px}
+.dl.d-r{fill:var(--d-r-text)} .dl.d-3{fill:var(--d-3-text)} .dl.d-5{fill:var(--d-5-text)} .dl.d-7{fill:var(--d-7-text)} .dl.d-n{fill:var(--text)}
+.ctmark{fill:var(--mark);stroke:var(--mark-edge);stroke-width:1.2}
+.nn{font-size:11px;font-weight:700;fill:var(--text);text-anchor:middle}
+.fr,.fnum,.sn{font-size:10px;font-weight:700;fill:var(--muted)}
+.fnum,.sn{text-anchor:middle;dominant-baseline:central}
+.fr{text-anchor:end;dominant-baseline:central}
+
+/* guide */
+.guide{display:grid;gap:.6rem}
+.guide li{padding:.8rem .9rem;border-radius:var(--r-md);background:var(--surface-2)}
+.guide b{display:block}
+.guide span{display:block;color:var(--muted);font-size:.9375rem}
+.guide em{display:block;margin-top:.3rem;font-style:normal;font-weight:700;letter-spacing:.02em}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"></a>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#9F2D3F"/><rect x="126" y="158" width="62" height="214" rx="11" fill="#fff"/><rect x="200" y="124" width="72" height="248" rx="11" fill="#F5A93B"/><rect x="292" y="150" width="60" height="222" rx="11" fill="#fff" transform="rotate(13 352 372)"/><rect x="104" y="380" width="304" height="20" rx="10" fill="#fff" opacity=".55"/></svg>
+    <h1 class="brand">Library</h1>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+<noscript><p class="wrap">Library needs JavaScript turned on.</p></noscript>
+
+<script src="../shared/theory.js"></script>
+<script>
+/* Library reads the same theory as Note Cards (../shared/theory.js) and lays it out
+   for looking things up. Addresses:
+     #/                      the index: search, key picker, every mode and chord in that key
+     #/mode/<key>/<mode>     one mode        (key is 0-11, C = 0)
+     #/chord/<key>/<quality> one chord: spelling, arpeggio, inversions and voicings
+     #/voicings              how inversions and voicings are named */
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+  const view = $("view");
+
+  /* ---------- the material ---------- */
+  const CARDS = buildCards();
+  const BY_KEY = Object.fromEntries(CARDS.map((c) => [c.key, c]));
+  const MODE = Object.fromEntries(MODES.map((m) => [m.id, m]));
+  const QUALS = [...TRIADS, ...SEVENTHS];
+  const QUAL = Object.fromEntries(QUALS.map((q) => [q.id, q]));
+  const isSeventh = (q) => q.tones.length === 4;
+  const deckOf = (q) => (isSeventh(q) ? "sevenths" : "triads");
+  const modeCard = (pc, id) => BY_KEY["modes-" + pc + "-" + id];
+  const chordCard = (pc, q, inv, v) => BY_KEY[[deckOf(q), pc, q.id, inv || "root", v || "close"].join("-")];
+  const arpCard = (pc, q, start) => BY_KEY[["arps", pc, q.id, start || "s1"].join("-")];
+  const invsOf = (q) => INVERSIONS.slice(0, q.tones.length);
+  const voicingsOf = (q) => VOICINGS.filter((v) => !(v.minVoices > q.tones.length));
+  const startsOf = (q) => (arpCard(0, q, "s1") ? ARP_STARTS.filter((s) => s.idx < q.tones.length) : []);
+  const SHORT_KEYS = KEY_LABELS;
+
+  /* ---------- what's remembered on this device ---------- */
+  const PREFS_KEY = "library:prefs:v1", RECENT_KEY = "library:recent:v1";
+  const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const prefs = Object.assign({ pc: 0 }, lsGet(PREFS_KEY) || {});
+  if (!(prefs.pc >= 0 && prefs.pc < 12)) prefs.pc = 0;
+  const savePrefs = () => lsSet(PREFS_KEY, prefs);
+  function recents() { const r = lsGet(RECENT_KEY); return Array.isArray(r) ? r.filter((x) => x && x.h && x.t) : []; }
+  function remember(h, t) {
+    const list = recents().filter((x) => x.h !== h);
+    list.unshift({ h: h, t: t });
+    lsSet(RECENT_KEY, list.slice(0, 6));
+  }
+
+  /* ---------- small pieces ---------- */
+  const ICON = {
+    home: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg>',
+    back: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.500 4 6.500 10l6 6"/></svg>',
+    go: '<svg class="row-go" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>',
+    search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.800"/><path d="M10.600 10.600 14 14"/></svg>',
+    play: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.500 6h2.500L8.500 3v10L5 10H2.500z" fill="currentColor"/><path d="M11 5.200a4 4 0 0 1 0 5.600M12.900 3.400a6.500 6.500 0 0 1 0 9.200" fill="none" stroke="currentColor" stroke-width="1.400" stroke-linecap="round"/></svg>'
+  };
+  const badge = (nt) => '<span class="deg ' + degClass(nt.deg) + (nt.tone ? " ct" : "") + '">' + esc(nt.deg) + "</span>";
+  const playBtn = (what, small) => '<button class="play' + (small ? " small" : "") + '" type="button" data-play="' + what + '">' + ICON.play + "<span>Play</span></button>";
+
+  // Notes in a row, each over its degree, with the step or interval between neighbours.
+  function voicesHTML(c, scale) {
+    return '<div class="voices' + (scale ? " scale" : "") + '">' + c.notes.map((nt, i) =>
+      (i ? '<span class="gap"><i>' + esc(c.gaps[i - 1]) + "</i></span>" : "") +
+      '<span class="v' + (nt.octave ? " oct" : "") + '"><b>' + esc(nt.name) + "</b>" + badge(nt) + "</span>").join("") + "</div>";
+  }
+  // The compact form used in lists: note over degree, no color.
+  function cellsHTML(c) {
+    return '<span class="cells">' + c.notes.filter((nt) => !nt.octave).map((nt) =>
+      '<span class="cell' + (nt.tone ? " ct" : "") + '"><b>' + esc(nt.name) + "</b><small>" + esc(nt.deg) + "</small></span>").join("") + "</span>";
+  }
+  function rowHTML(href, title, sub, c) {
+    return '<li><a class="row" href="' + href + '"><span class="row-head"><span class="row-t">' + esc(title) + "</span>" +
+      '<span class="row-s">' + esc(sub || "") + "</span>" + ICON.go + "</span>" + cellsHTML(c) + "</a></li>";
+  }
+  const modeRow = (pc, m) => { const c = modeCard(pc, m.id); return rowHTML("#/mode/" + pc + "/" + m.id, c.title, "", c); };
+  const chordRow = (pc, q) => { const c = chordCard(pc, q); return rowHTML("#/chord/" + pc + "/" + q.id, c.title, c.sub, c); };
+
+  /* ---------- piano ---------- */
+  const isWhite = (m) => [0, 2, 4, 5, 7, 9, 11].includes(((m % 12) + 12) % 12);
+  const diamond = (cx, cy, r) => '<path class="ctmark" d="M' + cx + " " + (cy - r) + "L" + (cx + r) + " " + cy + "L" + cx + " " + (cy + r) + "L" + (cx - r) + " " + cy + 'Z"/>';
+  function kbRange(midis) {
+    let lo = Math.min(...midis), hi = Math.max(...midis);
+    const mid = (lo + hi) / 2;
+    lo = Math.min(lo, Math.floor(mid - 12)); hi = Math.max(hi, Math.ceil(mid + 12));
+    while (![0, 5].includes(((lo % 12) + 12) % 12)) lo--;
+    while (![4, 11].includes(((hi % 12) + 12) % 12)) hi++;
+    return [lo, hi];
+  }
+  function keyboard(lo, hi, notes) {
+    while (!isWhite(lo)) lo--;
+    while (!isWhite(hi)) hi++;
+    const W = 24, H = 96, BW = 14, BH = 60, x = {};
+    let n = 0;
+    for (let m = lo; m <= hi; m++) if (isWhite(m)) x[m] = (n++) * W;
+    const hits = new Map();
+    notes.forEach((nt) => { if (!hits.has(nt.midi)) hits.set(nt.midi, nt); });
+    let wk = "", bk = "", marks = "", labels = "";
+    for (let m = lo; m <= hi; m++) {
+      const h = hits.get(m), cls = h ? " " + degClass(h.deg) : "";
+      if (isWhite(m)) {
+        wk += '<rect class="wk' + cls + '" x="' + (x[m] + .5) + '" y=".5" width="' + (W - 1) + '" height="' + (H - 1) + '" rx="2.5"/>';
+        if (h && h.tone) marks += diamond(x[m] + W / 2, H - 14, 6);
+      } else if (m > lo && m < hi) {
+        x[m] = x[m - 1] + W - BW / 2;
+        bk += '<rect class="bk' + cls + '" x="' + x[m] + '" y="0" width="' + BW + '" height="' + BH + '" rx="2"/>';
+        if (h && h.tone) marks += diamond(x[m] + BW / 2, BH - 11, 5);
+      }
+    }
+    hits.forEach((nt, m) => {
+      if (x[m] == null) return;
+      const cx = x[m] + (isWhite(m) ? W / 2 : BW / 2);
+      labels += '<span style="left:' + (cx / (n * W) * 100).toFixed(3) + '%">' + esc(nt.name) + "</span>";
+    });
+    return '<div class="kb" style="--n:' + n + '"><svg viewBox="0 0 ' + (n * W) + " " + H + '" role="img" aria-label="Piano keyboard with ' +
+      esc(notes.map((nt) => nt.name).join(", ")) + ' highlighted">' + wk + bk + marks + '</svg><div class="kb-labels" aria-hidden="true">' + labels + "</div></div>";
+  }
+  const pianoLine = (c) => { const m = c.notes.map((nt) => nt.midi); return keyboard(m[0], m[m.length - 1], c.notes); };
+  const pianoChord = (c) => { const r = kbRange(c.notes.map((nt) => nt.midi)); return keyboard(r[0], r[1], c.notes); };
+
+  /* ---------- guitar ---------- */
+  // A note marker on a fretboard: a circle, or a diamond for a mode's color tone.
+  function marker(cx, cy, nt, r, small) {
+    const dc = degClass(nt.deg), s = r * 1.62;
+    const shape = nt.tone
+      ? '<rect class="dot ' + dc + ' ct" x="' + (cx - s / 2) + '" y="' + (cy - s / 2) + '" width="' + s + '" height="' + s + '" rx="1.5" transform="rotate(45 ' + cx + " " + cy + ')"/>'
+      : '<circle class="dot ' + dc + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '"/>';
+    return shape + '<text class="dl' + (small ? " sm" : "") + " " + dc + '" x="' + cx + '" y="' + cy + '">' + esc(nt.deg) + "</text>";
+  }
+  // Every place the notes fall on frets 0 to 12.
+  function neckMap(c) {
+    const N = 12, SN = 14, OW = 24, FW = 26, SH = 19, TOP = 13;
+    const X0 = SN + OW, W = X0 + N * FW + 6, H = TOP + 5 * SH + 30;
+    const rows = [64, 59, 55, 50, 45, 40], names = ["E", "B", "G", "D", "A", "E"];
+    const byPc = new Map();
+    c.notes.forEach((nt) => { if (!nt.octave) byPc.set(((nt.midi % 12) + 12) % 12, nt); });
+    let g = "";
+    for (let j = 0; j <= N; j++) { const x = X0 + j * FW; g += '<line class="' + (j === 0 ? "nut" : "fret") + '" x1="' + x + '" x2="' + x + '" y1="' + TOP + '" y2="' + (TOP + 5 * SH) + '"/>'; }
+    rows.forEach((_, r) => { const y = TOP + r * SH; g += '<line class="str" x1="' + X0 + '" x2="' + (X0 + N * FW) + '" y1="' + y + '" y2="' + y + '"/><text class="sn" x="' + (SN / 2) + '" y="' + y + '">' + names[r] + "</text>"; });
+    [3, 5, 7, 9, 12].forEach((f) => { g += '<text class="fnum" x="' + (X0 + (f - .5) * FW) + '" y="' + (TOP + 5 * SH + 18) + '">' + f + "</text>"; });
+    rows.forEach((open, r) => {
+      for (let f = 0; f <= N; f++) {
+        const nt = byPc.get((open + f) % 12);
+        if (nt) g += marker(f === 0 ? SN + OW / 2 : X0 + (f - .5) * FW, TOP + r * SH, nt, 8.5, true);
+      }
+    });
+    return '<div class="neck-wrap"><svg class="neck" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Guitar neck, frets 0 to 12, with every ' + esc(c.title) + ' note marked">' + g + "</svg></div>";
+  }
+  // One fingering of a voicing, low string on the left.
+  function chordBox(c, sh) {
+    const S = 24, FH = 28, L = 34, TOP = 34, NF = 5;
+    const W = L + 5 * S + 16, H = TOP + NF * FH + 28;
+    const start = sh.maxF <= 5 ? 1 : sh.minF;
+    let g = "";
+    for (let j = 0; j <= NF; j++) { const y = TOP + j * FH; g += '<line class="' + (j === 0 && start === 1 ? "nut" : "fret") + '" x1="' + L + '" x2="' + (L + 5 * S) + '" y1="' + y + '" y2="' + y + '"/>'; }
+    for (let s = 0; s < 6; s++) { const x = L + s * S; g += '<line class="str" x1="' + x + '" x2="' + x + '" y1="' + TOP + '" y2="' + (TOP + NF * FH) + '"/>'; }
+    if (start > 1) g += '<text class="fr" x="' + (L - 9) + '" y="' + (TOP + FH / 2) + '">' + start + "fr</text>";
+    const at = new Map(sh.strings.map((s, i) => [s, i]));
+    for (let s = 0; s < 6; s++) {
+      const x = L + s * S, my = TOP - 13;
+      if (!at.has(s)) { g += '<path class="mute" d="M' + (x - 4) + " " + (my - 4) + "l8 8M" + (x + 4) + " " + (my - 4) + 'l-8 8"/>'; continue; }
+      const i = at.get(s), f = sh.frets[i], nt = c.notes[i];
+      g += f === 0 ? marker(x, my, nt, 8.5, true) : marker(x, TOP + (f - start + .5) * FH, nt, 11, false);
+      g += '<text class="nn" x="' + x + '" y="' + (TOP + NF * FH + 18) + '">' + esc(nt.name) + "</text>";
+    }
+    const desc = sh.strings.map((s, i) => "string " + (6 - s) + " " + (sh.frets[i] ? "fret " + sh.frets[i] : "open")).join(", ");
+    return '<svg class="gbox" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Guitar chord diagram: ' + desc + '">' + g + "</svg>";
+  }
+  function shapesHTML(c) {
+    const found = guitarFor(c.notes.map((nt) => nt.midi));
+    if (!found.shapes.length) return '<p class="say">This spacing doesn’t fit on a guitar within a five-fret reach, so there’s no shape for it.</p>';
+    return '<div class="shapes">' + found.shapes.map((sh, i) =>
+      '<figure class="shape">' + chordBox(c, sh) + "<figcaption><b>Shape " + (i + 1) + "</b>Strings " + sh.strings.map((s) => 6 - s).join(" ") +
+      (found.stretch ? ", wide stretch" : "") + "</figcaption></figure>").join("") + "</div>";
+  }
+
+  /* ---------- sound ---------- */
+  let actx = null;
+  function audio() {
+    try {
+      if (!actx) {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+        try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+        actx = new AC();
+      }
+      if (actx.state === "suspended") actx.resume();
+      return actx;
+    } catch (e) { return null; }
+  }
+  // Scales and arpeggios play up and back down, one note at a time; chords roll up and ring.
+  function play(c, line) {
+    const a = c && audio();
+    if (!a) return;
+    const up = c.notes.map((n) => n.midi);
+    const midis = line ? up.concat(up.slice(0, -1).reverse()) : up;
+    const t0 = a.currentTime + .04, step = line ? .24 : .11;
+    const end = t0 + step * (midis.length - 1) + (line ? .6 : 1.9);
+    const out = a.createGain();
+    out.gain.value = line ? .3 : .45 / Math.sqrt(midis.length);
+    out.connect(a.destination);
+    midis.forEach((m, i) => {
+      const f = 440 * Math.pow(2, (m - 69) / 12), t = t0 + i * step, stop = line ? t + .5 : end;
+      const o1 = a.createOscillator(), o2 = a.createOscillator(), g2 = a.createGain(), lp = a.createBiquadFilter(), g = a.createGain();
+      o1.type = "triangle"; o1.frequency.value = f;
+      o2.type = "sine"; o2.frequency.value = f * 2; g2.gain.value = .14;
+      lp.type = "lowpass"; lp.frequency.value = Math.min(5200, f * 5);
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(1, t + .012);
+      g.gain.exponentialRampToValueAtTime(.4, t + .3);
+      g.gain.exponentialRampToValueAtTime(.0001, stop);
+      o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(out);
+      o1.start(t); o2.start(t); o1.stop(stop + .05); o2.stop(stop + .05);
+    });
+  }
+
+  /* ---------- search ----------
+     "d dorian", "F#m7", "bb7 drop" ... A root (with # or b) picks the key; the rest is
+     matched against each entry's names. With no root, results are in the key you have picked. */
+  const norm = (s) => String(s).toLowerCase().replace(/♯/g, "#").replace(/♭/g, "b").replace(/[’']/g, "").trim();
+  const ROOT_PC = {};
+  PC_ROOTS.forEach((list, pc) => list.forEach((r) => { ROOT_PC[norm(rootName(r))] = pc; }));
+  Object.assign(ROOT_PC, { "cb": 11, "fb": 4, "e#": 5, "b#": 0 });
+  const MODE_ALIASES = {
+    ionian: ["ionian", "major scale", "major"], dorian: ["dorian"], phrygian: ["phrygian"], lydian: ["lydian"],
+    mixolydian: ["mixolydian", "mixo"], aeolian: ["aeolian", "natural minor", "minor scale", "minor"], locrian: ["locrian"]
+  };
+  const QUAL_ALIASES = {
+    maj: ["major", "maj", "major triad"], min: ["minor", "min", "m", "-", "minor triad"],
+    aug: ["augmented", "aug", "+"], dim: ["diminished", "dim", "o"], sus2: ["sus2", "sus 2"], sus4: ["sus4", "sus 4", "sus"],
+    maj7: ["maj7", "major 7", "major7", "major seventh", "ma7"], dom7: ["7", "dom7", "dominant 7", "dominant", "dominant seventh"],
+    m7: ["m7", "min7", "minor 7", "minor7", "-7", "minor seventh"], m7b5: ["m7b5", "min7b5", "half-diminished", "half diminished", "-7b5"],
+    dim7: ["dim7", "diminished 7", "o7", "diminished seventh"], mmaj7: ["m(maj7)", "mmaj7", "minmaj7", "minor-major 7", "minor major 7", "m maj7"],
+    maj7s5: ["maj7#5", "maj7+5", "augmented major 7", "+maj7", "maj7+"]
+  };
+  const KIND_WORDS = { mode: "mode", modes: "mode", scale: "mode", scales: "mode", triad: "triad", triads: "triad",
+    seventh: "seventh", sevenths: "seventh", "7th": "seventh", chord: "chord", chords: "chord", arpeggio: "chord", arpeggios: "chord", arp: "chord", voicing: "chord", voicings: "chord" };
+  // How well a typed word fits one of an entry's names: exact, start of a word, or not at all.
+  function fit(word, aliases) {
+    let best = 0;
+    for (const a of aliases) {
+      if (a === word) return 3;
+      if (a.startsWith(word)) best = Math.max(best, 2);
+      else if (word.length > 1 && a.split(/[\s-]/).some((w) => w.startsWith(word))) best = Math.max(best, 1);
+    }
+    return best;
+  }
+  const ALL_ALIASES = Object.values(QUAL_ALIASES).concat(Object.values(MODE_ALIASES));
+  const bestFit = (word) => ALL_ALIASES.reduce((best, al) => Math.max(best, fit(word, al)), 0);
+  function search(query) {
+    let words = norm(query).split(/\s+/).filter(Boolean);
+    let pc = null, kind = null;
+    const rest = [];
+    words.forEach((w) => {
+      if (KIND_WORDS[w]) { kind = KIND_WORDS[w]; return; }
+      if (pc === null && ROOT_PC[w] !== undefined) { pc = ROOT_PC[w]; return; }
+      // "dm7", "f#dorian", "bbmaj7": a root glued to a name. Try the two-character root first
+      // ("bb7" is B-flat 7), and leave the word whole when it is itself a name ("dim", "dorian").
+      if (pc === null) {
+        const whole = bestFit(w);
+        const cuts = [/^([a-g][#b])(.+)$/.exec(w), /^([a-g])(.+)$/.exec(w)].filter((m) => m && ROOT_PC[m[1]] !== undefined)
+          .map((m) => ({ pc: ROOT_PC[m[1]], tail: m[2], f: bestFit(m[2]) }));
+        const pick = cuts.find((c) => c.f === 3) || (whole >= 2 ? null : cuts.find((c) => c.f === 2));
+        if (pick) { pc = pick.pc; rest.push(pick.tail); return; }
+      }
+      rest.push(w);
+    });
+    const usePc = pc === null ? prefs.pc : pc;
+    const phrase = rest.join(" ");
+    const score = (aliases) => {
+      if (!rest.length) return 1;
+      const whole = fit(phrase, aliases);
+      if (whole === 3) return 100;
+      let total = whole * 10;
+      for (const w of rest) { const f = fit(w, aliases); if (!f) return 0; total += f; }
+      return total;
+    };
+    const out = [];
+    if (kind !== "triad" && kind !== "seventh" && kind !== "chord") {
+      MODES.forEach((m, i) => { const s = score(MODE_ALIASES[m.id]); if (s) out.push({ s: s, i: i, html: modeRow(usePc, m) }); });
+    }
+    if (kind !== "mode") {
+      QUALS.forEach((q, i) => {
+        if (kind === "triad" && isSeventh(q)) return;
+        if (kind === "seventh" && !isSeventh(q)) return;
+        const s = score(QUAL_ALIASES[q.id]); if (s) out.push({ s: s, i: 10 + i, html: chordRow(usePc, q) });
+      });
+    }
+    out.sort((a, b) => b.s - a.s || a.i - b.i);
+    // A very short name that matches exactly ("m", "7", "o") means just that; skip the loose matches.
+    const exact = out.filter((x) => x.s >= 100);
+    return { rows: phrase.length <= 2 && exact.length ? exact : out, pc: usePc, rootTyped: pc !== null };
+  }
+
+  /* ---------- index ---------- */
+  function keysHTML(labels, current) {
+    return labels.map((label, pc) =>
+      '<button class="key' + (label.length > 2 ? " two" : "") + '" type="button" role="radio" data-pc="' + pc + '" aria-checked="' + (pc === current) + '">' + esc(label) + "</button>").join("");
+  }
+  function listsHTML(query) {
+    const pc = prefs.pc;
+    if (query.trim()) {
+      const r = search(query);
+      if (!r.rows.length) return '<p class="empty">Nothing matches “' + esc(query.trim()) + '”. Try a root and a name, like E♭ lydian or Gm7.</p>';
+      return '<section class="sec"><h2>' + r.rows.length + (r.rows.length === 1 ? " match" : " matches") + " in " + esc(SHORT_KEYS[r.pc]) + "</h2>" +
+        (r.rootTyped ? "" : '<p class="hint">Showing the key you have picked. Type a root, like F♯, to search another.</p>') +
+        '<ul class="rows">' + r.rows.map((x) => x.html).join("") + "</ul></section>";
+    }
+    return '<section class="sec"><h2>Modes</h2><p class="hint">A bold degree is the note that gives the mode its color.</p><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>" +
+      '<section class="sec"><h2>Triads</h2><ul class="rows">' + TRIADS.map((q) => chordRow(pc, q)).join("") + "</ul></section>" +
+      '<section class="sec"><h2>7th chords</h2><ul class="rows">' + SEVENTHS.map((q) => chordRow(pc, q)).join("") +
+      '<li><a class="row plain" href="#/voicings"><span>How inversions and voicings are named</span>' + ICON.go + "</a></li></ul></section>";
+  }
+  let lastQuery = "";
+  function renderIndex() {
+    const rec = recents();
+    view.innerHTML =
+      '<label class="search">' + ICON.search + '<input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Search: D dorian, F♯m7, sus4" aria-label="Search modes and chords"></label>' +
+      (rec.length ? '<div class="recent" aria-label="Recently looked up">' + rec.map((x) => '<a class="pill" href="' + esc(x.h) + '">' + esc(x.t) + "</a>").join("") + "</div>" : "") +
+      '<span class="label" id="key-label">Key</span><div class="keys" id="keys" role="radiogroup" aria-labelledby="key-label">' + keysHTML(SHORT_KEYS, prefs.pc) + "</div>" +
+      '<div class="lists' + (lastQuery.trim() ? "" : " cols") + '" id="lists">' + listsHTML(lastQuery) + "</div>";
+    $("q").value = lastQuery;
+    $("q").addEventListener("input", (e) => {
+      lastQuery = e.target.value;
+      $("lists").className = "lists" + (lastQuery.trim() ? "" : " cols");
+      $("lists").innerHTML = listsHTML(lastQuery);
+    });
+  }
+
+  /* ---------- a mode ---------- */
+  function renderMode(pc, m) {
+    const c = modeCard(pc, m.id), mi = MODES.indexOf(m);
+    const parentPc = (((pc - MAJOR[mi]) % 12) + 12) % 12;
+    const family = MODES.map((x, j) => modeCard((parentPc + MAJOR[j]) % 12, x.id));
+    const steps = c.gaps.join(" ");
+    view.innerHTML =
+      '<div class="head"><div class="head-t"><h2 class="title">' + esc(c.title) + '</h2><p class="sub">' + esc(c.parent) + "</p></div>" + playBtn("mode") + "</div>" +
+      '<div class="keystrip" role="radiogroup" aria-label="Key">' + keysHTML(Array.from({ length: 12 }, (_, k) => modeCard(k, m.id).notes[0].name), pc) + "</div>" +
+      '<div class="entry two">' +
+        '<section class="card wide">' + voicesHTML(c, true) +
+          '<dl class="facts"><div><dt>Steps</dt><dd>' + esc(steps) + "</dd></div>" +
+          "<div><dt>Parent scale</dt><dd>" + esc(c.parent) + "</dd></div>" +
+          "<div><dt>Color tone</dt><dd>" + (c.colorTone ? badge(c.colorTone) + esc(c.colorTone.name) : "None. This is the major scale.") + "</dd></div></dl></section>" +
+        '<section class="card"><h3>Piano</h3>' + pianoLine(c) + "</section>" +
+        '<section class="card"><h3>Guitar neck</h3>' + neckMap(c) + "</section>" +
+        '<section class="wide"><div class="sec"><h2>' + esc(family[0].notes[0].name) + ' major and its modes</h2><p class="hint">All seven use the same notes, each starting from a different one.</p><ul class="rows">' +
+          family.map((f, j) => rowHTML("#/mode/" + ((parentPc + MAJOR[j]) % 12) + "/" + MODES[j].id, f.title, j === mi ? "You are here" : "", f)).join("") + "</ul></div></section>" +
+      "</div>";
+    current = { play: { mode: () => play(c, true) } };
+  }
+
+  /* ---------- a chord ---------- */
+  const sel = { start: "s1", inv: "root", v: "close" };
+  const ORD = ["", "1st", "2nd", "3rd", "4th"];
+  function voicingSays(v) {
+    if (!v.drops.length) return "The notes sit as close together as they go.";
+    const same = v.drops.every((d) => d[1] === v.drops[0][1]);
+    const oct = (n) => (n === 1 ? "an octave" : n === 2 ? "two octaves" : n + " octaves");
+    if (same) {
+      const which = v.drops.map((d) => ORD[d[0]]);
+      return "Start from the close voicing, then drop the " + (which.length > 1 ? which.slice(0, -1).join(", ") + " and " + which[which.length - 1] + " notes" : which[0] + " note") +
+        " from the top " + (which.length > 1 ? "each " : "") + oct(v.drops[0][1]) + ".";
+    }
+    return "Start from the close voicing, then drop " + v.drops.map((d) => "the " + ORD[d[0]] + " note from the top " + oct(d[1])).join(" and ") + ".";
+  }
+  function arpHTML(pc, q) {
+    const starts = startsOf(q);
+    if (!starts.length) {
+      const c = chordCard(pc, q);
+      return '<section class="card" id="arp"><div class="card-head"><h3>On the neck</h3></div><p class="say">Every ' + esc(c.title) + " note on frets 0 to 12.</p>" + neckMap(c) + "</section>";
+    }
+    if (!starts.some((s) => s.id === sel.start)) sel.start = "s1";
+    const c = arpCard(pc, q, sel.start);
+    return '<section class="card" id="arp"><div class="card-head"><h3>Arpeggio</h3>' + playBtn("arp", true) + "</div>" +
+      '<div class="picker"><span class="picker-l" id="start-l">Start on</span><div class="seg" role="group" aria-labelledby="start-l">' +
+        starts.map((s) => '<button class="chip" type="button" data-start="' + s.id + '" aria-pressed="' + (s.id === sel.start) + '">' + esc(s.chip) + "</button>").join("") + "</div></div>" +
+      voicesHTML(c, true) + neckMap(c) + "</section>";
+  }
+  function voicingHTML(pc, q) {
+    const invs = invsOf(q), vs = voicingsOf(q);
+    if (!invs.some((i) => i.id === sel.inv)) sel.inv = "root";
+    if (!vs.some((v) => v.id === sel.v)) sel.v = "close";
+    const inv = invs.find((i) => i.id === sel.inv), v = vs.find((x) => x.id === sel.v);
+    const c = chordCard(pc, q, inv.id, v.id), bass = c.notes[0];
+    return '<section class="card wide" id="voi"><div class="card-head"><h3>Inversions and voicings</h3>' + playBtn("voicing", true) + "</div>" +
+      '<div class="picker"><span class="picker-l" id="inv-l">Inversion</span><div class="seg" role="group" aria-labelledby="inv-l">' +
+        invs.map((i) => '<button class="chip" type="button" data-inv="' + i.id + '" aria-pressed="' + (i.id === inv.id) + '">' + esc(i.label) + "</button>").join("") + "</div></div>" +
+      '<div class="picker"><span class="picker-l" id="v-l">Voicing</span><div class="seg" role="group" aria-labelledby="v-l">' +
+        vs.map((x) => '<button class="chip" type="button" data-v="' + x.id + '" aria-pressed="' + (x.id === v.id) + '">' + esc(x.label) + "</button>").join("") + "</div></div>" +
+      '<p class="say"><b>' + esc(inv.label) + ":</b> " + esc(bass.name) + ", the " + esc(bass.deg === "R" ? "root" : bass.deg) + ", is the lowest note. <b>" + esc(v.label) + ":</b> " + esc(voicingSays(v)) + "</p>" +
+      voicesHTML(c, false) + pianoChord(c) + shapesHTML(c) + "</section>";
+  }
+  function renderChord(pc, q) {
+    const c = chordCard(pc, q);
+    view.innerHTML =
+      '<div class="head"><div class="head-t"><h2 class="title">' + esc(c.title) + "</h2>" + (c.sub ? '<p class="sub">' + esc(c.sub) + "</p>" : "") + "</div>" + playBtn("chord") + "</div>" +
+      '<div class="keystrip" role="radiogroup" aria-label="Key">' + keysHTML(Array.from({ length: 12 }, (_, k) => chordCard(k, q).notes[0].name), pc) + "</div>" +
+      '<div class="entry two">' +
+        '<section class="card">' + voicesHTML(c, false) +
+          '<dl class="facts"><div><dt>Formula</dt><dd>' + esc(c.notes.map((nt) => nt.deg).join("  ")) + "</dd></div>" +
+          "<div><dt>Stacked in</dt><dd>" + esc(c.gaps.join(" + ")) + "</dd></div></dl></section>" +
+        '<div id="arp-slot">' + arpHTML(pc, q) + "</div>" +
+        '<div class="wide" id="voi-slot">' + voicingHTML(pc, q) + "</div>" +
+      "</div>";
+    current = {
+      pc: pc, q: q,
+      play: {
+        chord: () => play(c, false),
+        arp: () => play(arpCard(pc, q, sel.start), true),
+        voicing: () => play(chordCard(pc, q, sel.inv, sel.v), false)
+      }
+    };
+  }
+
+  /* ---------- how inversions and voicings are named ---------- */
+  function renderGuide() {
+    const pc = prefs.pc, q = QUAL.maj7, name = chordCard(pc, q).title;
+    const spell = (c) => c.notes.map((nt) => nt.name).join("  ");
+    view.innerHTML =
+      '<div class="head"><div class="head-t"><h2 class="title">Inversions and voicings</h2><p class="sub">Examples use ' + esc(name) + ", low to high. Pick another key on the first page to change them.</p></div></div>" +
+      '<div class="entry two">' +
+        '<section class="card"><h3>Inversions</h3><p class="say">An inversion is named by the note in the bass, so root position always has the root on the bottom.</p><ul class="guide">' +
+          INVERSIONS.map((inv) => { const c = chordCard(pc, q, inv.id, "close"); return "<li><b>" + esc(inv.label) + "</b><span>The " + esc(c.notes[0].deg === "R" ? "root" : c.notes[0].deg) + " is the lowest note." + (inv.bass === 3 ? " Only 7th chords have one." : "") + "</span><em>" + esc(spell(c)) + "</em></li>"; }).join("") + "</ul></section>" +
+        '<section class="card"><h3>Voicings</h3><p class="say">A voicing is how the notes are spread out. Drops are counted from the top note of the close voicing.</p><ul class="guide">' +
+          VOICINGS.map((v) => { const c = chordCard(pc, q, "root", v.id); return "<li><b>" + esc(v.label) + "</b><span>" + esc(voicingSays(v)) + (v.minVoices > 3 ? " It needs four notes, so triads skip it." : "") + "</span><em>" + esc(spell(c)) + "</em></li>"; }).join("") + "</ul></section>" +
+      "</div>";
+    current = { play: {} };
+  }
+
+  /* ---------- getting around ---------- */
+  let current = { play: {} };
+  let indexScroll = 0, onIndex = false;
+  function parse() {
+    const p = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+    const pc = parseInt(p[1], 10);
+    const okPc = pc >= 0 && pc < 12 && String(pc) === p[1];
+    if (p[0] === "mode" && okPc && MODE[p[2]]) return { view: "mode", pc: pc, id: p[2] };
+    if (p[0] === "chord" && okPc && QUAL[p[2]]) return { view: "chord", pc: pc, id: p[2] };
+    if (p[0] === "voicings") return { view: "guide" };
+    return { view: "index" };
+  }
+  function route() {
+    const r = parse(), nav = $("nav");
+    if (onIndex) indexScroll = window.scrollY;
+    onIndex = r.view === "index";
+    if (onIndex) {
+      nav.href = "../"; nav.innerHTML = ICON.home; nav.setAttribute("aria-label", "Music home, all apps");
+      document.title = "Library";
+      renderIndex();
+      window.scrollTo(0, indexScroll);
+      return;
+    }
+    nav.href = "#/"; nav.innerHTML = ICON.back; nav.setAttribute("aria-label", "Back to the Library index");
+    if (r.view === "mode") renderMode(r.pc, MODE[r.id]);
+    else if (r.view === "chord") renderChord(r.pc, QUAL[r.id]);
+    else renderGuide();
+    const title = view.querySelector(".title").textContent;
+    document.title = title + " – Library";
+    if (r.view !== "guide") { prefs.pc = r.pc; savePrefs(); remember("#/" + r.view + "/" + r.pc + "/" + r.id, title); }
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-pc],[data-start],[data-inv],[data-v],[data-play]");
+    if (!t) return;
+    if (t.dataset.play) { const fn = current.play[t.dataset.play]; if (fn) fn(); return; }
+    if (t.dataset.pc !== undefined) {
+      const pc = +t.dataset.pc, r = parse();
+      prefs.pc = pc; savePrefs();
+      if (r.view === "index") {
+        $("keys").innerHTML = keysHTML(SHORT_KEYS, pc);
+        $("lists").innerHTML = listsHTML(lastQuery);
+        const again = $("keys").querySelector('[data-pc="' + pc + '"]'); if (again) again.focus({ preventScroll: true });
+      } else {
+        // Same entry in the new key; replace so Back still returns to the index.
+        const x = t.parentNode.scrollLeft;
+        location.replace("#/" + r.view + "/" + pc + "/" + r.id);
+        requestAnimationFrame(() => { const strip = view.querySelector(".keystrip"); if (strip) strip.scrollLeft = x; });
+      }
+      return;
+    }
+    if (!current.q) return;
+    if (t.dataset.start) { sel.start = t.dataset.start; $("arp-slot").innerHTML = arpHTML(current.pc, current.q); refocus("start", sel.start); }
+    else { if (t.dataset.inv) sel.inv = t.dataset.inv; if (t.dataset.v) sel.v = t.dataset.v; $("voi-slot").innerHTML = voicingHTML(current.pc, current.q); refocus(t.dataset.inv ? "inv" : "v", t.dataset.inv || t.dataset.v); }
+  });
+  function refocus(attr, value) { const b = view.querySelector("[data-" + attr + '="' + value + '"]'); if (b) b.focus({ preventScroll: true }); }
+
+  route();
+
+  /* ---------- offline: Music's shared service worker, one folder up ---------- */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", () => { navigator.serviceWorker.register("../sw.js").catch(() => {}); });
+  }
+})();
+</script>
+</body>
+</html>

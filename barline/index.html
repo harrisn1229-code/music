@@ -9,10 +9,10 @@
 <meta name="theme-color" content="#16181B" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Woodshed">
+<meta name="apple-mobile-web-app-title" content="Music">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
-<!-- Woodshed: Barline is one of the apps inside Woodshed, so it installs and works offline through the files one folder up. -->
+<!-- Music: Barline is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -92,7 +92,7 @@
   :root[data-scheme="dark"][data-accent="graphite"],:root[data-scheme="dark"] [data-accent="graphite"]{--chord:#E3E6EA;--chord-soft:#2A2E35;--accent-fill:#E3E6EA;--on-accent:#121417;--kb-lit:#8E96A3}
   :root[data-font="serif"]{--disp:var(--serif)}
 
-  /* Woodshed: fade between the home screen and this app instead of a hard page flash. */
+  /* Music: fade between the home screen and this app instead of a hard page flash. */
   @media (prefers-reduced-motion: no-preference){ @view-transition{navigation:auto} }
 
   *{box-sizing:border-box}
@@ -572,7 +572,7 @@
   <header class="topbar">
     <div class="wrap gutter">
       <div class="brandrow">
-        <a class="iconbtn home" href="../" aria-label="Woodshed home, all apps"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.3h9.6V8.2"/></svg></a>
+        <a class="iconbtn home" href="../" aria-label="Music home, all apps"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.3h9.6V8.2"/></svg></a>
         <span class="logo" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3.5" width="1.6" height="11" rx=".8" fill="#ECF0E6"/><circle cx="7.6" cy="9" r="1.7" fill="#F2B65C"/><rect x="10.6" y="3.5" width="1.6" height="11" rx=".8" fill="#ECF0E6"/><rect x="13.3" y="3.5" width="2.5" height="11" rx=".9" fill="#ECF0E6"/></svg>
         </span>
@@ -2393,7 +2393,7 @@
   window.addEventListener("appinstalled", () => { installEvt = null; renderInstall(); });
   function renderInstall(){
     const box = $("install");
-    // Woodshed: installing happens from the Woodshed home screen, so this card stays hidden.
+    // Music: installing happens from the Music home screen, so this card stays hidden.
     box.hidden = true; return;
     if (isStandalone() || prefs.installDismissed || (!installEvt && !isIOS)){ box.hidden = true; return; }
     box.hidden = false;

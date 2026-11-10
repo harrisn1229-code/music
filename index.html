@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Woodshed</title>
-<meta name="description" content="Your music practice tools in one app: chord charts and flashcards. Works offline; everything stays on this device.">
+<title>Music</title>
+<meta name="description" content="Your music tools in one app: chord charts, flashcards and a theory reference. Works offline; everything stays on this device.">
 <meta name="theme-color" content="#F1F2F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C0D10" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Woodshed">
+<meta name="apple-mobile-web-app-title" content="Music">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
@@ -18,9 +18,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-/* Woodshed home screen: one tile per app, each in that app's own colour, with a
+/* Music home screen: one tile per app, each in that app's own color, with a
    small live look at what's inside it. The page itself stays neutral grey so the
-   tiles carry the colour. The app list comes from apps.js. */
+   tiles carry the color. The app list comes from apps.js. */
 @font-face{
   font-family:"Big Shoulders Display";font-style:normal;font-weight:100 900;font-display:swap;
   src:url(fonts/big-shoulders-display.woff2) format("woff2");
@@ -98,7 +98,7 @@ main{flex:1;padding-top:.5rem;padding-bottom:1.5rem}
 .tile-live{margin-top:auto;padding-top:1.25rem}
 .tile-count{margin:.7rem .125rem 0;font-size:.875rem;color:rgb(255 255 255 / .86);font-variant-numeric:tabular-nums}
 
-/* The live look inside a tile: a sheet of "paper" on the colour field. */
+/* The live look inside a tile: a sheet of "paper" on the color field. */
 .panel{
   position:relative;display:block;padding:.8rem .9rem;border-radius:1rem;
   background:var(--panel);color:var(--panel-ink);text-decoration:none;
@@ -116,6 +116,12 @@ a.panel:active{transform:scale(.98)}
 }
 .peek .bl{color:var(--panel-muted);font-weight:400;opacity:.6}
 @media (prefers-color-scheme: dark){ .peek{color:color-mix(in srgb, var(--tile) 45%, #fff)} }
+
+/* Library: shortcuts back to the last few things looked up. */
+.lookups{display:flex;flex-wrap:wrap;gap:.4rem;padding:.7rem}
+.lookup{position:relative;z-index:1;height:2.125rem;padding:0 .85rem;border-radius:999px;display:inline-flex;align-items:center;
+  background:color-mix(in srgb, var(--tile) 12%, var(--panel));color:var(--panel-ink);font-size:.9375rem;font-weight:600;text-decoration:none;white-space:nowrap}
+.lookup:active{transform:scale(.96)}
 
 /* Note Cards: how the rated cards split between nailed, solid and rusty. */
 .split{display:flex;height:.625rem;border-radius:999px;overflow:hidden;background:var(--panel-track);gap:2px}
@@ -154,14 +160,14 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 <header class="bar">
   <div class="bar-in wrap">
     <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#15171B"/><path d="M214 116h84a18 18 0 0 1 17.500 13.800L378 386a18 18 0 0 1-17.500 22.200H151.500A18 18 0 0 1 134 386l62.500-256.200A18 18 0 0 1 214 116z" fill="#F5A93B"/><path d="M256 352 291 172" stroke="#15171B" stroke-width="18" stroke-linecap="round"/><rect x="253" y="210" width="56" height="32" rx="9" transform="rotate(11 281 226)" fill="#15171B"/><circle cx="256" cy="352" r="16" fill="#15171B"/></svg>
-    <h1 class="wordmark">Woodshed</h1>
+    <h1 class="wordmark">Music</h1>
     <button class="get" id="get" type="button" hidden>Install</button>
   </div>
 </header>
 
 <main class="wrap">
   <ul class="tiles" id="tiles"></ul>
-  <noscript>Woodshed needs JavaScript turned on to list its apps.</noscript>
+  <noscript>Music needs JavaScript turned on to list its apps.</noscript>
 </main>
 
 <footer class="foot wrap">
@@ -182,7 +188,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   "use strict";
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  const REG = self.WOODSHED || { version: "", apps: [] };
+  const REG = self.MUSIC || { version: "", apps: [] };
 
   // Each app keeps its data in this browser's storage. The home screen only reads it.
   function readJson(key) {
@@ -259,6 +265,15 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
       return { panel: panel, count: plural(rated, "card rated", "cards rated") + " across all decks" };
     }
   };
+  // Library: the last few things you looked up, each a shortcut straight back to it.
+  LIVE.library = function () {
+    const saved = readJson("library:recent:v1");
+    const recent = (Array.isArray(saved) ? saved : []).filter((x) => x && typeof x.h === "string" && x.h.indexOf("#/") === 0 && x.t).slice(0, 3);
+    if (!recent.length) return { panel: note("Look something up and a shortcut back to it shows up here.") };
+    const panel = el("div", "panel lookups");
+    recent.forEach((x) => { const a = el("a", "lookup", x.t); a.href = "library/" + x.h; panel.appendChild(a); });
+    return { panel: panel, count: "Recently looked up" };
+  };
   function note(text) { const p = el("div", "panel"); p.appendChild(el("p", "panel-note", text)); return p; }
 
   /* ---------- tiles ---------- */
@@ -288,7 +303,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
       }
       list.appendChild(li);
     });
-    $("version").textContent = REG.version ? "Woodshed " + REG.version : "";
+    $("version").textContent = REG.version ? "Music " + REG.version : "";
   }
   render();
   // Coming back from an app (Home button, back gesture) can restore this page as it was; refresh what it shows.
@@ -314,21 +329,21 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     ios: { title: "Add to Home Screen", steps: [
       "<b>Tap the Share button</b> (the square with an arrow).",
       "<b>Scroll down and tap Add to Home Screen.</b>",
-      "<b>Tap Add.</b> Woodshed opens full screen and works offline."], note: CARRY },
+      "<b>Tap Add.</b> Music opens full screen and works offline."], note: CARRY },
     "mac-safari": { title: "Add to Dock", steps: [
       "<b>In the menu bar, choose File, then Add to Dock.</b> Or click the Share button in Safari’s toolbar and choose Add to Dock.",
-      "<b>Click Add.</b> Woodshed opens in its own window from the Dock, Launchpad and Spotlight."],
+      "<b>Click Add.</b> Music opens in its own window from the Dock, Launchpad and Spotlight."],
       note: "Needs macOS Sonoma or later. " + CARRY },
-    android: { title: "Install Woodshed", steps: [
+    android: { title: "Install Music", steps: [
       "<b>Open the browser menu</b> (⋮).",
       "<b>Tap Install app</b> or Add to Home screen."], note: "" },
-    chrome: { title: "Install Woodshed", steps: [
+    chrome: { title: "Install Music", steps: [
       "<b>Click the install icon</b> at the right end of the address bar. Or open the ⋮ menu and choose Cast, save and share, then Install page as app.",
-      "<b>Click Install.</b> Woodshed opens in its own window and shows up with your other apps."], note: "" },
-    firefox: { title: "Install Woodshed", steps: [
+      "<b>Click Install.</b> Music opens in its own window and shows up with your other apps."], note: "" },
+    firefox: { title: "Install Music", steps: [
       "<b>Open this page in Safari or Chrome.</b> Firefox can’t install web apps on a computer.",
-      "<b>Follow the steps there</b> to add Woodshed to your Dock."], note: "" },
-    other: { title: "Install Woodshed", steps: [
+      "<b>Follow the steps there</b> to add Music to your Dock."], note: "" },
+    other: { title: "Install Music", steps: [
       "<b>Open your browser’s menu</b> and look for Install, Add to Dock or Add to Home Screen."], note: "" }
   };
   const sheet = $("sheet");

@@ -1,16 +1,16 @@
-/* Woodshed service worker: one worker for the home screen and every app inside it.
+/* Music service worker: one worker for the home screen and every app inside it.
    Pages open from the cache instantly, with or without a connection; a fresh copy
    is fetched in the background and used the next time the page opens.
 
    The list of files to keep comes from apps.js, so adding an app there is enough.
-   Only caches named woodshed-* are ever cleared, so other apps on the same site
-   (the older standalone Barline and Note Cards) keep theirs.
+   Only caches named music-app-* are ever cleared (plus woodshed-*, the name the first
+   build used), so other apps on the same site keep theirs.
    Fetches skip the browser's HTTP cache (GitHub Pages lets it keep files for
    10 minutes), so an update is picked up on the next launch, not 10 minutes later. */
 importScripts("apps.js");
 
-const PREFIX = "woodshed-";
-const VERSION = PREFIX + "v" + self.WOODSHED.version;
+const PREFIX = "music-app-";
+const VERSION = PREFIX + "v" + self.MUSIC.version;
 const ROOT = new URL("./", self.location.href).pathname;   // "/music/" on GitHub Pages
 const HOME = ROOT + "index.html";
 
@@ -24,7 +24,7 @@ const SHELL = [
   "icon-maskable-512.png",
   "apple-touch-icon.png",
   "fonts/big-shoulders-display.woff2"
-].concat(...self.WOODSHED.apps.map((app) => app.files.map((file) => app.id + "/" + file)));
+].concat(self.MUSIC.shared || [], ...self.MUSIC.apps.map((app) => app.files.map((file) => app.id + "/" + file)));
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -36,7 +36,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith(PREFIX) && k !== VERSION).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => (k.startsWith(PREFIX) && k !== VERSION) || k.startsWith("woodshed-")).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -68,7 +68,7 @@ self.addEventListener("fetch", (event) => {
 
   const page = request.mode === "navigate";
   // "/music/barline" without the last slash would break that app's links to its own files; send it to "/music/barline/".
-  if (page && self.WOODSHED.apps.some((app) => url.pathname === ROOT + app.id)) {
+  if (page && self.MUSIC.apps.some((app) => url.pathname === ROOT + app.id)) {
     event.respondWith(Response.redirect(url.pathname + "/" + url.search, 301));
     return;
   }

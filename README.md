@@ -1,14 +1,15 @@
-# Woodshed
+# Music
 
-One music app with several tools inside it. Open Woodshed, pick a tool.
+One music app with several tools inside it. Open Music, pick a tool.
 
-Live at <https://harrisn1229-code.github.io/music/> once GitHub Pages is turned on
-(repo **Settings → Pages → Deploy from a branch → `main` / `(root)`**).
+Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
+`main`).
 
 | Tool | Folder | What it does |
 | --- | --- | --- |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
+| Library | `library/` | Look up any mode, chord, arpeggio or voicing in any key |
 
 Everything runs in the browser. Charts and ratings are saved on the device
 (each tool's optional GitHub sync is the only thing that leaves it).
@@ -20,15 +21,22 @@ index.html             Home screen: one tile per tool
 apps.js                The list of tools (read by the home screen and by sw.js)
 sw.js                  Service worker: keeps every file available offline
 manifest.webmanifest   Name, icon and shortcuts for the installed app
-icon*.png, icon.svg    Woodshed's own icon
+icon*.png, icon.svg    Music's own icon
 fonts/                 Big Shoulders Display, the home screen's headline typeface
+shared/theory.js       Music theory used by Note Cards and Library
 barline/               Barline, self-contained
-note-cards/            Note Cards, self-contained
+note-cards/            Note Cards (reads shared/theory.js)
+library/               Library (reads shared/theory.js)
 ```
 
-Each tool is a single self-contained `index.html` in its own folder. The home
-screen only links to them and reads their saved data to show a small preview
-(last chart edited, how the rated cards split). It never writes to it.
+Each tool is a single `index.html` in its own folder. The home screen only
+links to them and reads their saved data to show a small preview (last chart
+edited, how the rated cards split, recent lookups). It never writes to it.
+
+`shared/theory.js` holds the note spelling, modes, chord qualities, inversions,
+voicings and guitar shapes. Note Cards drills it and Library looks it up, so a
+change there shows up in both. Card keys built there are how Note Cards stores
+ratings, so do not change how a key is built.
 
 ## Adding a tool
 
@@ -42,8 +50,9 @@ screen only links to them and reads their saved data to show a small preview
    - add a Home button that links to `../`;
    - save data under keys that start with the tool's name (`ear-training:…`)
      so tools never overwrite each other.
-3. Add an entry to `apps.js` (name, one-line description, tile colour, icon,
-   and every file the tool needs).
+3. Add an entry to `apps.js` (name, one-line description, tile color, icon,
+   and every file the tool needs). Files used by more than one tool go in
+   `shared/` and are listed under `shared` in `apps.js`.
 4. Raise `version` in `apps.js`.
 5. Optional: add a shortcut for it in `manifest.webmanifest`, and a preview
    for its tile under `LIVE` in `index.html`.

@@ -1,7 +1,7 @@
 {
-  "name": "Woodshed",
-  "short_name": "Woodshed",
-  "description": "Your music practice tools in one app: chord charts and flashcards. Works offline; everything stays on this device.",
+  "name": "Music",
+  "short_name": "Music",
+  "description": "Your music tools in one app: chord charts, flashcards and a theory reference. Works offline; everything stays on this device.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -28,6 +28,12 @@
       "description": "Flashcards for modes, arpeggios, triads and 7th chords",
       "url": "note-cards/",
       "icons": [{ "src": "note-cards/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Library",
+      "description": "Look up any mode, chord, arpeggio or voicing in any key",
+      "url": "library/",
+      "icons": [{ "src": "library/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }
