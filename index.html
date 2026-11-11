@@ -164,6 +164,10 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 .steps b{color:var(--ink);font-weight:600}
 .sheet-note{margin:.9rem 0 0;padding-top:.8rem;border-top:1px solid var(--rule);font-size:.875rem;color:var(--muted)}
 .sheet-done{display:block;width:100%;height:2.75rem;margin-top:1rem;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:600}
+/* account sheet */
+.acct-form{display:flex;flex-direction:column;gap:.55rem}
+.acct-form input{height:2.75rem;padding:0 .9rem;border-radius:.7rem;border:0;box-shadow:inset 0 0 0 1px var(--rule);background:var(--paper);color:var(--ink);font:inherit;min-width:0}
+.acct-form input:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 /* sync sheet */
 .sheet-text{margin:0 0 .9rem;font-size:.9375rem;color:var(--muted)}
 .sheet-text b{color:var(--ink);font-weight:600}
@@ -220,6 +224,8 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
 <script src="apps.js"></script>
 <script src="shared/account.js"></script>
+<script src="shared/cloud-config.js"></script>
+<script src="shared/cloud.js"></script>
 <script>
 (function () {
   "use strict";
@@ -425,12 +431,22 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   }
   renderInstall();
 
-  /* ---------- sync between devices ----------
-     One GitHub connection for the whole of Music (shared/account.js). Each tool that syncs keeps
-     its own secret gist and does its own merging whenever it is open. To sync everything from
-     here, the home screen opens each of those tools out of sight for a moment and lets it run its
-     normal sync; a tool marks the time it finished under the key apps.js lists as its sync.at. */
+  /* ---------- your account, and sync between devices ----------
+     One sign-in for the whole of Music (shared/cloud.js): an email and a password. Signed in,
+     every tool that syncs keeps its data in that account and does its own merging whenever it is
+     open. To sync everything from here, the home screen opens each of those tools out of sight
+     for a moment and lets it run its normal sync; a tool marks the time it finished under the key
+     apps.js lists as its sync.at.
+
+     Before accounts there was one GitHub connection (shared/account.js), each tool keeping a
+     secret gist. A device still connected that way keeps syncing that way until someone signs in
+     on it; from then on the account is what the tools use. With no account service configured
+     (shared/cloud-config.js left empty) the GitHub connection is all there is, as before. */
   const account = self.MusicAccount;
+  const cloud = self.MusicCloud && self.MusicCloud.configured ? self.MusicCloud : null;
+  const me = () => (cloud ? cloud.user() : null);
+  const ASKED = "music:accountAsked";                 // the sign-in sheet has been offered once on this device
+  const acct = { mode: "in", busy: false, err: "", note: "", email: "" };
   const SYNCERS = REG.apps.filter((app) => app.sync && app.sync.at);
   const SYNCED_AT = "music:syncedAt";                  // last time the home screen synced everything
   const TOKEN_URL = "https://github.com/settings/tokens/new?scopes=gist&description=Music%20sync";
@@ -478,11 +494,11 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     });
   }
   async function syncAll() {
-    if (sync.busy || !account.token() || !SYNCERS.length) return;
+    if (sync.busy || !(me() || account.token()) || !SYNCERS.length) return;
     sync.busy = true; sync.problem = ""; sync.tool = {};
     renderSync();
     try {
-      await github("/gists?per_page=1", account.token());
+      if (!me()) await github("/gists?per_page=1", account.token());
       for (const app of SYNCERS) {
         sync.tool[app.id] = "syncing"; renderSync();
         sync.tool[app.id] = (await syncTool(app)) ? "ok" : "failed";
@@ -503,12 +519,87 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     const at = Number(lsGet(app.sync.at)) || 0;
     return [at ? "Synced " + relTime(at) : (sync.busy ? "Waiting…" : "Not synced yet"), false];
   }
+  const toolList = () => '<ul class="sync-list">' + SYNCERS.map((app) => { const s = toolStatus(app); return "<li><b>" + escHtml(app.name) + '</b><span' + (s[1] ? ' class="bad"' : "") + ">" + escHtml(s[0]) + "</span></li>"; }).join("") + "</ul>";
+  // The account sheet: sign in, create an account, choose a new password, or see how sync is doing.
+  function renderAccount() {
+    const user = me(), body = $("sync-body");
+    if (cloud.recovering()) {
+      if ($("acct-new")) return;
+      $("sync-title").textContent = "Choose a new password";
+      body.innerHTML =
+        '<form class="acct-form" id="acct-form" data-kind="new" novalidate>' +
+          '<input id="acct-new" type="password" autocomplete="new-password" placeholder="New password" aria-label="New password">' +
+          '<button class="sheet-go" type="submit">Save password</button></form>' +
+        '<p class="sheet-err" id="acct-err" hidden></p>';
+      return;
+    }
+    if (user) {
+      $("sync-title").textContent = "Your account";
+      body.innerHTML =
+        '<p class="sheet-text">Signed in as <b>' + escHtml(user.email) + "</b>. Everything you make in Music is saved to your account and follows you to every device you sign in on. Each tool also syncs on its own while you use it.</p>" +
+        toolList() +
+        (sync.problem ? '<p class="sheet-err">' + escHtml(sync.problem) + "</p>" : "") +
+        '<button class="sheet-go" type="button" id="sync-now"' + (sync.busy ? " disabled" : "") + ">" + (sync.busy ? "Syncing…" : "Sync now") + "</button>" +
+        '<button class="sheet-plain" type="button" id="acct-out">Sign out</button>';
+      return;
+    }
+    // Don't redraw the form while someone is typing into it.
+    if ($("acct-email") && body.dataset.mode === acct.mode && !acct.busy && !acct.err && !acct.note) return;
+    const up = acct.mode === "up";
+    body.dataset.mode = acct.mode;
+    $("sync-title").textContent = up ? "Create your account" : "Sign in to Music";
+    body.innerHTML =
+      '<p class="sheet-text">One account for all of Music. Your charts, ratings and School progress are saved to it and follow you to every device.</p>' +
+      '<form class="acct-form" id="acct-form" data-kind="' + (up ? "up" : "in") + '" novalidate>' +
+        '<input id="acct-email" type="email" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Email" aria-label="Email" value="' + escHtml(acct.email) + '">' +
+        '<input id="acct-pw" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" placeholder="Password" aria-label="Password">' +
+        '<button class="sheet-go" type="submit"' + (acct.busy ? " disabled" : "") + ">" + (acct.busy ? "One moment…" : up ? "Create account" : "Sign in") + "</button></form>" +
+      (acct.err ? '<p class="sheet-err">' + escHtml(acct.err) + "</p>" : "") +
+      (acct.note ? '<p class="sheet-text" style="margin-top:.7rem">' + escHtml(acct.note) + "</p>" : "") +
+      (up ? '<button class="sheet-plain" type="button" data-acct-mode="in">I already have an account</button>'
+          : '<button class="sheet-plain" type="button" data-acct-mode="up">Create an account</button>' +
+            '<button class="sheet-plain" type="button" id="acct-reset">Forgot password</button>') +
+      '<p class="sheet-note">' + (account.token()
+        ? "This device is syncing through GitHub for now. Once you sign in, your tools sync through your account instead; what is on this device comes with you."
+        : "Without an account everything still works, and stays on this device.") + "</p>";
+    acct.err = ""; acct.note = "";
+  }
+  async function acctSubmit(kind) {
+    const val = (id) => (($(id) || {}).value || "");
+    try {
+      if (kind === "new") {
+        if (val("acct-new").length < 8) throw new Error("Use a password of at least 8 characters.");
+        await cloud.setPassword(val("acct-new"));
+        $("sync-body").textContent = ""; renderSync(); return;
+      }
+      acct.email = val("acct-email").trim();
+      if (!/^\S+@\S+\.\S+$/.test(acct.email)) throw new Error("Enter your email address.");
+      if (kind !== "reset" && val("acct-pw").length < 8) throw new Error("Use a password of at least 8 characters.");
+      const pw = val("acct-pw");
+      acct.busy = true; renderSync();
+      if (kind === "reset") { await cloud.resetPassword(acct.email); acct.note = "A link to choose a new password is on its way to " + acct.email + "."; }
+      else if (kind === "up") {
+        const r = await cloud.signUp(acct.email, pw);
+        if (r.confirm) { acct.mode = "in"; acct.note = "Almost there. Open the link in the email sent to " + acct.email + ", then sign in here."; }
+      } else await cloud.signIn(acct.email, pw);
+    } catch (e) {
+      if (kind === "new") { const el = $("acct-err"); if (el) { el.hidden = false; el.textContent = (e && e.message) || "That didn’t work."; } return; }
+      acct.err = (e && e.message) || "That didn’t work.";
+    }
+    acct.busy = false;
+    $("sync-body").dataset.mode = "";
+    renderSync();
+  }
   function renderSync() {
-    const on = !!account.token(), btn = $("sync-btn");
+    const on = !!(me() || account.token()), btn = $("sync-btn");
     btn.dataset.state = !on ? "off" : sync.busy ? "syncing" : sync.problem ? "error" : "on";
-    btn.setAttribute("aria-label", !on ? "Sync between devices: off" : sync.busy ? "Sync between devices: syncing" : sync.problem ? "Sync between devices: needs attention" : "Sync between devices: on");
-    $("privacy").textContent = on ? "Works offline. Your charts and ratings sync through your GitHub account." : "Works offline. Your charts and ratings stay on this device.";
+    const what = cloud ? "Account and sync" : "Sync between devices";
+    btn.setAttribute("aria-label", !on ? what + ": off" : sync.busy ? what + ": syncing" : sync.problem ? what + ": needs attention" : what + ": on");
+    $("privacy").textContent = me() ? "Works offline. Everything you make is saved to your account."
+      : account.token() ? "Works offline. Your charts and ratings sync through your GitHub account."
+      : cloud ? "Works offline. Sign in to keep everything on all your devices." : "Works offline. Your charts and ratings stay on this device.";
     if (!syncSheet.open) return;
+    if (cloud) { renderAccount(); return; }
     // Don't redraw the form while someone is typing a token into it.
     if (!on && $("token-in")) return;
     if (!on) {
@@ -569,18 +660,46 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   $("sync-close").addEventListener("click", () => { if (syncSheet.close) syncSheet.close(); else syncSheet.removeAttribute("open"); });
   syncSheet.addEventListener("click", (e) => {
     if (e.target === syncSheet && syncSheet.close) { syncSheet.close(); return; }
+    const mode = e.target.closest("[data-acct-mode]");
+    if (mode) { acct.email = (($("acct-email") || {}).value || "").trim(); acct.mode = mode.dataset.acctMode; acct.err = acct.note = ""; $("sync-body").dataset.mode = ""; renderSync(); return; }
+    if (e.target.closest("#acct-reset")) { acctSubmit("reset"); return; }
+    if (e.target.closest("#acct-out")) { cloud.signOut().then(() => { sync.problem = ""; sync.tool = {}; $("sync-body").textContent = ""; renderSync(); }); return; }
     if (e.target.closest("#sync-now")) syncAll();
     else if (e.target.closest("#sync-off") && confirm("Turn off sync on this device for all of Music? Your charts and ratings stay here and in your gists.")) disconnect();
   });
-  syncSheet.addEventListener("submit", (e) => { e.preventDefault(); connect(); });
+  syncSheet.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (e.target.id === "acct-form") acctSubmit(e.target.dataset.kind); else connect();
+  });
   syncSheet.addEventListener("input", (e) => { if (e.target.id === "token-in") $("token-err").hidden = true; });
   window.addEventListener("storage", (e) => { if (e.key === account.TOKEN_KEY || e.key === null) renderSync(); });
-  window.addEventListener("online", () => { if (account.token() && sync.problem) syncAll(); });
+  window.addEventListener("online", () => { if ((me() || account.token()) && sync.problem) syncAll(); });
   renderSync();
+  const openAccount = () => {
+    $("sync-body").textContent = "";
+    if (syncSheet.showModal) { if (!syncSheet.open) syncSheet.showModal(); } else syncSheet.setAttribute("open", "");
+    renderSync();
+  };
+  if (cloud) {
+    // Signing in or out (here, in a tool, or in another tab) changes what every tool syncs with.
+    cloud.onChange(() => {
+      $("sync-body").textContent = ""; renderSync(); render();
+      if (cloud.recovering()) openAccount();
+      else if (me()) { lsSet(SYNCED_AT, null); syncAll(); }
+    });
+    cloud.ready.then(() => {
+      renderSync();
+      if (cloud.recovering() || location.hash === "#account") { openAccount(); return; }
+      // Music is an app with an account: the first time it is opened on a device, offer sign-in
+      // once. Closing the sheet is a fine answer; everything works without one.
+      if (!me() && !lsGet(ASKED)) { lsSet(ASKED, "1"); openAccount(); }
+    });
+    window.addEventListener("hashchange", () => { if (location.hash === "#account") openAccount(); });
+  }
   // Opening Music syncs everything if that hasn't happened for a while (each tool still syncs itself while open).
   window.addEventListener("load", () => {
     setTimeout(() => {
-      if (account.token() && navigator.onLine !== false && Date.now() - (Number(lsGet(SYNCED_AT)) || 0) > 10 * 60 * 1000) syncAll();
+      if ((me() || account.token()) && navigator.onLine !== false && Date.now() - (Number(lsGet(SYNCED_AT)) || 0) > 10 * 60 * 1000) syncAll();
     }, 900);
   });
 

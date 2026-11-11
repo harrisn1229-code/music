@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.3.1",
+  version: "1.4.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/account.js", "shared/ai.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js"],
   apps: [
@@ -58,6 +58,7 @@ self.MUSIC = {
       // tile icon and leaves everything else under school/ alone; the home screen starts School's
       // worker in the background so School is ready offline too.
       worker: "sw.js",
+      sync: { at: "school:syncedAt" },
       files: ["icon-192.png"]
     }
   ]

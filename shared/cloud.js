@@ -17,7 +17,7 @@
   "use strict";
   var cfg = self.MUSIC_CLOUD || {};
   var configured = !!(cfg.url && cfg.anonKey);
-  var client = null, user = null, listeners = [], membership = null;
+  var client = null, user = null, listeners = [], membership = null, recovering = false;
 
   // This file's own folder, so the library loads from the right place whichever tool asks.
   var here = (document.currentScript && document.currentScript.src) || "";
@@ -47,6 +47,8 @@
         var next = plain(session && session.user);
         var changed = (next && next.id) !== (user && user.id);
         user = next;
+        // Arriving from a "reset your password" email: signed in for a moment, to choose a new one.
+        if (event === "PASSWORD_RECOVERY") { recovering = true; changed = true; }
         if (changed) { membership = null; emit(); }
       });
       // getSession reads the saved session from this device; it works offline.
@@ -103,6 +105,7 @@
     await ready;
     var r = await need().auth.updateUser({ password: password });
     if (r.error) throw fail(r.error, "Couldn't change the password.");
+    recovering = false; emit();
   }
 
   /* ---- one saved document per tool ---- */
@@ -162,6 +165,7 @@
     configured: configured,
     ready: ready,
     user: function () { return user; },
+    recovering: function () { return recovering; },
     onChange: function (f) { listeners.push(f); },
     signIn: signIn, signUp: signUp, signOut: signOut,
     resetPassword: resetPassword, setPassword: setPassword,

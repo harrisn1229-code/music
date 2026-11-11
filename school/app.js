@@ -6934,7 +6934,9 @@ async function syncNow(manual) {
       syncState.note = 'Another device had newer progress, so that is what is here now. What this device had is kept below.'; }
     else { lsSet(LS_OTHER, JSON.stringify(remote.progress)); await push();
       syncState.note = 'This device had the newer progress and it was kept. The other copy is kept below.'; }
-    lsSet(SYNC_AT, new Date().toISOString()); lsSet(SYNC_USER, me.id);
+    // Milliseconds, as a string: the Music home screen reads this key (apps.js `sync.at`) to show
+    // when School last synced, and to know its "sync everything" pass has finished here.
+    lsSet(SYNC_AT, String(Date.now())); lsSet(SYNC_USER, me.id);
     if (took) { lsSet(SYNC_BASE, remote.savedAt); syncState.busy = false; return adoptProgress(remote.progress, remote.savedAt); }
   } catch (e) {
     syncState.err = (e && e.message) || 'Sync failed.';
@@ -7086,7 +7088,7 @@ function localSyncTop() {
     : syncState.note ? `<p class="calnote" style="margin:10px 0 0">${esc(syncState.note)}</p>` : '';
   const account = !CLOUD ? '' : me ? `<div class="card"><div class="spread fadd">
         <div style="font-size:12.5px;color:var(--muted);max-width:60ch"><b>Signed in</b> as ${esc(me.email)}.
-          ${syncState.busy ? 'Syncing…' : at ? `Last synced ${esc(when(at))}.` : 'Not synced yet.'}
+          ${syncState.busy ? 'Syncing…' : +at ? `Last synced ${esc(when(new Date(+at).toISOString()))}.` : 'Not synced yet.'}
           Your progress follows this account onto every device you sign in on.
           ${cloudFiles.loaded ? (cloudFiles.member
             ? ` This account includes the school's files${cloudFiles.owner ? ', and you can add to them' : ''}.`
@@ -7094,7 +7096,7 @@ function localSyncTop() {
         <div class="row"><button class="btn" data-sync-now="1"${syncState.busy ? ' disabled' : ''}>Sync now</button>
           <button class="btn btn-quiet" data-acct-out="1">Sign out</button></div></div>${note}</div>`
     : `<div class="card"><div style="font-size:12.5px;color:var(--muted);max-width:68ch;margin-bottom:10px">
-        <b>${syncState.form === 'up' ? 'Create your account' : 'Sign in'}.</b> One account for the whole Music app.
+        <b>${syncState.form === 'up' ? 'Create your Music account' : 'Sign in to Music'}.</b> One account for the whole Music app: sign in here or on the home screen, it is the same thing.
         Your progress is saved to it and follows you to every device${syncState.form === 'up' ? '' : ', and it brings the school’s files with it'}.</div>
       <form class="row acct" data-acct-form="${syncState.form === 'up' ? 'up' : 'in'}">
         <input class="syncin" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"

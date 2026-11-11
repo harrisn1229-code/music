@@ -610,6 +610,8 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 
 <script src="../shared/theory.js"></script>
 <script src="../shared/account.js"></script>
+<script src="../shared/cloud-config.js"></script>
+<script src="../shared/cloud.js"></script>
 <script>
 // Music theory (note spelling, modes, chords, voicings, buildCards) lives in ../shared/theory.js,
 // loaded just above this script, so Library can use the same data.
@@ -744,6 +746,24 @@ function persist(c, entry) {
 // or turning sync off here, on the home screen, or in another tool does it for all of them.
 const GH_KEY = MusicAccount.TOKEN_KEY, GH_USER = MusicAccount.USER_KEY, GIST_KEY = 'shed-deck:gistId', SYNC_AT = 'shed-deck:syncedAt';
 const GIST_FILE = 'note-cards.json', GIST_DESC = 'Note Cards sync';
+// Music accounts (../shared/cloud.js). Signed in, ratings sync through the account instead of a
+// gist: the same payload and the same merge, kept in the account's "note-cards" document. A
+// device still connected to GitHub keeps using its gist until someone signs in on it.
+const cloud = () => (self.MusicCloud && self.MusicCloud.configured && self.MusicCloud.user()) ? self.MusicCloud : null;
+const cloudReady = () => !!(self.MusicCloud && self.MusicCloud.configured);
+const syncOn = () => !!(cloud() || ghToken());
+const CLOUD_USER = 'shed-deck:cloudUser', CLOUD_EMAIL = 'shed-deck:cloudEmail';
+async function cloudSync() {
+  const c = cloud(), me = c.user(), last = lsGet(CLOUD_USER);
+  // Someone else signed in on this device: these ratings are not theirs to take.
+  if (last && last !== me.id) throw new SyncError('The ratings on this device belong to ' + (lsGet(CLOUD_EMAIL) || 'another account') + '. Sign in as that account to sync them.', 'other');
+  const net = e => new SyncError(/reach/i.test(e.message) ? "You're offline. Ratings will sync when you're back online." : e.message, /reach/i.test(e.message) ? 'offline' : '');
+  let remote;
+  try { remote = await c.load('note-cards'); } catch (e) { throw net(e); }
+  const r = mergeRemote(remote);
+  if (r.remoteStale) { try { await c.save('note-cards', JSON.parse(payload())); } catch (e) { throw net(e); } }
+  lsSet(CLOUD_USER, me.id); lsSet(CLOUD_EMAIL, me.email);
+}
 const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Note%20Cards%20sync';
 const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
@@ -804,12 +824,13 @@ function mergeRemote(remote) {
   return { remoteStale };
 }
 async function syncNow() {
-  if (!ghToken()) return;
+  if (!syncOn()) return;
   if (sync.busy) { sync.again = true; return; }
   clearTimeout(sync.timer);
   sync.busy = true;
   setSyncState('syncing');
   try {
+    if (cloud()) { await cloudSync(); lsSet(SYNC_AT, String(Date.now())); setSyncState('ok'); return; }
     let id = lsGet(GIST_KEY) || '', remote = null;
     if (id) {
       try { remote = await readGist(id); }
@@ -833,14 +854,14 @@ async function syncNow() {
     const err = e instanceof SyncError ? e : new SyncError("Sync didn't finish. It will try again.", '');
     setSyncState(err.kind === 'offline' ? 'offline' : 'error', err.message);
     if (err.kind === 'auth') toast(err.message);
-    else queueSync(err.kind === 'rate' ? 600000 : 30000);
+    else if (err.kind !== 'other') queueSync(err.kind === 'rate' ? 600000 : 30000);
   } finally {
     sync.busy = false;
     if (sync.again) { sync.again = false; queueSync(800); }
   }
 }
 function queueSync(ms) {
-  if (!ghToken()) return;
+  if (!syncOn()) return;
   clearTimeout(sync.timer);
   sync.timer = setTimeout(syncNow, ms == null ? 2500 : ms);
 }
@@ -850,8 +871,14 @@ function disconnectSync() {
   setSyncState('');
 }
 function initSync() {
-  setSyncState(ghToken() ? 'ok' : '');
-  if (ghToken()) syncNow();
+  setSyncState(syncOn() ? 'ok' : '');
+  if (syncOn()) syncNow();
+  // The saved sign-in is read a moment after the page starts; signing in or out can also happen
+  // in another tool. Either way, sync follows the account as soon as it is known.
+  if (cloudReady()) {
+    self.MusicCloud.ready.then(() => { setSyncState(syncOn() ? 'ok' : ''); if (cloud()) syncNow(); });
+    self.MusicCloud.onChange(() => { setSyncState(syncOn() ? 'ok' : ''); renderSyncUI(); if (cloud()) syncNow(); });
+  }
 }
 function syncAgo(t) {
   const s = (Date.now() - t) / 1000;
@@ -861,7 +888,7 @@ function syncAgo(t) {
   return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 function syncMessage() {
-  if (!ghToken()) return 'Ratings are saved on this device only.';
+  if (!syncOn()) return 'Ratings are saved on this device only.';
   if (sync.state === 'syncing') return 'Syncing…';
   if (sync.state === 'offline') return "Offline. Ratings will sync when you're back online.";
   if (sync.state === 'error') return 'Sync paused: ' + sync.msg;
@@ -871,11 +898,11 @@ function syncMessage() {
 function setSyncState(st, msg) {
   sync.state = st;
   sync.msg = msg || '';
-  const on = !!ghToken(), dot = !on ? 'local' : st === 'ok' ? 'on' : st, text = syncMessage();
+  const on = syncOn(), dot = !on ? 'local' : st === 'ok' ? 'on' : st, text = syncMessage();
   const el = $('sync');
   if (el) { el.textContent = text; el.dataset.state = dot; }
   const foot = $('foot');
-  if (foot) { foot.dataset.state = dot; foot.textContent = on ? text : 'Ratings are saved on this device. Sync them in the ⋯ menu.'; }
+  if (foot) { foot.dataset.state = dot; foot.textContent = on ? text : cloudReady() ? 'Ratings are saved on this device. Sign in on the Music home screen to sync them.' : 'Ratings are saved on this device. Sync them in the ⋯ menu.'; }
 }
 
 let toastTimer = null;
@@ -1114,6 +1141,21 @@ const ICON_SYNC = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 6.5A
 const ICON_OFF = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.1 4.1l7.8 7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 function renderSyncUI() {
   const who = lsGet(GH_USER) || '';
+  if (cloud()) {
+    $('sync-ui').innerHTML = `
+    <div class="list">
+      <div class="row static"><span class="row-ic">${ICON_CLOUD}</span><span class="row-t"><b>On with your Music account</b><small>${esc(cloud().user().email)}</small></span></div>
+      <button class="row" type="button" data-sync="now"><span class="row-ic">${ICON_SYNC}</span><span class="row-t"><b>Sync now</b><small>It also syncs on its own as you practice</small></span></button>
+    </div>
+    <p class="sheet-text small">Sign out, or switch accounts, from the cloud button on the Music home screen.</p>`;
+    return;
+  }
+  if (cloudReady() && !ghToken()) {
+    $('sync-ui').innerHTML = `
+    <p class="sheet-text">Keep ratings the same on your phone and computer. Sign in to your Music account and they are saved to it, along with everything else you make in Music.</p>
+    <a class="btn btn-primary" href="../#account" style="display:inline-flex;align-items:center;text-decoration:none">Sign in on the home screen</a>`;
+    return;
+  }
   $('sync-ui').innerHTML = ghToken() ? `
     <div class="list">
       <div class="row static"><span class="row-ic">${ICON_CLOUD}</span><span class="row-t"><b>On with GitHub${who ? ' (' + esc(who) + ')' : ''}</b><small>Ratings sync through a secret gist</small></span></div>
@@ -1165,14 +1207,14 @@ $('sync-ui').addEventListener('click', e => {
 $('sync-ui').addEventListener('submit', e => { e.preventDefault(); connectToken(); });
 $('sync-ui').addEventListener('input', e => { if (e.target.id === 'token-in') $('token-err').hidden = true; });
 document.addEventListener('visibilitychange', () => {
-  if (!ghToken()) return;
+  if (!syncOn()) return;
   if (document.visibilityState === 'visible') { if (Date.now() - (Number(lsGet(SYNC_AT)) || 0) > 5000) syncNow(); }
   else if (sync.timer) syncNow();  // leaving the app with a rating still queued: send it now
 });
-window.addEventListener('online', () => { if (ghToken()) syncNow(); });
+window.addEventListener('online', () => { if (syncOn()) syncNow(); });
 // While open, pick up ratings from other devices every couple of minutes and keep "Synced 3 min ago" current.
 setInterval(() => {
-  if (!ghToken()) return;
+  if (!syncOn()) return;
   if (document.visibilityState === 'visible' && !sync.busy && Date.now() - (Number(lsGet(SYNC_AT)) || 0) > 115000 && sync.state === 'ok') syncNow();
   else if (sync.state === 'ok') setSyncState('ok');
 }, 30000);

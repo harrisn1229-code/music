@@ -13,9 +13,9 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | School | `school/` | Classes, lessons, quizzes, tests and a song library |
 
 Everything runs in the browser and is saved on the device. Three optional
-things reach outside it, each only when you turn it on: GitHub sync (Barline,
-Note Cards), a Music account (School), and Claude (Barline's assistant,
-School's test marking).
+things reach outside it, each only when you turn it on: a Music account (sync
+for every tool), Claude (Barline's assistant, School's test marking), and the
+older GitHub sync on devices that have not signed in yet.
 
 ## What's in here
 
@@ -91,7 +91,16 @@ straight from the device to Anthropic. A key added in any tool works in all of t
 
 ## Accounts
 
-A Music account is an email and a password. `shared/cloud.js` gives a tool three things: sign-in,
+A Music account is an email and a password, and it is one sign-in for the whole app: the cloud
+button on the home screen opens it (the first time Music is opened on a device it is offered
+once), and a tool that needs it links there with `../#account`. Signed in, every tool that syncs
+keeps its data in the account: Barline its charts (`barline`), Note Cards its ratings
+(`note-cards`), School its progress (`school`). A device that was syncing through GitHub keeps
+doing so until someone signs in on it; after that the account is what the tools use, and what was
+on the device is merged in. If a different person signs in on a device, Barline and Note Cards
+will not hand the first person's charts and ratings to them, and School starts them fresh.
+
+`shared/cloud.js` gives a tool three things: sign-in,
 one saved document per tool that follows the account (`MusicCloud.load` / `save`), and private
 files for the people on a members list (`member`, `listFiles`, `download`, `upload`). School
 keeps its progress there and gets its chord charts, album art and book scans from there: files

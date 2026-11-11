@@ -701,6 +701,8 @@
 
 <script src="../shared/account.js"></script>
 <script src="../shared/ai.js"></script>
+<script src="../shared/cloud-config.js"></script>
+<script src="../shared/cloud.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1219,10 +1221,23 @@
 
       const syRow = setRow("Sync between devices");
       const sySet = h("div", "ai-set");
-      const syOn = !!ghToken(), who = store.get(GH_USER, "");
-      sySet.appendChild(h("span", "", syOn ? "On with GitHub" + (who ? " (" + who + ")" : "") + ". " + syncLine() + "." : "Keep your charts the same on your phone, tablet and computer."));
+      const syOn = syncOn(), who = store.get(GH_USER, ""), acct = cloud();
+      sySet.appendChild(h("span", "", acct ? "On with your Music account (" + acct.user().email + "). " + syncLine() + "."
+        : syOn ? "On with GitHub" + (who ? " (" + who + ")" : "") + ". " + syncLine() + "."
+        : cloudReady() ? "Sign in to your Music account to keep your charts on every device." : "Keep your charts the same on your phone, tablet and computer."));
       const syBtns = h("div", "sync-btns");
-      if (syOn){
+      if (acct){
+        // Signing out is done once for all of Music, on the home screen.
+        const now = h("button", "btn", "Sync now");
+        now.addEventListener("click", () => { closeSheet(); syncNow().then(() => toast(sync.status === "ok" ? "Synced." : (sync.msg || "Sync didn't finish."))); });
+        const home = h("button", "btn", "Account");
+        home.addEventListener("click", () => { location.href = "../#account"; });
+        syBtns.appendChild(now); syBtns.appendChild(home);
+      } else if (!syOn && cloudReady()){
+        const b = h("button", "btn", "Sign in");
+        b.addEventListener("click", () => { location.href = "../#account"; });
+        syBtns.appendChild(b);
+      } else if (syOn){
         const now = h("button", "btn", "Sync now");
         now.addEventListener("click", () => { closeSheet(); syncNow().then(() => toast(sync.status === "ok" ? "Synced." : (sync.msg || "Sync didn't finish."))); });
         const off = h("button", "btn", "Turn off");
@@ -1986,6 +2001,13 @@
   const GIST_FILE = "barline.json", GIST_DESC = "Barline sync";
   const TOKEN_URL = "https://github.com/settings/tokens/new?scopes=gist&description=Barline%20sync";
   const ghToken = () => store.get(GH_KEY, "") || "";
+  // Music accounts (../shared/cloud.js). Signed in, charts sync through the account instead of a
+  // gist: the same payload and the same per-chart merge, kept in the account's "barline" document.
+  // A device still connected to GitHub keeps using its gist until someone signs in on it.
+  const cloud = () => (self.MusicCloud && self.MusicCloud.configured && self.MusicCloud.user()) ? self.MusicCloud : null;
+  const cloudReady = () => !!(self.MusicCloud && self.MusicCloud.configured);
+  const syncOn = () => !!(cloud() || ghToken());
+  const CLOUD_USER = "barline:cloudUser", CLOUD_EMAIL = "barline:cloudEmail";
   let tombs = (function(){
     try { const t = JSON.parse(store.get(TOMB_KEY, "{}")) || {}; return { charts: t.charts || {}, folders: t.folders || {} }; }
     catch(e){ return { charts: {}, folders: {} }; }
@@ -2110,13 +2132,38 @@
       delete charts[ids[0]]; sync.applying = true; saveNow(); sync.applying = false;
     }
   }
+  async function cloudSync(){
+    const c = cloud(), me = c.user(), last = store.get(CLOUD_USER, "");
+    // Someone else signed in on this device: these charts are not theirs to take.
+    if (last && last !== me.id) throw new SyncError("The charts on this device belong to " + (store.get(CLOUD_EMAIL, "") || "another account") + ". Sign in as that account to sync them.", "other");
+    const net = (e) => new SyncError(/reach/i.test(e.message) ? "You're offline. Changes will sync when you're back online." : e.message, /reach/i.test(e.message) ? "offline" : "");
+    let remote;
+    try { remote = await c.load("barline"); } catch(e){ throw net(e); }
+    // A brand-new device joining an account that already has charts: don't copy the example to it.
+    if (remote && !last) dropUntouchedExample();
+    const r = mergeRemote(remote);
+    if (!remote || r.remoteStale){ try { await c.save("barline", JSON.parse(payload(r.push))); } catch(e){ throw net(e); } }
+    store.set(CLOUD_USER, me.id); store.set(CLOUD_EMAIL, me.email);
+    return r;
+  }
   async function syncNow(){
-    if (!ghToken()) return;
+    if (!syncOn()) return;
     if (sync.busy){ sync.again = true; return; }
     clearTimeout(sync.timer);
     sync.busy = true; setSync("syncing", "");
     try {
       if (saveTimer) saveNow();
+      if (cloud()){
+        const cr = await cloudSync();
+        store.set(SYNC_AT, String(Date.now()));
+        setSync("ok", "");
+        if (cr.localChanged){
+          if (cr.openGone){ toast("This chart was deleted on another device."); goLibrary(); }
+          else if (state.screen === "chart" && cr.openReplaced) renderChartScreen();
+          else if (state.screen === "lib") renderLibrary();
+        }
+        return;
+      }
       let id = store.get(GIST_KEY, "");
       let remote = null;
       if (id){
@@ -2152,7 +2199,7 @@
     }
   }
   function queueSync(ms){
-    if (!ghToken() || sync.applying) return;
+    if (!syncOn() || sync.applying) return;
     clearTimeout(sync.timer);
     sync.timer = setTimeout(syncNow, ms == null ? 2500 : ms);
   }
@@ -2161,7 +2208,7 @@
     if (state.screen === "lib") renderSyncLine();
   }
   function syncLine(){
-    if (!ghToken()) return "";
+    if (!syncOn()) return "";
     if (sync.status === "syncing") return "Syncing…";
     if (sync.status === "offline") return "Offline. Will sync when you're back online.";
     if (sync.status === "error") return "Sync paused: " + sync.msg;
@@ -2244,7 +2291,7 @@
     if (document.visibilityState === "visible"){
       const at = +store.get(SYNC_AT, "0");
       if (Date.now() - at > 20000) queueSync(300);
-    } else if (sync.timer && ghToken()){ clearTimeout(sync.timer); syncNow(); }
+    } else if (sync.timer && syncOn()){ clearTimeout(sync.timer); syncNow(); }
   });
   window.addEventListener("online", () => queueSync(500));
 
@@ -2382,7 +2429,7 @@
       list.appendChild(grid);
     }
     const n = all.length;
-    $("libFoot").textContent = n ? n + (n === 1 ? " chart" : " charts") + (ghToken() ? " · kept in sync on your devices" : " on this phone · nothing is uploaded") : "";
+    $("libFoot").textContent = n ? n + (n === 1 ? " chart" : " charts") + (syncOn() ? " · kept in sync on your devices" : " on this phone · nothing is uploaded") : "";
     renderSyncLine();
     renderInstall();
   }
@@ -2396,7 +2443,7 @@
       items: [
         { label: "Back up all charts", icon: ICON.backup, run: backupAll },
         { label: "Import from backup", icon: ICON.import, run: () => $("importInput").click() },
-        { label: ghToken() ? "Sync now" : "Sync between devices", icon: ICON.sync, run: () => { if (ghToken()) syncNow(); else setTimeout(setupSync, 280); } }
+        { label: syncOn() ? "Sync now" : "Sync between devices", icon: ICON.sync, run: () => { if (syncOn()) syncNow(); else if (cloudReady()) location.href = "../#account"; else setTimeout(setupSync, 280); } }
       ]
     });
   });
@@ -4293,7 +4340,13 @@
   loadFolders();
   route();
   $("syncLine").addEventListener("click", () => syncNow());
-  if (ghToken()) queueSync(600);
+  if (syncOn()) queueSync(600);
+  // The saved sign-in is read a moment after the page starts, and signing in or out can happen in
+  // another tool; sync follows the account as soon as it is known.
+  if (cloudReady()){
+    self.MusicCloud.ready.then(() => { if (cloud()){ queueSync(300); if (state.screen === "lib") renderLibrary(); } });
+    self.MusicCloud.onChange(() => { if (cloud()) queueSync(300); if (state.screen === "lib") renderLibrary(); });
+  }
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")){
     window.addEventListener("load", () => { navigator.serviceWorker.register("../sw.js").catch(() => {}); });
   }
