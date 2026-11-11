@@ -9,6 +9,6 @@
    Left empty, Music has no accounts: every tool keeps working and saves on the
    device, exactly as before. */
 self.MUSIC_CLOUD = {
-  url: "",
-  anonKey: ""
+  url: "https://wtlsmhpyhijfjhgpnfbf.supabase.co",
+  anonKey: "sb_publishable_SdBp6Hbgre6oy9BmYEN7BQ_scePyAvX"
 };
