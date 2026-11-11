@@ -1,0 +1,157 @@
+/* Music skin — School and the Library shelves in the Music app's own look.
+
+   app.css is the school's original design (a serif reading face, a display serif, hairline
+   cards). Inside Music everything shares one style, the one the home screen, Barline, Note Cards
+   and Library use: the system typeface with heavy headings, a grey page, white cards on a
+   hairline-and-shadow, pill buttons, ink for whatever is selected. This file is that style laid
+   over app.css. It is only loaded by the app shell, so the single-file artifact page keeps the
+   original look.
+
+   It works the way app.css asks to be worked on: tokens first. Most of the change is the block
+   of tokens below; the rest is the handful of components whose SHAPE differs (radius, buttons,
+   the menu, the header bar). */
+:root{
+  --ground:#F2F3F6; --surface:#FFFFFF; --sunk:#F0F1F5; --raised:#FFFFFF;
+  --ink:#14171F; --ink-2:#3A404C; --muted:#5F6675; --faint:#8A91A0;
+  --line:#E3E6EC; --line-2:#CED3DD;
+  --shadow:0 0 0 1px rgb(20 24 44 / .07), 0 1px 2px rgb(22 26 52 / .05);
+  --sh:var(--shadow);
+  --r-lg:1.25rem; --r-md:.875rem;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI","Noto Music",sans-serif;
+  --read:var(--ui); --disp:var(--ui);
+  --mono:ui-monospace,SFMono-Regular,Menlo,"Courier New",monospace;
+  --rail:15rem;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D0E12; --surface:#181A20; --sunk:#21242C; --raised:#21242C;
+    --ink:#ECEEF4; --ink-2:#C6CBD6; --muted:#9BA1B0; --faint:#727A8A;
+    --line:#292D38; --line-2:#3A404D;
+    --shadow:0 0 0 1px rgb(255 255 255 / .06);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D0E12; --surface:#181A20; --sunk:#21242C; --raised:#21242C;
+  --ink:#ECEEF4; --ink-2:#C6CBD6; --muted:#9BA1B0; --faint:#727A8A;
+  --line:#292D38; --line-2:#3A404D;
+  --shadow:0 0 0 1px rgb(255 255 255 / .06);
+  color-scheme:dark;
+}
+
+body{font:16px/1.45 var(--ui);-webkit-tap-highlight-color:transparent;}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px;}
+.boot h1{font-weight:800;letter-spacing:-.02em;}
+
+/* ---------------------------------------------------------------- type */
+h2.vh{font-weight:800;font-size:1.75rem;letter-spacing:-.022em;line-height:1.1;}
+.eyebrow{font-size:.8125rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted);}
+.eyebrow.path{font-size:.8125rem;}
+.lede{font-size:1rem;line-height:1.5;color:var(--muted);}
+.calnote{font-size:.8125rem;}
+.prose{font-size:1rem;line-height:1.6;}
+.prose h3,.prose h4,.prose h5,.prose h6{font-size:1rem;font-weight:800;letter-spacing:-.01em;}
+.prose h5,.prose h6{font-size:.875rem;letter-spacing:0;}
+.prose code,.prose pre{font-family:var(--mono);}
+.prose th{font-size:.75rem;letter-spacing:0;text-transform:none;font-weight:700;}
+.dhead .eyebrow{color:var(--ink);font-size:1.0625rem;font-weight:800;letter-spacing:-.01em;}
+.dhead .rule{background:transparent;}
+.navgrp{font-size:.75rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted);}
+
+/* ---------------------------------------------------------------- surfaces */
+.card{border:0;border-radius:var(--r-lg);box-shadow:var(--sh);padding:1rem 1.125rem;}
+.rd{border:0;border-radius:var(--r-md);box-shadow:var(--sh);background:var(--surface);}
+.banner{border-radius:var(--r-md);}
+.byo-miss{border-radius:var(--r-md);}
+.pr-ban{border-radius:var(--r-lg);border:0;box-shadow:var(--sh);}
+.pr-ban b{font-weight:800;letter-spacing:-.02em;}
+.stile-art,.songhead-art{border-radius:var(--r-md);}
+.bkpg img{border-radius:var(--r-md);}
+
+/* ---------------------------------------------------------------- controls */
+.btn{border:0;border-radius:999px;padding:.55rem 1.05rem;font-size:.875rem;font-weight:600;
+  background:var(--ink);color:var(--ground);box-shadow:none;}
+.btn:hover{opacity:.88;}
+.btn:active{transform:scale(.97);}
+.btn[disabled]{opacity:.5;}
+.btn-quiet,label.btn{background:var(--surface);color:var(--ink);box-shadow:var(--sh);}
+.runhint .btn{margin:0;}
+.pill{border-radius:999px;letter-spacing:.02em;}
+.syncin,.pq-a,.fr-off input{border:0;box-shadow:inset 0 0 0 1px var(--line-2);border-radius:.75rem;background:var(--surface);}
+.syncin{height:2.75rem;padding:0 .9rem;font-size:1rem;}
+.pq-a{font-size:1rem;}
+.pq-n{font-family:var(--ui);font-weight:800;}
+.lnkedit{font-size:.8125rem;font-weight:600;border-bottom:0;text-decoration:underline;text-underline-offset:3px;
+  text-decoration-color:var(--accent-line);}
+.lnkedit:hover{text-decoration-color:var(--accent);}
+
+/* ---------------------------------------------------------------- the header bar and the menu
+   Every Music tool opens with the same bar: a round button (home, or back), the tool's icon, its
+   name. School needs a menu as well, so on a wide screen the bar heads a column with the menu
+   under it, and on a phone the bar runs across the top with a button that opens the menu. */
+#app{grid-template-columns:var(--rail) minmax(0,1fr);}
+.rail{background:var(--ground);border-right:0;gap:1rem;padding:.75rem .75rem 1rem;}
+.mbar{display:flex;align-items:center;gap:.6rem;min-height:3rem;}
+.icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;background:var(--surface);box-shadow:var(--sh);
+  display:inline-grid;place-items:center;flex:none;color:var(--ink);}
+.icon-btn:active{transform:scale(.92);}
+.icon-btn svg{width:1.25rem;height:1.25rem;}
+.mbar .logo{width:2.25rem;height:2.25rem;border-radius:.6rem;flex:none;display:block;}
+.mbar .brand{font-size:1.3125rem;font-weight:800;letter-spacing:-.015em;line-height:1;flex:1;min-width:0;}
+.rail .rail-toggle{align-self:auto;}
+.rail .sem{font-size:.8125rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted);
+  margin:-.35rem 0 0 .25rem;}
+nav{gap:.125rem;}
+nav button,nav a.navlink{padding:.55rem .75rem;border-radius:.75rem;font-size:.9375rem;font-weight:600;color:var(--ink-2);}
+nav button:hover,nav a.navlink:hover{background:var(--surface);}
+nav button[aria-current="page"]{background:var(--ink);color:var(--ground);font-weight:700;}
+nav .n{font-size:.75rem;font-weight:700;}
+nav button[aria-current="page"] .n{color:var(--ground);opacity:.8;}
+.navgrp{padding:0 .75rem;margin-bottom:.15rem;}
+.navgrp-2{border-top:0;margin-top:.9rem;padding-top:0;}
+.rail-foot{padding:0 .5rem;}
+.savechip{font-size:.75rem;letter-spacing:0;text-transform:none;font-weight:600;}
+/* collapsed on a wide screen: just the two round buttons, stacked */
+.rail.shut{padding:.75rem .5rem;align-items:center;}
+.rail.shut .mbar{flex-direction:column;}
+.rail.shut .logo,.rail.shut .brand,.rail.shut .sem{display:none;}
+main{padding:1.25rem 1.5rem 5rem;max-width:68rem;}
+.view{gap:1.25rem;}
+
+@media (max-width:700px){
+  /* The bar runs across the top; the menu drops down from it when the button is pressed. */
+  .rail,.rail.shut{position:fixed;left:0;right:0;top:0;z-index:20;width:auto;max-width:none;height:auto;
+    max-height:100vh;overflow-y:auto;padding:env(safe-area-inset-top,0px) 16px 0;gap:.5rem;box-shadow:none;
+    background:color-mix(in srgb, var(--ground) 88%, transparent);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);align-items:stretch;}
+  .rail:not(.shut){background:var(--ground);padding-bottom:1rem;box-shadow:0 1px 0 var(--line),0 12px 28px -12px rgb(20 24 44 / .28);}
+  .mbar,.rail.shut .mbar{flex-direction:row;min-height:3.75rem;}
+  .rail.shut .logo{display:block;}
+  .rail.shut .brand{display:block;}
+  .rail.shut .rail-toggle{width:2.5rem;height:2.5rem;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--sh);}
+  main{padding:4.5rem 16px 5rem;}
+}
+
+/* ---------------------------------------------------------------- lists and tiles */
+.qz{border-radius:var(--r-md);}
+.stile-t{font-size:.875rem;font-weight:700;}
+.stile-a{font-size:.8125rem;}
+.frow{font-size:.9375rem;}
+.fgrp .rd-t,.rd-t{font-weight:700;}
+.pq-q{font-size:1rem;}
+.pq-mine,.pq-key,.pq-why{font-size:.9375rem;}
+
+/* ---------------------------------------------------------------- section headings and labels
+   The school set its section labels in small spaced capitals. Music sets them as plain bold
+   words. Tiny status tags (pills, calendar weekdays) keep their caps; headings and field labels
+   do not. */
+.ovsec-t,.dhead .dfold,.callout.co-unlocks summary,.tl-done>summary,.origlog summary,
+.uindex .lbl,.blk .lbl,.wb-k,.lesson-h .u,.extform label,.ef-l,.pl-form label{
+  font-size:.9375rem;font-weight:800;letter-spacing:-.005em;text-transform:none;color:var(--ink);}
+.extform label,.ef-l,.pl-form label,.wb-k,.lesson-h .u{font-size:.8125rem;font-weight:700;letter-spacing:0;color:var(--muted);}
+.tl-w .tl-k,.tl-w .tl-t{font-family:var(--ui);}
+.tl-w .tl-t{font-size:.8125rem;font-weight:600;letter-spacing:0;}
+.filters select,.filters input{border:0;box-shadow:var(--sh);border-radius:999px;background:var(--surface);
+  font-size:.875rem;padding:.5rem .9rem;color:var(--ink);}
+.filters select{padding-right:1.6rem;}

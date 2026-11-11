@@ -89,6 +89,10 @@ same notes and the same saved progress as School (a drill's tempo log and a song
 progress), so they are the same engine opened in a second mode: `school/library.html`, which the
 Library tool's front page links to. School's own menu keeps only coursework and Classes.
 
+Library opens on its shelves: Modes and chords (`library/#/theory`, the mode, chord and voicing
+lookup), Songs, Drills, Originals and My files. All of them, and School, share one look — School's
+is `school/music-skin.css`, written from the `music-school` repo.
+
 ## Claude
 
 `shared/ai.js` is the one connection to Claude. The key is the musician's own Anthropic API key,

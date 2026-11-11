@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>School</title>
 <meta name="description" content="Classes, lessons, quizzes, drills and a song library. Works offline; your progress stays on this device.">
-<meta name="school-build" content="2026-11-11 21:38">
+<meta name="school-build" content="2026-11-11 22:32">
 <meta name="school-books" content="full">
 <meta name="theme-color" content="#e9ebf0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0e13" media="(prefers-color-scheme: dark)">
@@ -18,15 +18,16 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="app.css">
+<!-- The Music app's look, laid over the school's own: one style across every tool. -->
+<link rel="stylesheet" href="music-skin.css">
 <style>
   /* Fade between the Music home screen and this app instead of a hard page flash. */
   @media (prefers-reduced-motion: no-preference){ @view-transition{navigation:auto} }
   /* Shown for the second or two it takes to read the curriculum, and if that fails. */
   .boot{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:14px;padding:24px;text-align:center;color:var(--muted);font-family:var(--ui);}
-  .boot h1{font-family:var(--disp);font-weight:400;font-size:27px;margin:0;color:var(--ink);}
+  .boot h1{font-family:var(--ui);font-weight:800;font-size:1.75rem;letter-spacing:-.02em;margin:0;color:var(--ink);}
   .boot p{margin:0;font-size:13.5px;max-width:42ch;}
   .boot button{font:inherit;font-weight:600;font-size:13.5px;padding:8px 16px;border-radius:8px;
     background:var(--theory);color:var(--surface);border:none;cursor:pointer;}
@@ -34,7 +35,7 @@
 </head>
 <body>
 <div id="app"><div class="boot"><h1>School</h1><p id="bootmsg">Opening…</p></div></div>
-<script>window.MS_APP = {build: "2026-11-11 21:38"};</script>
+<script>window.MS_APP = {build: "2026-11-11 22:32"};</script>
 <!-- Shared by every tool in Music: the Claude connection, and the email account. -->
 <script src="../shared/ai.js"></script>
 <script src="../shared/cloud-config.js"></script>

@@ -103,6 +103,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 
 .lists{display:grid;gap:0 1.5rem;align-items:start}
 @media (min-width:62rem){ .lists.cols{grid-template-columns:1.35fr 1fr 1fr} }
+.sec h2.first{margin-top:.5rem}
 .sec h2{margin:1.5rem .125rem .6rem;font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
 .sec .hint{margin:-.35rem .125rem .6rem}
 .hint{font-size:.875rem;color:var(--muted)}
@@ -541,20 +542,28 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
         (r.rootTyped ? "" : '<p class="hint">Showing the key you have picked. Type a root, like F♯, to search another.</p>') +
         '<ul class="rows">' + r.rows.map((x) => x.html).join("") + "</ul></section>";
     }
-    // The shelves that came over from School: songs, drills, your own ideas, and your files. They
-    // open as their own pages (../school/library.html), built from the same notes as School and
-    // sharing its saved progress, so a drill's tempo log or a song's status is the same everywhere.
-    const shelf = (hash, title, about) => '<li><a class="row shelf" href="../school/library.html#' + hash + '"><span class="shelf-in"><span class="row-t">' + title + '</span><span class="shelf-s">' + about + "</span></span>" + ICON.go + "</a></li>";
-    return '<section class="sec"><h2>Shelves</h2><ul class="rows">' +
-        shelf("songs", "Songs", "Every song with its chart, notes and what to practice") +
-        shelf("drills", "Drills", "Technique drills with a tempo log, and ear training") +
-        shelf("originals", "Originals", "Your own song ideas") +
-        shelf("files", "My files", "Books, charts and album art from your account") +
-      "</ul></section>" +
-      '<section class="sec"><h2>Modes</h2><p class="hint">A bold degree is the note that gives the mode its color.</p><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>" +
+    return '<section class="sec"><h2>Modes</h2><p class="hint">A bold degree is the note that gives the mode its color.</p><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>" +
       '<section class="sec"><h2>Triads</h2><ul class="rows">' + TRIADS.map((q) => chordRow(pc, q)).join("") + "</ul></section>" +
       '<section class="sec"><h2>7th chords</h2><ul class="rows">' + SEVENTHS.map((q) => chordRow(pc, q)).join("") +
       '<li><a class="row plain" href="#/voicings"><span>How inversions and voicings are named</span>' + ICON.go + "</a></li></ul></section>";
+  }
+  /* ---------- the front page: Library's shelves ----------
+     Modes and chords is this page's own lookup (#/theory). The rest came over from School and
+     open as their own pages (../school/library.html), built from the same notes as School and
+     sharing its saved progress, so a drill's tempo log or a song's status is the same everywhere. */
+  function renderShelves() {
+    const shelf = (href, title, about) => '<li><a class="row shelf" href="' + href + '"><span class="shelf-in"><span class="row-t">' + title + '</span><span class="shelf-s">' + about + "</span></span>" + ICON.go + "</a></li>";
+    const rec = recents();
+    view.innerHTML =
+      '<section class="sec"><h2 class="first">Shelves</h2><ul class="rows">' +
+        shelf("#/theory", "Modes and chords", "Every mode, chord, arpeggio and voicing in any key") +
+        shelf("../school/library.html#songs", "Songs", "Every song with its chart, notes and what to practice") +
+        shelf("../school/library.html#drills", "Drills", "Technique drills with a tempo log, and ear training") +
+        shelf("../school/library.html#originals", "Originals", "Your own song ideas") +
+        shelf("../school/library.html#files", "My files", "Books, charts and album art from your account") +
+      "</ul></section>" +
+      (rec.length ? '<span class="label">Recently looked up</span><div class="recent" style="margin-top:0">' + rec.map((x) => '<a class="pill" href="' + esc(x.h) + '">' + esc(x.t) + "</a>").join("") + "</div>" : "");
+    current = { play: {} };
   }
   let lastQuery = "";
   function renderIndex() {
@@ -682,20 +691,28 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     if (p[0] === "mode" && okPc && MODE[p[2]]) return { view: "mode", pc: pc, id: p[2] };
     if (p[0] === "chord" && okPc && QUAL[p[2]]) return { view: "chord", pc: pc, id: p[2] };
     if (p[0] === "voicings") return { view: "guide" };
-    return { view: "index" };
+    if (p[0] === "theory") return { view: "index" };
+    return { view: "shelves" };
   }
   function route() {
     const r = parse(), nav = $("nav");
     if (onIndex) indexScroll = window.scrollY;
     onIndex = r.view === "index";
-    if (onIndex) {
+    if (r.view === "shelves") {
       nav.href = "../"; nav.innerHTML = ICON.home; nav.setAttribute("aria-label", "Music home, all apps");
       document.title = "Library";
+      renderShelves();
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (onIndex) {
+      nav.href = "#/"; nav.innerHTML = ICON.back; nav.setAttribute("aria-label", "Back to Library");
+      document.title = "Modes and chords – Library";
       renderIndex();
       window.scrollTo(0, indexScroll);
       return;
     }
-    nav.href = "#/"; nav.innerHTML = ICON.back; nav.setAttribute("aria-label", "Back to the Library index");
+    nav.href = "#/theory"; nav.innerHTML = ICON.back; nav.setAttribute("aria-label", "Back to modes and chords");
     if (r.view === "mode") renderMode(r.pc, MODE[r.id]);
     else if (r.view === "chord") renderChord(r.pc, QUAL[r.id]);
     else renderGuide();

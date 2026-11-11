@@ -2100,31 +2100,39 @@ function rail() {
   const chipState = (cap === null && !readonly) ? ['wait', 'checking\u2026']
                   : readonly ? ['ro', 'read-only \u2014 nothing is saved']
                   : pending ? ['dirty', 'unsaved'] : ['saved', LOCAL ? 'saved on this device' : 'saved'];
-  const homeLink = `<a class="rail-home" href="../" aria-label="Music home, all apps">
-        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.6h9.6V8.2"/></svg>
-        <span>Music</span></a>`;
-  const toggle = `<button class="rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
-      aria-label="${open ? 'Collapse menu' : 'Expand menu'}"><span class="car"></span></button>`;
+  /* The header every Music tool opens with: a round button (home; in the Library shelves, back to
+     Library's front page), the tool's icon and its name. The second round button opens and closes
+     the menu. Styled by app-shell/music-skin.css. */
+  const ICO = {
+    home: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.6h9.6V8.2"/></svg>',
+    back: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5"/></svg>',
+    menu: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h12M4 10h12M4 13.5h12"/></svg>',
+    shut: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>'
+  };
+  const bar = (name, logo, href, label, icon) => `<div class="mbar">
+      <a class="icon-btn" href="${href}" aria-label="${label}">${icon}</a>
+      <img class="logo" src="${logo}" alt=""><span class="brand">${name}</span>
+      <button class="icon-btn rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
+        aria-label="${open ? 'Close menu' : 'Open menu'}">${open ? ICO.shut : ICO.menu}</button></div>`;
   const foot = `<div class="rail-foot">
       <div class="savechip" data-s="${chipState[0]}"><b></b><span> ${esc(chipState[1])}</span></div>
     </div>`;
   /* The Library tool's shelves (LIBMODE): the same views, their own menu. */
-  if (LIBMODE) return `<aside class="rail${open ? '' : ' shut'}">${toggle}${homeLink}
-    <div class="mast"><h1>Library</h1><div class="sem">Songs, drills and ideas</div></div>
+  if (LIBMODE) return `<aside class="rail${open ? '' : ' shut'}">
+    ${bar('Library', '../library/icon-192.png', '../library/', 'Back to Library', ICO.back)}
     <nav>
       ${Object.keys(SONGS).length ? item('songs','Songs') : ''}
       ${item('drills','Drills')}
       ${item('originals','Originals')}
       ${TOOLS.length ? item('tools','Tools') : ''}
       ${item('files','My files')}
-      <div class="navgrp navgrp-2">Also in Library</div>
-      <a class="navlink" href="../library/">Modes, chords and voicings</a>
+      <a class="navlink" href="../library/#/theory">Modes and chords</a>
     </nav>${foot}</aside>`;
   /* School inside Music: only what is yours as a student, plus the catalogue of classes. The
      shelves moved to the Library tool; the links at the bottom are the way to them. */
-  if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">${toggle}${homeLink}
-    <div class="mast"><h1>School</h1>
-      <div class="sem">${kn ? `${kn} ${kn === 1 ? 'class' : 'classes'} enrolled` : 'No classes enrolled'}</div></div>
+  if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">
+    ${bar('School', 'icon-192.png', '../', 'Music home, all apps', ICO.home)}
+    <div class="sem">${kn ? `${kn} ${kn === 1 ? 'class' : 'classes'} enrolled` : 'No classes enrolled'}</div>
     <nav>
       ${item('overview','Overview')}
       ${item('myclasses','My classes', kn || '')}
@@ -2136,7 +2144,7 @@ function rail() {
       ${item('ext','Outside lessons', extHomeworkDue() || '')}
       ${SLICES.length ? item('slices','Soundslice') : ''}
       ${item('sync','Activity & backup')}
-      <div class="navgrp navgrp-2">In the Library</div>
+      <div class="navgrp navgrp-2">In Library</div>
       <a class="navlink" href="library.html#songs">Songs</a>
       <a class="navlink" href="library.html#drills">Drills</a>
       <a class="navlink" href="library.html#files">My files</a>
@@ -7531,7 +7539,7 @@ function render() {
     : head === 'files' && LOCAL ? filesView()  // app build — the reader's own books, charts, art
     : head === 'paper' && LOCAL ? paperView(arg) // app build — a test, sat and marked on the page
     : head === 'tests' ? testsView() : overview();
-  app.style.setProperty('--rail', railOpen() ? '236px' : '56px');
+  app.style.setProperty('--rail', railOpen() ? (LOCAL ? '15rem' : '236px') : (LOCAL ? '3.5rem' : '56px'));
   // PATCH-144 — the one pass that makes every [[vault note]] the school assigns a live link,
   // wherever it appears. Deliberately here and not in the view functions: a dead span turns up
   // on Read lines, in **The material** bullets, inside pulled reading and on a source page

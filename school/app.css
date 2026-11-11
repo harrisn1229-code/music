@@ -873,7 +873,7 @@ a.btn:hover,a.btn:focus-visible{text-decoration:none;}
    .callout's shape (hairline box, accent rule down the left, radius open on that edge) so a
    pulled section reads as quoted material from elsewhere rather than as the lesson's own
    voice, and the body is plain .prose — the same Spectral the rest of the page reads in. */
-.reading{flex:0 0 100%;margin:9px 0 3px 26px;display:flex;flex-direction:column;gap:7px;}
+.reading{flex:0 0 calc(100% - 26px);min-width:0;margin:9px 0 3px 26px;display:flex;flex-direction:column;gap:7px;}
 .rd{border:1px solid var(--line);border-left:2px solid var(--accent-line);border-radius:0 8px 8px 0;
   background:var(--surface);}
 .rd>summary{cursor:pointer;list-style:none;padding:9px 14px 10px;display:grid;
