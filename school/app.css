@@ -1888,3 +1888,17 @@ nav a.navlink:hover{background:var(--sunk);color:var(--ink);}
   .view>.row{flex-wrap:wrap;}
   .view>.row>.pill{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
 }
+
+/* Video tiles on the Drills shelf: the thumbnail, the length in its corner, the name under it. */
+.vtiles{display:grid;gap:14px 12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
+.vtile{display:flex;flex-direction:column;gap:7px;padding:0;border:0;background:none;text-align:left;cursor:pointer;font:inherit;color:var(--ink);}
+.vthumb{position:relative;display:block;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--sunk);
+  border:1px solid var(--line);}
+.vthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.vplay{position:absolute;left:8px;bottom:8px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  background:rgb(0 0 0 / .62);color:#fff;font-size:11px;padding-left:2px;}
+.vdur{position:absolute;right:8px;bottom:8px;padding:2px 7px;border-radius:999px;background:rgb(0 0 0 / .62);color:#fff;
+  font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;}
+.vthumb.nopic .vplay{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);width:38px;height:38px;font-size:15px;}
+.vtile-t{font-size:13.5px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+@media (max-width:700px){ .vtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px;} }

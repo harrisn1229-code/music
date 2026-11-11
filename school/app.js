@@ -6592,7 +6592,9 @@ function drillItems(shelf) {
   (DR.routines || []).filter(r => r.instrument === shelf)
     .forEach(r => out.push({kind: 'drill', title: r.title, go: 'routine:' + r.id, meta: tempo(r)}));
   (DR.watch || []).filter(w => (w.instrument || 'theory') === shelf)
-    .forEach(w => out.push({kind: 'video', title: w.title, go: 'watch:' + w.id, meta: durShort(w.duration)}));
+    .forEach(w => out.push({kind: 'video', title: w.title, go: 'watch:' + w.id, meta: durShort(w.duration),
+      pic: w.thumb ? 'data:image/webp;base64,' + w.thumb
+         : (LOCAL && ytId(w.url)) ? `https://i.ytimg.com/vi/${ytId(w.url)}/mqdefault.jpg` : ''}));
   (DR.methodology || []).filter(m => (m.instrument || 'theory') === shelf)
     .forEach(m => out.push({kind: 'read', title: m.title, go: 'method:' + m.id, meta: ''}));
   const rank = {drill: 0, video: 1, read: 2};
@@ -6622,13 +6624,26 @@ function drillsView(shelf) {
   const tile = i => `<button class="dtile" data-goto="${esc(i.go)}">
       <span class="dtile-t">${esc(i.title)}</span>${
       (KIND_MARK[i.kind] || i.meta) ? `<span class="dtile-b">${[KIND_MARK[i.kind], i.meta].filter(Boolean).join(' · ')}</span>` : ''}</button>`;
+  /* A video keeps its thumbnail (Nate: "I want video thumbnails to still show"). A picture tile and
+     a text tile do not sit well in one grid, so the page runs drills, then the videos as a grid of
+     thumbnails, then the reading — one flow, no headings; the chips still narrow it. The picture
+     comes straight from YouTube; if it cannot load (offline) the tile falls back to its name. */
+  const vtile = i => `<button class="vtile" data-goto="${esc(i.go)}">
+      <span class="vthumb"><img data-ytt="1" loading="lazy" alt="" src="${esc(i.pic)}"><span class="vplay" aria-hidden="true">&#9654;</span>${
+        i.meta ? `<span class="vdur">${i.meta}</span>` : ''}</span>
+      <span class="vtile-t">${esc(i.title)}</span></button>`;
+  const vids = shown.filter(i => i.kind === 'video' && i.pic);
+  const plain = shown.filter(i => !(i.kind === 'video' && i.pic));
+  const reads = plain.filter(i => i.kind === 'read');
   const earTile = shelf === 'ear' && earSet && drillKind === 'all' ? `<button class="dtile" data-nav="ear">
       <span class="dtile-t">Ear training set</span><span class="dtile-b">${EAR.length} clips</span></button>` : '';
   return `<div class="view drillsview">
     <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="drills">&larr; Drills</button></div>
     <h2 class="vh">${esc(label)}</h2>
     ${chips}
-    <div class="dtiles">${earTile}${shown.map(tile).join('')}</div></div>`;
+    ${earTile || plain.length ? `<div class="dtiles">${earTile}${plain.filter(i => i.kind !== 'read').map(tile).join('')}</div>` : ''}
+    ${vids.length ? `<div class="vtiles">${vids.map(vtile).join('')}</div>` : ''}
+    ${reads.length ? `<div class="dtiles">${reads.map(tile).join('')}</div>` : ''}</div>`;
 }
 
 /* A video to watch and play along with, on a page of its own. In the app the player is on the
@@ -7379,6 +7394,7 @@ if (LOCAL) {
   app.addEventListener('error', e => {
     const t = e.target;
     if (t && t.tagName === 'IMG' && t.dataset.yt) { const a = t.closest('.wthumb'); if (a) a.remove(); }
+    if (t && t.tagName === 'IMG' && t.dataset.ytt) { const a = t.closest('.vthumb'); if (a) a.classList.add('nopic'); t.remove(); }
   }, true);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncSoon(800); });
   window.addEventListener('popstate', e => {
