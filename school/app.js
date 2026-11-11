@@ -6595,6 +6595,8 @@ function coverKey(s) {
   return l ? l.key : '';
 }
 /** The charts this device has for a song — the named ones first, then anything attached by hand. */
+/** Where a file that came with the app is served from. */
+function shippedURL(name) { return 'files/' + encodeURIComponent(name); }
 function songCharts(sid) {
   const s = SONGS[sid] || {}, out = [], seen = new Set();
   const take = m => { if (m && !seen.has(m.key)) { seen.add(m.key); out.push(m); } };
@@ -6604,11 +6606,20 @@ function songCharts(sid) {
 }
 function chartBlockLocal(sid) {
   if (!FILES) return '';
-  const s = SONGS[sid] || {}, have = songCharts(sid);
+  const s = SONGS[sid] || {}, have = songCharts(sid), shipped = s.chart_shipped || [];
   const missing = (s.chart_files || []).filter(n => !fhas(n));
   return `<div class="ovsec chartsec">
     <div class="dhead"><p class="eyebrow">Chord chart${have.length === 1 ? '' : 's'}</p>
-      <span class="rule"></span><span class="cnt">${have.length ? `${have.length} on this device` : 'none added yet'}</span></div>
+      <span class="rule"></span><span class="cnt">${shipped.length ? `${shipped.length} included` : ''}${
+        shipped.length && have.length ? ' · ' : ''}${have.length ? `${have.length} on this device`
+        : shipped.length ? '' : 'none added yet'}</span></div>
+    ${shipped.map(n => {
+      const k = sid + ':ship:' + n;
+      return `<details class="rd chart" data-chart="${esc(k)}"${chartOpen.has(k) ? ' open' : ''}>
+        <summary><span class="rd-t">${esc(n.replace(/\.[^.]+$/, ''))}</span>
+          <span class="rd-m">included</span></summary>
+        <div class="rd-b"><div class="fview" data-fship="${esc(n)}"></div></div></details>`;
+    }).join('')}
     ${have.map(m => {
       const k = sid + ':' + m.key;
       return `<details class="rd chart" data-chart="${esc(k)}"${chartOpen.has(k) ? ' open' : ''}>
@@ -6698,7 +6709,7 @@ function mountView(box, ref) {
 function fillSlot(el) {
   if (el.closest('details:not([open])')) return;        // filled when its fold is opened
   const name = el.dataset.file;
-  if (el.dataset.have) return mountView(el, {url: 'files/' + encodeURIComponent(name), name});
+  if (el.dataset.have) return mountView(el, {url: shippedURL((C.slots[name] || {}).src || name), name});
   if (!FILES || !FILES.ok()) { el.dataset.filled = '1'; return; }
   const m = FILES.get(name);
   if (m) return mountView(el, {key: m.key, name: m.name, file: m.file, rm: true});
@@ -6739,6 +6750,10 @@ function fillLocal() {
     FILES.thumbUrl(img.dataset.fthumb).then(u => { if (u) img.src = u; });
   });
   app.querySelectorAll('.byo[data-file]:not([data-filled])').forEach(fillSlot);
+  app.querySelectorAll('.fview[data-fship]:not([data-filled])').forEach(v => {
+    if (v.closest('details:not([open])')) return;
+    mountView(v, {url: shippedURL(v.dataset.fship), name: v.dataset.fship});
+  });
   if (FILES) app.querySelectorAll('.fview[data-fview]:not([data-filled])').forEach(v => {
     if (v.closest('details:not([open])')) return;
     const m = FILES.get(v.dataset.fview);
