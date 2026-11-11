@@ -5552,10 +5552,176 @@ function songArt(s, cls) {
   // The app carries no album art. If the reader has added their own copy of this song's sleeve
   // it is drawn from their device (fillLocal sets the src); otherwise the lettered tile stands.
   const mine = LOCAL ? coverKey(s) : '';
-  if (LOCAL && !mine && cloudHas(s.cover_file)) ensureFile(s.cover_file);   // arrives, then redraws
-  return mine
-    ? `<span class="${cls} has-art"><img data-fthumb="${esc(mine)}" alt="" loading="lazy"></span>`
-    : `<span class="${cls} no-art" style="--h:${songHue(s)}"><span>${esc(songInitials(s))}</span></span>`;
+  if (mine) return `<span class="${cls} has-art"><img data-fthumb="${esc(mine)}" alt="" loading="lazy"></span>`;
+  if (LOCAL && cloudHas(s.cover_file)) ensureFile(s.cover_file);            // arrives, then redraws
+  // Otherwise the sleeve is looked up by album (see "album covers, looked up" below). The tile
+  // carries what it needs to turn into the picture when the answer comes, and back into letters
+  // if the picture will not load.
+  const ck = LOCAL && !cloudHas(s.cover_file) ? coverAlbumKey(s) : '';
+  const tag = `${ck ? ` data-cover-k="${esc(ck)}"` : ''} data-init="${esc(songInitials(s))}" style="--h:${songHue(s)}"`;
+  const u = ck ? fetchedCover(ck, s) : '';
+  return u
+    ? `<span class="${cls} has-art"${tag}><img src="${esc(u)}" data-cover-u="1" alt="" loading="lazy" referrerpolicy="no-referrer"></span>`
+    : `<span class="${cls} no-art"${tag}><span>${esc(songInitials(s))}</span></span>`;
+}
+
+/* ------------------------------------------------------------------ album covers, looked up
+   The app ships no album art. A song whose reader has not added a sleeve of their own gets one
+   looked up by artist and album, in the reader's browser, from open catalogues:
+
+     1. MusicBrainz finds the album, and the Cover Art Archive (the Internet Archive's cover
+        collection for MusicBrainz) serves its front cover;
+     2. if that has none, the iTunes Search API's artwork for the album.
+
+   Only the picture's ADDRESS is remembered (localStorage `school:covers`, per album, so sixty
+   Beatles songs cost a handful of lookups); the picture itself is shown from where it lives and
+   kept for offline use by the service worker. Nothing is copied into this repo or the account.
+   Lookups run one at a time, a second apart (MusicBrainz asks for that), and a miss is retried
+   after a month. A sleeve the reader adds themselves always wins. */
+const COVER_STORE = 'school:covers', COVER_RETRY = 30 * 864e5, COVER_GAP = 1100;
+let coverMap = null, coverBusy = false, coverStop = 0;
+const coverQ = [], coverSeen = new Set();
+const cnormw = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+/** "Saturday Night Fever (Original Movie Soundtrack)" is searched as "Saturday Night Fever". */
+const albumCore = a => String(a || '').replace(/\s*[\(\[][^\)\]]*[\)\]]/g, ' ').replace(/\s+/g, ' ').trim() || String(a || '');
+function coverAlbumKey(s) {
+  if (!s || !s.album || !s.artist) return '';
+  return cnormw(s.artist).join(' ') + '|' + cnormw(albumCore(s.album)).join(' ');
+}
+function coverLoad() {
+  if (!coverMap) { try { coverMap = JSON.parse(localStorage.getItem(COVER_STORE)) || {}; } catch (e) { coverMap = {}; } }
+  return coverMap;
+}
+function fetchedCover(k, s) {
+  const e = coverLoad()[k];
+  if (e && e.u) return e.u;
+  if ((!e || Date.now() - (e.x || 0) > COVER_RETRY) && !coverSeen.has(k)) {
+    coverSeen.add(k);
+    coverQ.push([k, s.artist, albumCore(s.album)]);
+    setTimeout(coverRun, 0);
+  }
+  return '';
+}
+const overlap = (want, got) => { const g = new Set(got); return want.length ? want.filter(w => g.has(w)).length / want.length : 0; };
+function imgOK(url) {
+  return new Promise(res => {
+    const i = new Image();
+    const t = setTimeout(() => res(false), 12000);
+    i.referrerPolicy = 'no-referrer';
+    i.onload = () => { clearTimeout(t); res(i.naturalWidth > 1); };
+    i.onerror = () => { clearTimeout(t); res(false); };
+    i.src = url;
+  });
+}
+async function jget(url) {
+  const ac = new AbortController(), t = setTimeout(() => ac.abort(), 10000);
+  try {
+    const r = await fetch(url, {signal: ac.signal, headers: {Accept: 'application/json'}});
+    if (!r.ok) throw new Error('http ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+/** The iTunes Search API answers a script tag (its `callback` parameter), which needs no CORS. */
+function jsonp(url) {
+  return new Promise((res, rej) => {
+    const fn = '__mscov' + Math.random().toString(36).slice(2), el = document.createElement('script');
+    const done = (f, v) => { clearTimeout(t); try { delete window[fn]; } catch (e) {} el.remove(); f(v); };
+    const t = setTimeout(() => done(rej, new Error('timeout')), 10000);
+    window[fn] = v => done(res, v);
+    el.onerror = () => done(rej, new Error('network'));
+    el.src = url + '&callback=' + fn;
+    document.head.appendChild(el);
+  });
+}
+/** A cover address for one album: a URL, '' when no catalogue has one, null when neither could be reached. */
+async function coverFind(artist, album) {
+  const wa = cnormw(artist), wb = cnormw(album);
+  let reached = false;
+  /* A jazz standard's note names the COMPOSER as its artist (Jobim) and the record it is learned
+     from as its album ("Getz/Gilberto", credited to Stan Getz and João Gilberto), so the artist
+     will not match. A title of two or more words that matches exactly, and is not one of the
+     names every act has used, is taken on its title alone. */
+  const same = t => overlap(wb, cnormw(t)) === 1 && overlap(cnormw(t), wb) === 1;
+  const loose = new Set(wb).size >= 2 && !/^(the )?(greatest hits|best of|the best|live|unplugged|anthology|collection|the collection|essential|the essential|gold|volume \d+|vol \d+|\d+ \d+)( .*)?$/.test(wb.join(' '));
+  const art = async groups => {
+    for (const g of groups.slice(0, 3)) {
+      const u = `https://coverartarchive.org/release-group/${g.id}/front-500`;
+      if (await imgOK(u)) return u;
+    }
+    return '';
+  };
+  const mb = q => jget('https://musicbrainz.org/ws/2/release-group?fmt=json&limit=8&query=' + encodeURIComponent(q))
+    .then(r => r['release-groups'] || []);
+  try {
+    const got = await mb(`releasegroup:(${wb.join(' ')}) AND artist:(${wa.join(' ')})`);
+    reached = true;
+    const hits = got.filter(g => overlap(wb, cnormw(g.title)) >= 0.75
+      && overlap(cnormw(g.title), wb) >= 0.5
+      && (g['artist-credit'] || []).some(c => overlap(wa, cnormw((c.artist && c.artist.name) || c.name)) >= 0.5
+                                           || overlap(cnormw((c.artist && c.artist.name) || c.name), wa) >= 0.75));
+    let u = await art(hits);
+    if (u) return u;
+    if (!hits.length && loose) {
+      await new Promise(r => setTimeout(r, COVER_GAP));
+      u = await art((await mb(`releasegroup:"${wb.join(' ')}"`)).filter(g => same(g.title)));
+      if (u) return u;
+    }
+  } catch (e) {}
+  try {
+    const r = await jsonp('https://itunes.apple.com/search?media=music&entity=album&limit=8&term='
+      + encodeURIComponent(artist + ' ' + album));
+    reached = true;
+    for (const a of (r && r.results) || []) {
+      const byArtist = overlap(wb, cnormw(albumCore(a.collectionName))) >= 0.75 && overlap(wa, cnormw(a.artistName)) >= 0.5;
+      if (!byArtist && !(loose && same(albumCore(a.collectionName)))) continue;
+      const u = String(a.artworkUrl100 || '').replace(/\/\d+x\d+bb\./, '/600x600bb.');
+      if (u && await imgOK(u)) return u;
+    }
+  } catch (e) {}
+  return reached ? '' : null;
+}
+async function coverRun() {
+  if (coverBusy || !coverQ.length || Date.now() < coverStop) return;
+  if (navigator.onLine === false) return;
+  coverBusy = true;
+  try {
+    while (coverQ.length) {
+      const [k, artist, album] = coverQ[0];
+      const u = await coverFind(artist, album);
+      if (u === null) {                         // offline, or both catalogues unreachable: try later
+        coverStop = Date.now() + 5 * 60e3;
+        coverQ.forEach(q => coverSeen.delete(q[0])); coverQ.length = 0;
+        break;
+      }
+      coverQ.shift();
+      coverLoad()[k] = u ? {u} : {x: Date.now()};
+      try { localStorage.setItem(COVER_STORE, JSON.stringify(coverMap)); } catch (e) {}
+      if (u) coverPaint(k, u);
+      if (coverQ.length) await new Promise(r => setTimeout(r, COVER_GAP));
+    }
+  } finally { coverBusy = false; }
+}
+/** Turn every lettered tile of this album on the page into its sleeve, without a redraw. */
+function coverPaint(k, u) {
+  document.querySelectorAll('.no-art[data-cover-k]').forEach(el => {
+    if (el.dataset.coverK !== k) return;
+    el.classList.remove('no-art'); el.classList.add('has-art');
+    el.innerHTML = `<img src="${esc(u)}" data-cover-u="1" alt="" loading="lazy" referrerpolicy="no-referrer">`;
+  });
+}
+if (LOCAL) {
+  // A looked-up sleeve that will not load (offline before it was ever seen, or the address died)
+  // goes back to the lettered tile rather than showing a broken picture.
+  document.addEventListener('error', e => {
+    const img = e.target;
+    if (!img || img.tagName !== 'IMG' || !img.dataset.coverU) return;
+    const el = img.parentElement;
+    if (!el) return;
+    el.classList.remove('has-art'); el.classList.add('no-art');
+    el.innerHTML = `<span>${esc(el.dataset.init || '')}</span>`;
+  }, true);
+  window.addEventListener('online', () => { coverStop = 0; if (route === 'songs' || route.startsWith('song:')) render(); });
 }
 
 function songsView() {
@@ -6925,7 +7091,7 @@ function filesView() {
     <div class="fgrps">${[
       ['book', 'Books', 'A PDF of your own copy. Lessons show the pages they cite.'],
       ['chart', 'Chord charts', 'The charts the song notes were written from, by file name.'],
-      ['cover', 'Album art', 'The sleeve on each song. Songs without one show a lettered tile.'],
+      ['cover', 'Album art', 'Sleeves are looked up online by album. A copy of your own here is used instead.'],
       ['note', 'Pictures and handouts in notes', 'Screenshots, scans and PDFs that notes show in place.'],
     ].map(group).join('')}
     ${loose.length ? `<details class="rd fgrp" data-fgrp="loose"${filesOpen.has('loose') ? ' open' : ''}>
