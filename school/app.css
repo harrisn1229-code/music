@@ -1844,3 +1844,10 @@ label.btn{cursor:pointer;}
 .pr-ban[data-r="fail"]{border-color:var(--due-line);background:var(--due-soft);}
 .pr-ban[data-r="fail"] b{color:var(--due);}
 .runhint .btn{vertical-align:baseline;}
+
+/* A menu entry that leaves this page (School <-> the Library tool): reads as a nav row, with an
+   arrow so it is plain that it goes somewhere else. */
+nav a.navlink{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border-radius:6px;
+  font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;}
+nav a.navlink::after{content:"\2192";color:var(--faint);font-size:13px;}
+nav a.navlink:hover{background:var(--sunk);color:var(--ink);}

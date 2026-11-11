@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Library</title>
+<meta name="description" content="Classes, lessons, quizzes, drills and a song library. Works offline; your progress stays on this device.">
+<meta name="school-build" content="2026-11-11 21:38">
+<meta name="school-books" content="full">
+<meta name="theme-color" content="#e9ebf0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0e13" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- School is a tool inside the Music app: it installs as Music, with Music's name and icon. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="app.css">
+<style>
+  /* Fade between the Music home screen and this app instead of a hard page flash. */
+  @media (prefers-reduced-motion: no-preference){ @view-transition{navigation:auto} }
+  /* Shown for the second or two it takes to read the curriculum, and if that fails. */
+  .boot{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;padding:24px;text-align:center;color:var(--muted);font-family:var(--ui);}
+  .boot h1{font-family:var(--disp);font-weight:400;font-size:27px;margin:0;color:var(--ink);}
+  .boot p{margin:0;font-size:13.5px;max-width:42ch;}
+  .boot button{font:inherit;font-weight:600;font-size:13.5px;padding:8px 16px;border-radius:8px;
+    background:var(--theory);color:var(--surface);border:none;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app"><div class="boot"><h1>Library</h1><p id="bootmsg">Opening…</p></div></div>
+<script>window.MS_APP = {build: "2026-11-11 21:38", mode: "library"};</script>
+<!-- Shared by every tool in Music: the Claude connection, and the email account. -->
+<script src="../shared/ai.js"></script>
+<script src="../shared/cloud-config.js"></script>
+<script src="../shared/cloud.js"></script>
+<script src="files.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>

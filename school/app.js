@@ -15,6 +15,15 @@
    expects but does not ship — an in-copyright book, chord-chart PDFs, album art, a handout.
    Every use of either is guarded, so the artifact page behaves exactly as it did before. */
 const LOCAL = !!window.MS_APP;
+/* LIBRARY MODE. In the Music app the shelves that are not coursework — songs, drills, the idea
+   board, tools, the reader's own files — belong to the Library tool, not to School. They are the
+   same views over the same data and the same saved progress (a drill's tempo log and a song's
+   status are progress), so they are not a second program: `library.html` is this same app opened
+   with `mode: 'library'`, which changes the menu, the name on it and where it starts. School's
+   own menu keeps only what depends on what you are enrolled in, plus Classes. */
+const LIBMODE = LOCAL && window.MS_APP.mode === 'library';
+const ROUTE_KEY = LIBMODE ? 'hms.route.lib' : 'hms.route';
+const LIB_ROUTES = ['songs', 'drills', 'originals', 'tools', 'files'];
 const FILES = LOCAL ? (window.MSFiles || null) : null;
 const LS_KEY = 'school:progress', LS_AT = 'school:savedAt';
 const C = JSON.parse(document.getElementById('curriculum').textContent);
@@ -1779,7 +1788,7 @@ async function save() {
   // beforeunload guard must not fire an unsaved-changes dialog on our own reload.
   pending = false;
   try {
-    sessionStorage.setItem('hms.route', route);
+    sessionStorage.setItem(ROUTE_KEY, route);
     sessionStorage.setItem('hms.scroll', String(window.scrollY));
     if (drill.queue.length) sessionStorage.setItem('hms.drill', JSON.stringify(drill));
     await cap.publish(buildDoc(P));       // view reloads on success
@@ -1811,7 +1820,7 @@ if (LOCAL) {
      overwrite PATCH-165 describes, closed the cheap way. Skipped mid-quiz and with unsaved work. */
   window.addEventListener('storage', e => {
     if (e.key !== LS_KEY || e.newValue === null || pending || sessionLive()) return;
-    sessionStorage.setItem('hms.route', route);
+    sessionStorage.setItem(ROUTE_KEY, route);
     location.reload();
   });
 }
@@ -1943,7 +1952,13 @@ const earSeen = id => ear.seen.indexOf(id) >= 0;
 const earGo = n => { ear.i = ((n % EAR.length) + EAR.length) % EAR.length; earSave(); };
 
 /* ---------------------------------------------------------------- render */
-let route = sessionStorage.getItem('hms.route') || 'overview';
+let route = sessionStorage.getItem(ROUTE_KEY) || (LIBMODE ? 'songs' : 'overview');
+// The Library tool links straight to a shelf (library.html#drills); that beats whatever was open last.
+if (LIBMODE && LIB_ROUTES.includes(location.hash.slice(1))) {
+  route = location.hash.slice(1);
+  // Used once: left in the address it would drag every later reload back to that shelf.
+  try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
+}
 let filters = {strand:'', status:'', q:'', sq:'', genre:'', key:'', bpm:''};
 let editStart = false;
 /* Nate's day-picker: "when starting a course... prompted with a question of what days do you
@@ -2085,6 +2100,47 @@ function rail() {
   const chipState = (cap === null && !readonly) ? ['wait', 'checking\u2026']
                   : readonly ? ['ro', 'read-only \u2014 nothing is saved']
                   : pending ? ['dirty', 'unsaved'] : ['saved', LOCAL ? 'saved on this device' : 'saved'];
+  const homeLink = `<a class="rail-home" href="../" aria-label="Music home, all apps">
+        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.6h9.6V8.2"/></svg>
+        <span>Music</span></a>`;
+  const toggle = `<button class="rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
+      aria-label="${open ? 'Collapse menu' : 'Expand menu'}"><span class="car"></span></button>`;
+  const foot = `<div class="rail-foot">
+      <div class="savechip" data-s="${chipState[0]}"><b></b><span> ${esc(chipState[1])}</span></div>
+    </div>`;
+  /* The Library tool's shelves (LIBMODE): the same views, their own menu. */
+  if (LIBMODE) return `<aside class="rail${open ? '' : ' shut'}">${toggle}${homeLink}
+    <div class="mast"><h1>Library</h1><div class="sem">Songs, drills and ideas</div></div>
+    <nav>
+      ${Object.keys(SONGS).length ? item('songs','Songs') : ''}
+      ${item('drills','Drills')}
+      ${item('originals','Originals')}
+      ${TOOLS.length ? item('tools','Tools') : ''}
+      ${item('files','My files')}
+      <div class="navgrp navgrp-2">Also in Library</div>
+      <a class="navlink" href="../library/">Modes, chords and voicings</a>
+    </nav>${foot}</aside>`;
+  /* School inside Music: only what is yours as a student, plus the catalogue of classes. The
+     shelves moved to the Library tool; the links at the bottom are the way to them. */
+  if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">${toggle}${homeLink}
+    <div class="mast"><h1>School</h1>
+      <div class="sem">${kn ? `${kn} ${kn === 1 ? 'class' : 'classes'} enrolled` : 'No classes enrolled'}</div></div>
+    <nav>
+      ${item('overview','Overview')}
+      ${item('myclasses','My classes', kn || '')}
+      ${item('classes','Classes', Object.keys(CLASSES).length)}
+      ${item('homework','Homework',
+          (hwDueList().length + extHwPlan().filter(x => !x.allDone && x.due <= dayOf(TODAY)).length) || '')}
+      ${item('drill','Quizzes', due || '')}
+      ${item('tests','Tests', datedTests().length || '')}
+      ${item('ext','Outside lessons', extHomeworkDue() || '')}
+      ${SLICES.length ? item('slices','Soundslice') : ''}
+      ${item('sync','Activity & backup')}
+      <div class="navgrp navgrp-2">In the Library</div>
+      <a class="navlink" href="library.html#songs">Songs</a>
+      <a class="navlink" href="library.html#drills">Drills</a>
+      <a class="navlink" href="library.html#files">My files</a>
+    </nav>${foot}</aside>`;
   return `<aside class="rail${open ? '' : ' shut'}">
     <button class="rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
       aria-label="${open ? 'Collapse menu' : 'Expand menu'}"><span class="car"></span></button>
@@ -6898,7 +6954,7 @@ function syncSoon(ms) {
 function adoptProgress(prog, at) {
   lsSet(LS_KEY, JSON.stringify(prog)); lsSet(LS_AT, at);
   pending = false;
-  try { sessionStorage.setItem('hms.route', route); } catch (e) {}
+  try { sessionStorage.setItem(ROUTE_KEY, route); } catch (e) {}
   location.reload();
 }
 async function syncNow(manual) {
@@ -7441,7 +7497,7 @@ if (LOCAL) {
    change of route is one history entry, pushed by render(). */
 let histRoute = null;
 function trackRoute() {
-  try { sessionStorage.setItem('hms.route', route); } catch (e) {}
+  try { sessionStorage.setItem(ROUTE_KEY, route); } catch (e) {}
   if (histRoute === route) return;
   try { histRoute === null ? history.replaceState({r: route}, '') : history.pushState({r: route}, ''); } catch (e) {}
   histRoute = route;

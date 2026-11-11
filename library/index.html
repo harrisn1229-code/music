@@ -120,6 +120,10 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .cell small{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .cell.ct small{color:var(--text);font-weight:800}
 .row.plain{display:flex;align-items:center;gap:.5rem;font-weight:700}
+/* a shelf: a title and a line about it, which wraps on a phone instead of pushing the page wide */
+.row.shelf{display:flex;align-items:center;gap:.75rem}
+.shelf-in{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:.1rem .6rem}
+.shelf-s{color:var(--muted);font-size:.875rem}
 .empty{margin-top:1.5rem;padding:1.25rem;border-radius:var(--r-md);background:var(--surface-2);color:var(--muted)}
 
 /* ---------- entry page ---------- */
@@ -537,7 +541,17 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
         (r.rootTyped ? "" : '<p class="hint">Showing the key you have picked. Type a root, like F♯, to search another.</p>') +
         '<ul class="rows">' + r.rows.map((x) => x.html).join("") + "</ul></section>";
     }
-    return '<section class="sec"><h2>Modes</h2><p class="hint">A bold degree is the note that gives the mode its color.</p><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>" +
+    // The shelves that came over from School: songs, drills, your own ideas, and your files. They
+    // open as their own pages (../school/library.html), built from the same notes as School and
+    // sharing its saved progress, so a drill's tempo log or a song's status is the same everywhere.
+    const shelf = (hash, title, about) => '<li><a class="row shelf" href="../school/library.html#' + hash + '"><span class="shelf-in"><span class="row-t">' + title + '</span><span class="shelf-s">' + about + "</span></span>" + ICON.go + "</a></li>";
+    return '<section class="sec"><h2>Shelves</h2><ul class="rows">' +
+        shelf("songs", "Songs", "Every song with its chart, notes and what to practice") +
+        shelf("drills", "Drills", "Technique drills with a tempo log, and ear training") +
+        shelf("originals", "Originals", "Your own song ideas") +
+        shelf("files", "My files", "Books, charts and album art from your account") +
+      "</ul></section>" +
+      '<section class="sec"><h2>Modes</h2><p class="hint">A bold degree is the note that gives the mode its color.</p><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>" +
       '<section class="sec"><h2>Triads</h2><ul class="rows">' + TRIADS.map((q) => chordRow(pc, q)).join("") + "</ul></section>" +
       '<section class="sec"><h2>7th chords</h2><ul class="rows">' + SEVENTHS.map((q) => chordRow(pc, q)).join("") +
       '<li><a class="row plain" href="#/voicings"><span>How inversions and voicings are named</span>' + ICON.go + "</a></li></ul></section>";

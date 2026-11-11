@@ -9,7 +9,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | --- | --- | --- |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
-| Library | `library/` | Look up any mode, chord, arpeggio or voicing in any key |
+| Library | `library/` | Songs, drills and your own ideas, plus every mode, chord, arpeggio and voicing in any key |
 | School | `school/` | Classes, lessons, quizzes, tests and a song library |
 
 Everything runs in the browser and is saved on the device. Three optional
@@ -81,6 +81,13 @@ one exception to "no service worker of its own": `school/sw.js` looks after `sch
 file by file. `apps.js` says so with `worker: "sw.js"`; Music's worker then leaves that folder
 alone, and the home screen starts School's worker in the background so School is saved for
 offline use as well. School does not need `version` raised when only `school/` changes.
+
+### Library's shelves
+
+Songs, Drills, Originals and My files are reached from Library, not from School. They are the
+same notes and the same saved progress as School (a drill's tempo log and a song's status are
+progress), so they are the same engine opened in a second mode: `school/library.html`, which the
+Library tool's front page links to. School's own menu keeps only coursework and Classes.
 
 ## Claude
 
