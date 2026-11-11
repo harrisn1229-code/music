@@ -1851,3 +1851,40 @@ nav a.navlink{display:flex;align-items:center;justify-content:space-between;gap:
   font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;}
 nav a.navlink::after{content:"\2192";color:var(--faint);font-size:13px;}
 nav a.navlink:hover{background:var(--sunk);color:var(--ink);}
+
+
+/* ------------------------------------------------------------------ the Drills shelf
+   One tile per instrument on the way in; inside, every drill, routine, video and method note is
+   the same small tile. */
+.shelf-tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+.shelf-tile{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;
+  min-height:104px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  color:var(--ink);cursor:pointer;font:inherit;}
+.shelf-tile:hover{border-color:var(--line-2);background:var(--sunk);}
+.shelf-n{font-size:17px;font-weight:700;line-height:1.2;}
+.shelf-c{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font:inherit;font-size:13px;font-weight:600;padding:6px 13px;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);cursor:pointer;}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--ground);}
+.drillsview .dtile{justify-content:center;min-height:64px;padding:12px 14px;gap:4px;}
+.drillsview .dtile-t{padding:0;}
+.drillsview .dtile-b{padding:0;font-size:12px;color:var(--muted);}
+.ytbox{position:relative;aspect-ratio:16/9;max-width:860px;border-radius:12px;overflow:hidden;background:#000;}
+.ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+@media (max-width:700px){
+  .shelf-tiles{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .drillsview .dtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+}
+
+/* A reading fold's heading on a narrow screen: the "from … · 220 words · 1 min" line cannot share
+   a row with the title (it does not wrap, and pushed the page sideways), so it goes under it. */
+@media (max-width:700px){
+  .rd{min-width:0;}
+  .rd>summary{grid-template-columns:minmax(0,1fr);}
+  .rd-m{white-space:normal;}
+}
+@media (max-width:700px){
+  .view>.row{flex-wrap:wrap;}
+  .view>.row>.pill{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+}

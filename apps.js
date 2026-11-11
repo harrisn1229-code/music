@@ -1,7 +1,7 @@
 /* Music registry: the one list of apps inside Music.
 
    Two things read this file:
-   - the home screen (index.html) draws one tile per app from it;
+   - the home screen (index.html) draws one icon per app from it, in this order;
    - the service worker (sw.js) saves every file listed here so the whole
      of Music opens with no connection.
 
@@ -15,15 +15,23 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.6.0",
+  version: "1.7.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/account.js", "shared/ai.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js"],
   apps: [
     {
+      id: "library",
+      name: "Library",
+      about: "Songs, drills, and every mode, chord and voicing in any key",
+      color: "#9F2D3F",
+      icon: "icon-192.png",
+      files: ["index.html", "icon.svg", "icon-192.png"]
+    },
+    {
       id: "barline",                       // folder name, also the link from the home screen
       name: "Barline",
       about: "Chord charts with a click track",
-      color: "#0F766E",                    // tile color; white text sits on it
+      color: "#0F766E",                    // shown behind the icon while it loads
       icon: "icon-192.png",
       // A tool that syncs through GitHub says where it notes the time of its last sync and which gist it
       // uses, so the home screen can show its status and sync it along with everything else.
@@ -37,14 +45,6 @@ self.MUSIC = {
       color: "#4D45E3",
       icon: "icon-192.png",
       sync: { at: "shed-deck:syncedAt", gist: "shed-deck:gistId" },
-      files: ["index.html", "icon.svg", "icon-192.png"]
-    },
-    {
-      id: "library",
-      name: "Library",
-      about: "Songs, drills, and every mode, chord and voicing in any key",
-      color: "#9F2D3F",
-      icon: "icon-192.png",
       files: ["index.html", "icon.svg", "icon-192.png"]
     },
     {

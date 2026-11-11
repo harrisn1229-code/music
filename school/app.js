@@ -5241,7 +5241,7 @@ function homeworkPage(cid, nRaw) {
       ${pill(c)}${handed ? '<span class="pill pill-ok">Turned in</span>'
                          : '<span class="pill pill-due">Open</span>'}
       ${plan ? `<span class="pill">due ${esc(shortDate(dayIso(plan.due)))}</span>` : ''}</div>
-    <div><p class="eyebrow">Lesson ${n} homework</p><h2 class="vh">${esc(u.title)}</h2></div>
+    <div><p class="eyebrow path">Lesson ${n} homework</p><h2 class="vh">${esc(u.title)}</h2></div>
 
     <div class="card hw-turn">
       <div class="spread">
@@ -5902,8 +5902,8 @@ function sourceView(sid) {
    opens the drill's own page, so "← Back" has to mean the lesson when that is where you were
    and the shelf when it is not. Same shape and the same reasoning as `srcBack`. */
 let drillBack = '';
-const drillOut = () => drillBack && !drillBack.startsWith('technique:')
-  && !drillBack.startsWith('routine:') ? drillBack : 'drills';
+const DRILL_PAGE = /^(technique|routine|watch|method):/;
+const drillOut = () => drillBack && !DRILL_PAGE.test(drillBack) ? drillBack : 'drills';
 
 /* One page body for a technique drill and for a practice routine. They were never really two
    things — a routine is a drill that also reinforces concepts — and splitting them is what left
@@ -5935,11 +5935,9 @@ function drillPage(d, kind) {
   return `<div class="view" data-domain="instrument">
     <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="${esc(back)}">${
       back === 'drills' ? '← Drills' : '← Back'}</button>
-      <span class="pill">${kind === 'routine' ? 'practice routine' : 'technique drill'}</span>
       ${d.instrument ? `<span class="pill">${esc(d.instrument)}</span>` : ''}
-      ${d.source ? `<span class="pill">${esc(d.source)}</span>` : ''}
+      ${d.source ? `<span class="pill">${esc(String(d.source).replace(/\s*\((music_enrich|video_enrich)[^)]*\)/i, ''))}</span>` : ''}
       ${d.minutes ? `<span class="pill">${d.minutes} min</span>` : ''}</div>
-    <div class="clsbar"></div>
     <h2 class="vh">${esc(d.title)}</h2>
 
     <div class="dstats">
@@ -6565,150 +6563,105 @@ function originalView(id) {
   </div>`;
 }
 
-function drillsView() {
-  const DR = C.drills || {technique: {guitar: [], bass: [], piano: []}, routines: [], watch: [], methodology: []};
-  const INSTR = {guitar: 'Guitar', bass: 'Bass', piano: 'Piano', theory: 'Theory'};
+/* The Drills shelf. Nate, 2026-11-11: "make drills a simple tile. Same with practice routine —
+   too busy currently. Integrate watch and play YouTube videos to categories instead of in its own
+   video section. Maybe be able to click into by instrument. Make practice routine and drills the
+   same thing."
 
-  /* PATCH-119 — Nate: "simplify the cards greatly. theres alot going on right now. im fine with
-     logging a session by clicking into the drill... the cards should be name, current bpm, %
-     change, last practiced."
-
-     The card was the whole drill: title, source, minutes, the tempo range, a foldable body of
-     reading and a full practice-log form with a date field, a tempo field, a note field and the
-     last eight sessions in a table — times thirty-one drills down one page. It read as a wall.
-     A library card answers "which one" and nothing else now; everything it used to carry lives
-     one click away on the drill's own page (techniqueView), including the log form.
-
-     The one field added beyond Nate's four is the TARGET, and it earns its place: "+18%" says
-     you have moved without saying whether you have arrived, and the printed mark is the thing
-     that makes the number mean something. It is omitted rather than invented where the scan
-     prints no mark (Hanon 36–38 — see practiceLog's own note), which is also why the % is
-     computed off tempo_start and not off the target. */
-  /* PATCH-126 — Nate: "make drills tiles like the classes page but just smaller with less info."
-     PATCH-119 had cut these to four-column rows; a row is right for a table and wrong for a shelf
-     you browse. Same tile grammar as a class — a coloured rule, then the name — at about half the
-     size, and carrying ONE fact instead of four: where the tempo stands. The % change and the last
-     date move to the drill's own page, which is one tap away and is where you go to log anyway. */
-  const techCard = d => {
-    const st = ds(d.id), cur = st.tempo_current;
-    return `<button class="dtile" data-goto="technique:${esc(d.id)}" data-domain="instrument">
-      <span class="dtile-bar"></span>
-      <span class="dtile-t">${esc(d.title)}</span>
-      <span class="dtile-b">${cur ? `<b>&#9833;=${cur}</b>${
-        d.tempo_target ? ` <span>of ${d.tempo_target}</span>` : ''}`
-        : d.tempo_target ? `<span>target &#9833;=${d.tempo_target}</span>`
-        : '<span>no target printed</span>'}</span></button>`;
-  };
-  const techSection = key => {
-    const list = (DR.technique[key] || []);
-    if (!list.length) return '';
-    return `<div><div class="dhead"><p class="eyebrow">${esc(INSTR[key] || key)}</p><span class="rule"></span>
-      <span class="cnt">${list.length} drill${list.length === 1 ? '' : 's'}</span></div>
-      <div class="dtiles">${list.map(techCard).join('')}</div></div>`;
-  };
-
-  const conceptChip = id => CONCEPTS[id]
-    ? `<button type="button" class="xlink xlink-concept" data-goto="concept:${esc(id)}">${esc(CONCEPTS[id].short)}</button>` : '';
-  /* PATCH-159 — the title opens the routine's own page. The card stayed a card (a routine
-     carries concept chips and a course join that a technique tile has nowhere to put), but it
-     is no longer a dead end: every routine has a stat strip and a practice log now, and the
-     shelf has to be a way in to them. The tempo line is the same one the technique tiles
-     carry, and it is simply omitted where the note prints no marks — most routines print
-     none, and a row of dashes says less than no row. */
-  const routineCard = r => {
-    const st = ds(r.id), cur = st.tempo_current;
-    const tempo = cur ? `<b>&#9833;=${cur}</b>${r.tempo_target ? ` <span>of ${r.tempo_target}</span>` : ''}`
-                : r.tempo_target ? `<span>target &#9833;=${r.tempo_target}</span>` : '';
-    return `<div class="card drillcard">
-    <div class="spread">
-      <div><h3 class="dt"><button type="button" class="xlink xlink-read"
-          data-goto="routine:${esc(r.id)}" title="Open this routine — stats and practice log">${
-          esc(r.title)}</button></h3>
-        <div class="dmeta">${esc(INSTR[r.instrument] || r.instrument)}${
-          r.classes.length ? ` · Class ${r.classes.map(id => esc((CLASSES[id] || {}).short || id)).join(', ')}` : ''}${
-          r.minutes ? ` · ${r.minutes} min` : ''}${tempo ? ` · ${tempo}` : ''}</div></div>
-      ${r.course_id && r.lesson ? `<button type="button" class="btn btn-quiet"
-        data-course-lesson="${esc(r.course_id)}:${esc(r.lesson)}">Course ${esc(r.course_id)} · Lesson ${esc(r.lesson)}</button>` : ''}</div>
-    ${r.reinforces.length ? `<div class="dchips">${r.reinforces.map(conceptChip).join('')}</div>`
-      : '<p class="calnote" style="margin:6px 0 0">Reinforces no concept — analytical/repertoire work, left unwired rather than forced.</p>'}
-    ${r.read ? readFold(r.read) : ''}
-    <div class="row" style="margin-top:10px"><button class="btn btn-go"
-      data-goto="routine:${esc(r.id)}">Log a session &rarr;</button></div></div>`;
-  };
-
-  /* Phase 0 (recorded in spec-174): the artifact's CSP blocks an <iframe> to youtube.com the
-     same as any other external host, so no in-page player can be hosted. This is a labelled
-     external hand-off, not a play button pretending to embed one.
-
-     IT MUST BE A REAL <a href>, NOT window.open (corrected 2026-08-23). The frame runtime
-     wraps this page and intercepts click/auxclick on `a[href],area[href]`: for an external
-     http(s) origin it calls preventDefault() and posts
-     `{__frame_nav, url, newTab}` to the parent, with newTab true when target="_blank". That
-     is the ONLY sanctioned way out of the frame. `window.open` appears nowhere in the runtime
-     and the frame carries no `allow-popups`, so a scripted popup is silently swallowed — which
-     is exactly the dead play button this spec forbids. A plain anchor is also what keeps
-     middle-click, ⌘-click and "copy link address" working. */
-  /* The app build inlines no thumbnails (they are the channel's images, not ours to copy into a
-     public repo) and links each one from YouTube instead — the artifact frame's CSP forbade
-     that, a normal page does not. Offline the image fails and the `error` listener removes it. */
-  const ytId = u => (String(u || '').match(/[?&]v=([\w-]{11})/)
-    || String(u || '').match(/youtu\.be\/([\w-]{11})/) || [])[1] || '';
-  const wImg = w => w.thumb ? `<img src="data:image/webp;base64,${w.thumb}" alt="">`
-    : (LOCAL && ytId(w.url)) ? `<img data-yt="1" loading="lazy" alt="" src="https://i.ytimg.com/vi/${ytId(w.url)}/mqdefault.jpg">` : '';
-  const watchCard = w => `<div class="card drillcard watchcard">
-    ${wImg(w) && w.url ? `<a class="wthumb" href="${esc(w.url)}" target="_blank" rel="noopener noreferrer"
-        aria-label="Watch “${esc(w.title)}” on YouTube (opens a new tab)">
-        ${wImg(w)}<span class="wplay">&#9654;</span></a>` : ''}
-    <div class="spread"><div><h3 class="dt">${esc(w.title)}${w.drill ? ' <span class="pill pill-ok">drill</span>' : ''}</h3>
-      <div class="dmeta">${esc(w.channel)}${w.duration ? ` · ${esc(w.duration)}` : ''}</div></div></div>
-    ${w.read ? readFold(w.read) : ''}
-    ${w.url ? `<a class="btn btn-go" href="${esc(w.url)}" target="_blank" rel="noopener noreferrer">&#9654; Watch on YouTube (opens new tab)</a>`
-             : '<p class="calnote">No URL on this note — nothing to watch.</p>'}</div>`;
-
-  const methRow = m => `<div class="card drillcard meth">
-    <h3 class="dt">${esc(m.title)}</h3>
-    ${m.read ? readFold(m.read) : (m.lede ? `<p class="calnote" style="margin:6px 0 0">${esc(m.lede)}</p>` : '')}</div>`;
-
+   So: the page opens on one tile per instrument (plus ear training), and inside an instrument
+   everything to practise is the same simple tile — a technique drill, a practice routine (both
+   are just "drills" now), a video to play along with, a note on practice method. Each opens its
+   own page; the tile carries the name and at most one small fact. */
+const DRILL_SHELVES = [['guitar', 'Guitar'], ['bass', 'Bass'], ['piano', 'Piano'], ['theory', 'Theory'],
+                       ['production', 'Production'], ['ear', 'Ear training']];
+let drillKind = 'all';
+const ytId = u => (String(u || '').match(/[?&]v=([\w-]{11})/)
+  || String(u || '').match(/youtu\.be\/([\w-]{11})/) || [])[1] || '';
+const durShort = d => {
+  const m = String(d || '').match(/^(?:(\d+):)?(\d+):(\d+)$/);
+  if (!m) return '';
+  const mins = (+m[1] || 0) * 60 + (+m[2]) + (+m[3] >= 30 ? 1 : 0);
+  return mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60 ? (mins % 60) + ' min' : ''}`.trim() : `${Math.max(1, mins)} min`;
+};
+function drillItems(shelf) {
+  const DR = C.drills || {};
+  const out = [];
+  const tempo = d => { const cur = ds(d.id).tempo_current;
+    return cur ? `&#9833;=${cur}${d.tempo_target ? ` of ${d.tempo_target}` : ''}` : ''; };
+  ((DR.technique || {})[shelf] || []).forEach(d => out.push({kind: 'drill', title: d.title, go: 'technique:' + d.id, meta: tempo(d)}));
+  (DR.routines || []).filter(r => r.instrument === shelf)
+    .forEach(r => out.push({kind: 'drill', title: r.title, go: 'routine:' + r.id, meta: tempo(r)}));
+  (DR.watch || []).filter(w => (w.instrument || 'theory') === shelf)
+    .forEach(w => out.push({kind: 'video', title: w.title, go: 'watch:' + w.id, meta: durShort(w.duration)}));
+  (DR.methodology || []).filter(m => (m.instrument || 'theory') === shelf)
+    .forEach(m => out.push({kind: 'read', title: m.title, go: 'method:' + m.id, meta: ''}));
+  const rank = {drill: 0, video: 1, read: 2};
+  return out.sort((a, b) => rank[a.kind] - rank[b.kind]
+    || a.title.localeCompare(b.title, undefined, {numeric: true, sensitivity: 'base'}));
+}
+const KIND_MARK = {drill: '', video: '&#9654; Video', read: 'Read'};
+function drillsView(shelf) {
+  const earSet = AUDIO_OK && EAR.length;
+  if (!shelf) {
+    const tiles = DRILL_SHELVES.map(([k, label]) => {
+      const n = drillItems(k).length + (k === 'ear' && earSet ? 1 : 0);
+      return n ? `<button class="shelf-tile" data-goto="drills:${k}"><span class="shelf-n">${label}</span>
+        <span class="shelf-c">${n}</span></button>` : '';
+    }).join('');
+    return `<div class="view drillsview"><h2 class="vh">Drills</h2>
+      <div class="shelf-tiles">${tiles}</div></div>`;
+  }
+  const label = (DRILL_SHELVES.find(x => x[0] === shelf) || [])[1] || shelf;
+  const all = drillItems(shelf);
+  const kinds = ['drill', 'video', 'read'].filter(k => all.some(i => i.kind === k));
+  if (drillKind !== 'all' && !kinds.includes(drillKind)) drillKind = 'all';
+  const shown = drillKind === 'all' ? all : all.filter(i => i.kind === drillKind);
+  const KL = {all: 'All', drill: 'Drills', video: 'Videos', read: 'Reading'};
+  const chips = kinds.length > 1 ? `<div class="chips">${['all', ...kinds].map(k =>
+    `<button type="button" class="chip" data-drillkind="${k}" aria-pressed="${drillKind === k}">${KL[k]}</button>`).join('')}</div>` : '';
+  const tile = i => `<button class="dtile" data-goto="${esc(i.go)}">
+      <span class="dtile-t">${esc(i.title)}</span>${
+      (KIND_MARK[i.kind] || i.meta) ? `<span class="dtile-b">${[KIND_MARK[i.kind], i.meta].filter(Boolean).join(' · ')}</span>` : ''}</button>`;
+  const earTile = shelf === 'ear' && earSet && drillKind === 'all' ? `<button class="dtile" data-nav="ear">
+      <span class="dtile-t">Ear training set</span><span class="dtile-b">${EAR.length} clips</span></button>` : '';
   return `<div class="view drillsview">
-    <div><p class="eyebrow">Practice</p><h2 class="vh">Drills</h2>
-      <p class="calnote" style="margin:4px 0 14px;max-width:74ch">Technique drills progress by
-      tempo. Practice routines carry the concepts they reinforce. Practice method and ear training
-      are shelves — nothing on this page is ever due.</p></div>
-    ${/* PATCH-119 — ear training moved here from its own rail tab. Nate asked whether it needed
-          one "since ear training is a class", and it does not: Class 4 TEACHES ear training with
-          concepts, lessons and quizzes, while these twenty clips are a practice shelf that is
-          deliberately unscored, undated and outside the rotation — which is precisely what this
-          page is for. The player itself is untouched and still lives at the `ear` route; only
-          the way in moved. */''}
-    ${AUDIO_OK && EAR.length ? `<div class="ovsec">
-      <div class="dhead"><p class="eyebrow">Ear training</p><span class="rule"></span>
-        <span class="cnt">${EAR.length} clips</span></div>
-      <button class="earrow" data-nav="ear">
-        <span class="earrow-t">Ear training set</span>
-        <span class="earrow-s">intervals, chords, scales, progressions</span>
-        <span class="earrow-n">${ear.seen.filter(id => EAR.some(c => c.id === id)).length} of ${
-          EAR.length} revealed</span></button></div>` : ''}
+    <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="drills">&larr; Drills</button></div>
+    <h2 class="vh">${esc(label)}</h2>
+    ${chips}
+    <div class="dtiles">${earTile}${shown.map(tile).join('')}</div></div>`;
+}
 
-    <div class="ovsec">
-      <div class="dhead"><p class="eyebrow">Technique drills</p><span class="rule"></span></div>
-      <div style="display:flex;flex-direction:column;gap:22px">${
-        techSection('guitar')}${techSection('bass')}${techSection('piano')}</div></div>
-
-    ${DR.routines.length ? `<div class="ovsec">
-      <div class="dhead"><p class="eyebrow">Practice routines</p><span class="rule"></span>
-        <span class="cnt">${DR.routines.length}</span></div>
-      <div class="grid">${DR.routines.map(routineCard).join('')}</div></div>` : ''}
-
-    ${DR.watch.length ? `<div class="ovsec">
-      <div class="dhead"><p class="eyebrow">Watch and do</p><span class="rule"></span>
-        <span class="cnt">${DR.watch.length}</span></div>
-      <div class="grid watchgrid">${DR.watch.map(watchCard).join('')}</div></div>` : ''}
-
-    ${DR.methodology.length ? `<div class="ovsec">
-      <div class="dhead"><p class="eyebrow">Practice method</p><span class="rule"></span>
-        <span class="cnt">${DR.methodology.length} — read, not drilled</span></div>
-      <div class="grid">${DR.methodology.map(methRow).join('')}</div></div>` : ''}
-  </div>`;
+/* A video to watch and play along with, on a page of its own. In the app the player is on the
+   page; the single-file artifact cannot frame YouTube (its CSP forbids it), so there it is a
+   plain link out — and it must be a real <a href>, which is the only way out of that frame. */
+function watchView(id) {
+  const w = ((C.drills || {}).watch || []).find(x => x.id === id);
+  if (!w) return drillNotFound(id, 'Video');
+  const back = drillOut(), vid = ytId(w.url);
+  return `<div class="view">
+    <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="${esc(back)}">&larr; Back</button>
+      ${w.channel ? `<span class="pill">${esc(w.channel)}</span>` : ''}
+      ${durShort(w.duration) ? `<span class="pill">${durShort(w.duration)}</span>` : ''}</div>
+    <h2 class="vh">${esc(w.title)}</h2>
+    ${LOCAL && vid ? `<div class="ytbox"><iframe src="https://www.youtube-nocookie.com/embed/${vid}" title="${esc(w.title)}"
+        loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe></div>` : ''}
+    ${w.url ? `<div><a class="btn ${LOCAL && vid ? 'btn-quiet' : 'btn-go'}" href="${esc(w.url)}" target="_blank" rel="noopener noreferrer">&#9654; ${
+        LOCAL && vid ? 'Open in YouTube' : 'Watch on YouTube (opens new tab)'}</a></div>` : ''}
+    ${READING[w.read] ? `<div class="card dread"><div class="prose">${READING[w.read].html}</div></div>` : ''}</div>`;
+}
+/* A note on practice method: something to read, not to log. */
+function methodView(id) {
+  const m = ((C.drills || {}).methodology || []).find(x => x.id === id);
+  if (!m) return drillNotFound(id, 'Note');
+  const back = drillOut(), r = READING[m.read];
+  return `<div class="view">
+    <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="${esc(back)}">&larr; Back</button></div>
+    <h2 class="vh">${esc(m.title)}</h2>
+    ${r ? `<div class="card dread"><div class="prose">${r.html}</div></div>`
+        : m.lede ? `<div class="card dread"><div class="prose"><p>${esc(m.lede)}</p></div></div>` : ''}
+    ${SRC_INDEX[(m.title || '').toLowerCase()] ? `<p class="calnote" style="margin:0">The whole note:
+      <button type="button" class="xlink xlink-read" data-goto="source:${esc(SRC_INDEX[m.title.toLowerCase()])}">${esc(m.title)}</button></p>` : ''}</div>`;
 }
 
 /* ================================================================== THE APP BUILD: your own files
@@ -7705,13 +7658,15 @@ function render() {
     : head === 'courses' ? coursesView() : head === 'course' ? courseView(arg)
     : head === 'concepts' ? conceptsView() : head === 'concept' ? conceptCard(arg)
     : head === 'source' ? sourceView(arg)     // PATCH-144 — a vault note, as its own page
-    : head === 'drill' ? drillView() : head === 'drills' ? drillsView() : head === 'sync' ? syncView()
+    : head === 'drill' ? drillView() : head === 'drills' ? drillsView(arg) : head === 'sync' ? syncView()
     : head === 'notes' ? notesView()          // PATCH-102
     : head === 'ear' ? earView()
     : head === 'homework' ? (arg === 'ext' ? extHomeworkPage(arg2) : arg ? homeworkPage(arg, arg2) : homeworkLanding())
     : head === 'ext' ? extView() : head === 'myclasses' ? myClassesView()
     : head === 'technique' ? techniqueView(arg)
     : head === 'routine' ? routineView(arg)   // PATCH-159 — a routine is a drill page too
+    : head === 'watch' ? watchView(arg)       // a play-along video, on its own page
+    : head === 'method' ? methodView(arg)     // a practice-method note
     : head === 'songs' ? songsView()          // spec-176 — the song library shelf
     : head === 'originals' ? originalsView()  // spec-179 — the shared idea board
     : head === 'original' ? originalView(arg) //           …and one idea's thread
@@ -7736,7 +7691,7 @@ function render() {
 
 /* ---------------------------------------------------------------- events */
 app.addEventListener('click', e => {
-  const t = e.target.closest('[data-nav],[data-course],[data-class],[data-concept],[data-jump],' +
+  const t = e.target.closest('[data-nav],[data-course],[data-class],[data-concept],[data-jump],[data-drillkind],' +
     '[data-course-toggle],[data-course-stop],[data-class-toggle],[data-sec-toggle],[data-lesson],[data-reveal],[data-rate],' +
     '[data-drill-start],[data-drill-lesson],[data-drill-quiz],[data-drill-scope],[data-drill-miss],[data-unretire],[data-undo],' +
     '[data-copy],[data-download],[data-goto],[data-unlocks],[data-strand],[data-read],[data-tool],[data-srcsec],[data-upx],'
@@ -7925,6 +7880,7 @@ app.addEventListener('click', e => {
   if (d.course) return go('course:' + d.course);
   if (d.class) return go('class:' + d.class);
   if (d.concept) return go('concept:' + d.concept);
+  if (d.drillkind) { drillKind = d.drillkind; return render(); }
   if (d.goto) { const i0 = d.goto.indexOf(':');
     const k = i0 < 0 ? d.goto : d.goto.slice(0, i0), v = i0 < 0 ? '' : d.goto.slice(i0 + 1);
     /* PATCH-144 — remember the way out BEFORE the route changes, and only on the way IN. A
@@ -7934,8 +7890,7 @@ app.addEventListener('click', e => {
     // PATCH-159 — a drill page reached from a lesson should come back to the lesson, the same
     // contract PATCH-144 gave a note page. `drillBack` is separate from `srcBack` so a
     // note → drill → note walk cannot cross the two wires.
-    if ((k === 'technique' || k === 'routine') && !route.startsWith('technique:')
-        && !route.startsWith('routine:')) drillBack = route;
+    if (DRILL_PAGE.test(k + ':') && !DRILL_PAGE.test(route)) drillBack = route;
     if (k === 'tool') { toolOpen.add(v); return go('tools'); }
     return go(k + ':' + v); }
   // spec-176 — clears BOTH song filters at once. Two controls to undo one "why is the shelf

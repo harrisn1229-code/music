@@ -83,65 +83,24 @@ a{color:inherit}
 @media (prefers-reduced-motion: no-preference){ .cloud[data-state="syncing"]::after{animation:pulse 1s ease-in-out infinite alternate} }
 @keyframes pulse{from{opacity:1}to{opacity:.25}}
 
-/* ---------- tiles ---------- */
-main{flex:1;padding-top:.5rem;padding-bottom:1.5rem}
-.tiles{list-style:none;margin:0;padding:0;display:grid;gap:.875rem}
-@media (min-width:46rem){ .tiles{grid-template-columns:repeat(2, minmax(0, 1fr));gap:1.125rem} }
-
-.tile{
-  position:relative;display:flex;flex-direction:column;min-height:17.5rem;
-  padding:1.25rem 1.25rem 1.125rem;border-radius:1.75rem;
-  background:var(--tile);color:#fff;
-  transition:transform .12s ease-out;
-}
-@media (prefers-color-scheme: dark){ .tile{background:color-mix(in srgb, var(--tile) 86%, #000)} }
-.tile:has(.tile-open:active){transform:scale(.985)}
-.tile-open{display:block;text-decoration:none;padding-right:4rem}
-.tile-open::after{content:"";position:absolute;inset:0;border-radius:inherit}
+/* ---------- tiles ----------
+   The home screen of a phone: one icon per tool with its name under it, nothing else. */
+main{flex:1;padding-top:1rem;padding-bottom:1.5rem}
+.tiles{list-style:none;margin:0;padding:0;display:grid;gap:1.5rem .5rem;
+  grid-template-columns:repeat(4, minmax(0, 1fr))}
+@media (min-width:46rem){ .tiles{grid-template-columns:repeat(auto-fill, minmax(7rem, 1fr));gap:2rem 1rem} }
+.tile{display:flex;justify-content:center}
+.tile-open{display:flex;flex-direction:column;align-items:center;gap:.5rem;width:100%;max-width:6.5rem;
+  text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent}
+.tile-icon{display:block;width:min(4.25rem, 100%);height:auto;aspect-ratio:1;border-radius:22.5%;
+  background:var(--tile);box-shadow:0 1px 2px rgb(20 24 44 / .12), 0 6px 14px -6px rgb(20 24 44 / .28);
+  transition:transform .12s ease-out}
+@media (min-width:46rem){ .tile-icon{width:5rem} }
+.tile-open:active .tile-icon{transform:scale(.92)}
 .tile-open:focus-visible{outline:none}
-.tile-open:focus-visible::after{outline:3px solid var(--focus);outline-offset:3px}
-.tile-name{display:block;font:800 clamp(3rem, 2.2rem + 4vw, 4rem)/.92 var(--display);letter-spacing:.005em}
-.tile-about{display:block;margin-top:.5rem;max-width:22rem;font-size:1rem;line-height:1.35;color:rgb(255 255 255 / .86)}
-.tile-icon{
-  position:absolute;top:1.25rem;right:1.25rem;width:2.75rem;height:2.75rem;border-radius:.7rem;
-  box-shadow:0 0 0 1.5px rgb(255 255 255 / .4);pointer-events:none;
-}
-.tile-live{margin-top:auto;padding-top:1.25rem}
-.tile-count{margin:.7rem .125rem 0;font-size:.875rem;color:rgb(255 255 255 / .86);font-variant-numeric:tabular-nums}
-
-/* The live look inside a tile: a sheet of "paper" on the color field. */
-.panel{
-  position:relative;display:block;padding:.8rem .9rem;border-radius:1rem;
-  background:var(--panel);color:var(--panel-ink);text-decoration:none;
-}
-a.panel{z-index:1;transition:transform .12s ease-out}
-a.panel:active{transform:scale(.98)}
-.panel-top{display:flex;align-items:baseline;gap:.75rem}
-.panel-label{font-size:.75rem;color:var(--panel-muted)}
-.panel-title{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.panel-time{flex:none;font-size:.8125rem;color:var(--panel-muted)}
-.panel-note{margin:0;font-size:.9375rem;color:var(--panel-muted)}
-.peek{
-  display:block;margin-top:.3rem;font:600 .875rem/1.4 var(--mono);white-space:pre;overflow:hidden;text-overflow:ellipsis;
-  color:var(--tile);
-}
-.peek .bl{color:var(--panel-muted);font-weight:400;opacity:.6}
-@media (prefers-color-scheme: dark){ .peek{color:color-mix(in srgb, var(--tile) 45%, #fff)} }
-
-/* Library: shortcuts back to the last few things looked up. */
-.lookups{display:flex;flex-wrap:wrap;gap:.4rem;padding:.7rem}
-.lookup{position:relative;z-index:1;height:2.125rem;padding:0 .85rem;border-radius:999px;display:inline-flex;align-items:center;
-  background:color-mix(in srgb, var(--tile) 12%, var(--panel));color:var(--panel-ink);font-size:.9375rem;font-weight:600;text-decoration:none;white-space:nowrap}
-.lookup:active{transform:scale(.96)}
-
-/* Note Cards: how the rated cards split between nailed, solid and rusty. */
-.split{display:flex;height:.625rem;border-radius:999px;overflow:hidden;background:var(--panel-track);gap:2px}
-.split i{display:block;min-width:.375rem}
-.legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:.6rem 0 0;padding:0;list-style:none;font-size:.875rem;font-variant-numeric:tabular-nums}
-.legend li{display:flex;align-items:center;gap:.4rem}
-.legend i{width:.625rem;height:.625rem;border-radius:3px;flex:none}
-.legend b{font-weight:600}
-.legend span{color:var(--panel-muted)}
+.tile-open:focus-visible .tile-icon{outline:3px solid var(--focus);outline-offset:3px}
+.tile-name{font-size:.8125rem;font-weight:600;line-height:1.2;text-align:center;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ---------- foot ---------- */
 .foot{padding-top:.25rem;padding-bottom:calc(1.25rem + env(safe-area-inset-bottom, 0px));display:flex;flex-wrap:wrap;gap:.25rem 1rem;justify-content:space-between;font-size:.8125rem;color:var(--muted)}
@@ -248,118 +207,20 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
 
-  /* ---------- live looks ----------
-     Optional, one per app id. Each returns { panel, count } or null to show nothing.
-     They read the app's own saved data and never change it. An app with no entry here
-     still gets its tile. */
-  const LIVE = {
-    // Barline: the chart you edited last (tap it to open it) and how many you have.
-    barline() {
-      const saved = readJson("barline:charts:v1");
-      if (saved === null) return { panel: note("Write your first chord chart and it shows up here.") };
-      const charts = Object.values(saved || {}).filter((c) => c && c.id)
-        .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      if (!charts.length) return { panel: note("No charts yet. Start one and it shows up here.") };
-      const c = charts[0];
-      const title = String(c.title || "").trim() || "Untitled chart";
-      const panel = el("a", "panel");
-      panel.href = "barline/#c-" + encodeURIComponent(c.id);
-      panel.setAttribute("aria-label", "Open " + title + " in Barline");
-      const top = el("span", "panel-top");
-      top.appendChild(el("span", "panel-title", title));
-      top.appendChild(el("span", "panel-time", relTime(c.updatedAt)));
-      panel.appendChild(top);
-      const first = Array.isArray(c.sections) && c.sections[0];
-      const bars = first && Array.isArray(first.bars) ? first.bars.slice(0, 4) : [];
-      if (bars.length) {
-        const peek = el("span", "peek");
-        const bar = () => peek.appendChild(el("span", "bl", "|"));
-        bar();
-        bars.forEach((b) => {
-          const chords = (Array.isArray(b.chords) ? b.chords : []).map((x) => String(x || "").trim()).filter(Boolean);
-          peek.appendChild(document.createTextNode(" " + (chords.join(" ") || "·") + " "));
-          bar();
-        });
-        panel.appendChild(peek);
-      }
-      return { panel: panel, count: plural(charts.length, "chart", "charts") };
-    },
-
-    // Note Cards: how your rated cards split between nailed, solid and rusty.
-    "note-cards"() {
-      const saved = readJson("shed-deck:progress:v1") || {};
-      const n = { nailed: 0, solid: 0, rusty: 0 };
-      Object.keys(saved).forEach((k) => { const e = saved[k]; if (e && n[e.s] !== undefined) n[e.s]++; });
-      const rated = n.nailed + n.solid + n.rusty;
-      if (!rated) return { panel: note("Rate a few cards and your progress shows up here.") };
-      const panel = el("div", "panel");
-      const split = el("div", "split");
-      split.setAttribute("role", "img");
-      split.setAttribute("aria-label", n.nailed + " nailed, " + n.solid + " solid, " + n.rusty + " rusty");
-      const legend = el("ul", "legend");
-      [["nailed", "Nailed"], ["solid", "Solid"], ["rusty", "Rusty"]].forEach(([id, label]) => {
-        if (n[id]) { const seg = el("i"); seg.style.flex = n[id] + " 0 0"; seg.style.background = "var(--" + id + ")"; split.appendChild(seg); }
-        const li = el("li");
-        const chip = el("i"); chip.style.background = "var(--" + id + ")";
-        li.appendChild(chip); li.appendChild(el("b", "", n[id].toLocaleString())); li.appendChild(el("span", "", label));
-        legend.appendChild(li);
-      });
-      panel.appendChild(split); panel.appendChild(legend);
-      return { panel: panel, count: plural(rated, "card rated", "cards rated") + " across all decks" };
-    }
-  };
-  // Library: the last few things you looked up, each a shortcut straight back to it.
-  LIVE.library = function () {
-    const saved = readJson("library:recent:v1");
-    const recent = (Array.isArray(saved) ? saved : []).filter((x) => x && typeof x.h === "string" && x.h.indexOf("#/") === 0 && x.t).slice(0, 3);
-    if (!recent.length) return { panel: note("Look something up and a shortcut back to it shows up here.") };
-    const panel = el("div", "panel lookups");
-    recent.forEach((x) => { const a = el("a", "lookup", x.t); a.href = "library/" + x.h; panel.appendChild(a); });
-    return { panel: panel, count: "Recently looked up" };
-  };
-  // School: how many classes you are enrolled in, and the last test you sat.
-  LIVE.school = function () {
-    const saved = readJson("school:progress");
-    if (saved === null) return { panel: note("Enroll in a class and your term shows up here.") };
-    const classes = Object.values(saved.classes || {}).filter((c) => c && c.status === "enrolled").length;
-    if (!classes) return { panel: note("Enroll in a class and your term shows up here.") };
-    const sat = Object.keys(saved.tests || {})
-      .map((name) => ({ name: name, last: ((saved.tests[name] || {}).attempts || [])[0] }))
-      .filter((t) => t.last && t.last.date)
-      .sort((a, b) => String(b.last.date).localeCompare(String(a.last.date)))[0];
-    const panel = el("a", "panel");
-    panel.href = "school/";
-    panel.setAttribute("aria-label", "Open School");
-    panel.appendChild(el("p", "panel-note", sat ? sat.name + ": " + sat.last.score_pct + "%" : "Pick up where you left off."));
-    return { panel: panel, count: plural(classes, "class enrolled", "classes enrolled") };
-  };
-  function note(text) { const p = el("div", "panel"); p.appendChild(el("p", "panel-note", text)); return p; }
-
   /* ---------- tiles ---------- */
   function render() {
     const list = $("tiles");
     list.textContent = "";
     REG.apps.forEach((app) => {
       const li = el("li", "tile");
-      li.style.setProperty("--tile", app.color || "#2A2F36");
       const open = el("a", "tile-open");
       open.href = app.id + "/";
+      const img = el(app.icon ? "img" : "span", "tile-icon");
+      img.style.setProperty("--tile", app.color || "#2A2F36");
+      if (app.icon) { img.src = app.id + "/" + app.icon; img.alt = ""; img.width = 68; img.height = 68; img.decoding = "async"; }
+      open.appendChild(img);
       open.appendChild(el("span", "tile-name", app.name));
-      if (app.about) open.appendChild(el("span", "tile-about", app.about));
       li.appendChild(open);
-      if (app.icon) {
-        const img = el("img", "tile-icon");
-        img.src = app.id + "/" + app.icon; img.alt = ""; img.width = 44; img.height = 44; img.decoding = "async";
-        li.appendChild(img);
-      }
-      let live = null;
-      try { live = LIVE[app.id] ? LIVE[app.id]() : null; } catch (e) { live = null; }
-      if (live && live.panel) {
-        const box = el("div", "tile-live");
-        box.appendChild(live.panel);
-        if (live.count) box.appendChild(el("p", "tile-count", live.count));
-        li.appendChild(box);
-      }
       list.appendChild(li);
     });
     $("version").textContent = REG.version ? "Music " + REG.version : "";

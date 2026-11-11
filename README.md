@@ -20,7 +20,7 @@ older GitHub sync on devices that have not signed in yet.
 ## What's in here
 
 ```
-index.html             Home screen: one tile per tool
+index.html             Home screen: one app icon per tool, in the order of apps.js
 apps.js                The list of tools (read by the home screen and by sw.js)
 sw.js                  Service worker: keeps every file available offline
 manifest.webmanifest   Name, icon and shortcuts for the installed app
@@ -62,12 +62,11 @@ ratings, so do not change how a key is built.
      so tools never overwrite each other;
    - if it syncs, load `../shared/account.js` and use `MusicAccount` for the
      token instead of keeping its own (see Sync between devices).
-3. Add an entry to `apps.js` (name, one-line description, tile color, icon,
-   and every file the tool needs). Files used by more than one tool go in
-   `shared/` and are listed under `shared` in `apps.js`.
+3. Add an entry to `apps.js` (name, color, icon, and every file the tool needs). The home screen
+   shows the icon and the name, nothing else, in the order of that list. Files used by more than
+   one tool go in `shared/` and are listed under `shared` in `apps.js`.
 4. Raise `version` in `apps.js`.
-5. Optional: add a shortcut for it in `manifest.webmanifest`, and a preview
-   for its tile under `LIVE` in `index.html`.
+5. Optional: add a shortcut for it in `manifest.webmanifest`.
 
 ## School
 
