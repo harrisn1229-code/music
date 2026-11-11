@@ -65,6 +65,10 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(ROOT)) return;
+  // A tool with a worker of its own (School) looks after its own folder; only the files this
+  // worker was asked to keep for it (its tile icon) are served from here.
+  const own = self.MUSIC.apps.find((app) => app.worker && url.pathname.startsWith(ROOT + app.id + "/"));
+  if (own && !own.files.some((file) => url.pathname === ROOT + own.id + "/" + file)) return;
 
   const page = request.mode === "navigate";
   // "/music/barline" without the last slash would break that app's links to its own files; send it to "/music/barline/".

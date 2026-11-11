@@ -1,7 +1,7 @@
 {
   "name": "Music",
   "short_name": "Music",
-  "description": "Your music tools in one app: chord charts, flashcards and a theory reference. Works offline; everything stays on this device.",
+  "description": "Your music tools in one app: chord charts, flashcards, a theory reference and a school. Works offline.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -34,6 +34,12 @@
       "description": "Look up any mode, chord, arpeggio or voicing in any key",
       "url": "library/",
       "icons": [{ "src": "library/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "School",
+      "description": "Classes, lessons, quizzes, tests and a song library",
+      "url": "school/",
+      "icons": [{ "src": "school/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

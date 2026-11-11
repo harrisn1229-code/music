@@ -311,6 +311,22 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     recent.forEach((x) => { const a = el("a", "lookup", x.t); a.href = "library/" + x.h; panel.appendChild(a); });
     return { panel: panel, count: "Recently looked up" };
   };
+  // School: how many classes you are enrolled in, and the last test you sat.
+  LIVE.school = function () {
+    const saved = readJson("school:progress");
+    if (saved === null) return { panel: note("Enroll in a class and your term shows up here.") };
+    const classes = Object.values(saved.classes || {}).filter((c) => c && c.status === "enrolled").length;
+    if (!classes) return { panel: note("Enroll in a class and your term shows up here.") };
+    const sat = Object.keys(saved.tests || {})
+      .map((name) => ({ name: name, last: ((saved.tests[name] || {}).attempts || [])[0] }))
+      .filter((t) => t.last && t.last.date)
+      .sort((a, b) => String(b.last.date).localeCompare(String(a.last.date)))[0];
+    const panel = el("a", "panel");
+    panel.href = "school/";
+    panel.setAttribute("aria-label", "Open School");
+    panel.appendChild(el("p", "panel-note", sat ? sat.name + ": " + sat.last.score_pct + "%" : "Pick up where you left off."));
+    return { panel: panel, count: plural(classes, "class enrolled", "classes enrolled") };
+  };
   function note(text) { const p = el("div", "panel"); p.appendChild(el("p", "panel-note", text)); return p; }
 
   /* ---------- tiles ---------- */
@@ -570,7 +586,14 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
   /* ---------- offline ---------- */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
-    window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+      // A tool with a worker of its own (School) is started from here too, so it is saved for
+      // offline use even before it is first opened.
+      REG.apps.filter((app) => app.worker).forEach((app) => {
+        navigator.serviceWorker.register(app.id + "/" + app.worker, { scope: app.id + "/" }).catch(() => {});
+      });
+    });
   }
 })();
 </script>

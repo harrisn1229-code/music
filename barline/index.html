@@ -700,6 +700,7 @@
 <input type="file" id="importInput" hidden>
 
 <script src="../shared/account.js"></script>
+<script src="../shared/ai.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1244,6 +1245,7 @@
       keyBtn.addEventListener("click", () => {
         if (hasKey){
           try { localStorage.removeItem(AI_KEY); } catch(e){}
+          if (self.MusicAI) self.MusicAI.clearKey();   // the key is Music-wide: forget it everywhere
           closeSheet(); toast("API key removed from this device.");
         } else { closeSheet(); setTimeout(openAi, 280); }
       });
@@ -1524,7 +1526,8 @@
   // this browser only (never in backups or sync).
   const AI_KEY = "barline:aiKey";
   const AI_MODEL = "claude-opus-5-5";
-  const aiKey = () => store.get(AI_KEY, "") || "";
+  // The key is shared by every tool in Music (shared/ai.js); Barline's own name for it is the fallback.
+  const aiKey = () => (self.MusicAI ? self.MusicAI.key() : "") || store.get(AI_KEY, "") || "";
   const AI_SYSTEM = [
     "You are the assistant inside Barline, a chord-chart app for working musicians. The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
     "You can see and change their library with tools: list_charts, get_chart, create_chart, update_chart and move_chart. Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button.",
@@ -1817,6 +1820,7 @@
         const v = input.value.trim();
         if (!/^sk-ant-[A-Za-z0-9_\-]{10,}$/.test(v)){ toast("That doesn't look like an Anthropic API key (they start with sk-ant-)."); input.focus(); return; }
         if (!store.set(AI_KEY, v)){ toast("Couldn't save the key on this device."); return; }
+        if (self.MusicAI) self.MusicAI.setKey(v);
         openAi();
       };
       form.addEventListener("submit", (e) => { e.preventDefault(); submit(); });

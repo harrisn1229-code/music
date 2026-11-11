@@ -1,0 +1,1846 @@
+/* Music School — tokens first, components strictly through tokens. */
+:root{
+  /* PATCH-075 — back to the original ground. PATCH-074 darkened it to #d4dae6 for contrast
+     against the white cards; Nate preferred the lighter sheet and took it back. --line goes
+     back with it: the two were moved together and only make sense together. */
+  --ground:#e9ebf0; --surface:#fcfcfe; --sunk:#f1f2f7; --raised:#ffffff;
+  --ink:#14171f; --ink-2:#3f4756; --muted:#6c7484; --faint:#8f97a6;
+  --line:#d5d9e2; --line-2:#bcc3d1;
+  --theory:#33449e; --theory-soft:#e3e7f7; --theory-line:#b7c0ea;
+  --prod:#0e7361; --prod-soft:#dbefe9; --prod-line:#a6d6c9;
+  --instr:#9c2f4f; --instr-soft:#f8e4ea; --instr-line:#e7b6c5;
+  --teach:#6a3aa8; --teach-soft:#efe7fa; --teach-line:#cdb8ec;
+  --due:#9a5410; --due-soft:#f6e9d8; --due-line:#e0c295;
+  --ok:#2e6b4f; --ok-soft:#dfeee6;
+  /* PATCH-012 — strand plate. The hue is per-strand and comes from the data (see app.js);
+     saturation and lightness are the theme's, so one plate rule serves 17 strands in both
+     themes and no strand colour is ever declared inside a theme-only block. */
+  --st-s:58%; --st-l:29%; --st-bg-s:74%; --st-bg-l:91%; --st-ln-s:52%; --st-ln-l:77%;
+  --shadow:0 1px 2px rgba(20,23,31,.05),0 8px 24px -12px rgba(20,23,31,.18);
+  --rail:236px;
+  /* PATCH-125 — back to Archivo / Prata / Spectral. PATCH-120 swapped in Fraunces / Inter Tight /
+     Source Serif 4 on the argument that Prata's Didone hairlines thin out on a low-res screen;
+     Nate tried it against a typewriter set and took the original back. Keeping the note because
+     the hairline observation is still true and will come up again — it just is not worth the
+     trade. Every stack keeps a real fallback: Google Fonts is the ONE external host the artifact
+     CSP allows, and a blocked stylesheet must not drop the page into a default serif. */
+  --ui:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --read:"Spectral",Georgia,"Times New Roman",serif;
+  --disp:"Prata","Didot",Georgia,serif;
+  /* PATCH-152 — homework, quizzes and tests wear a typewriter face on the term view. Nate:
+     "make homework, quizzes, and tests a different font on the schedule to make look even more
+     different. maybe like typewriter ish". Courier Prime rather than a code mono: it is an actual
+     typewriter revival, and the point is that assigned WORK reads as something handed to you on
+     paper, distinct from a lesson (which is just information) and from a course start (a marker,
+     not a task). Real mono metrics follow it in the stack so the distinction survives a font
+     failure. */
+  --mono:"Courier Prime",ui-monospace,SFMono-Regular,Menlo,"Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0c0e13; --surface:#14171e; --sunk:#101319; --raised:#1a1e27;
+    /* PATCH-137 (C6) — `--faint:#69718230` was a stray 8-digit alpha that the next line already
+       overrode; two declarations of the same token, one of them wrong, is a trap for whoever edits
+       this block next. Kept the intended opaque value. */
+    --ink:#e7eaf1; --ink-2:#b5bccb; --muted:#828b9d; --faint:#697182; --line:#262b35; --line-2:#39404d;
+    --theory:#97a6ff; --theory-soft:#1a2140; --theory-line:#2e3868;
+    --prod:#4ec9a7; --prod-soft:#0d2a25; --prod-line:#1c463d;
+    --instr:#f2879f; --instr-soft:#331520; --instr-line:#5d2937;
+    --teach:#c3a4f2; --teach-soft:#221a36; --teach-line:#403060;
+    --due:#e0a45e; --due-soft:#2f2312; --due-line:#4d3a1c;
+    --ok:#6dc290; --ok-soft:#152c21;
+    --st-s:72%; --st-l:78%; --st-bg-s:40%; --st-bg-l:17%; --st-ln-s:34%; --st-ln-l:33%;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0c0e13; --surface:#14171e; --sunk:#101319; --raised:#1a1e27;
+  --ink:#e7eaf1; --ink-2:#b5bccb; --muted:#828b9d; --faint:#697182;
+  --line:#262b35; --line-2:#39404d;
+  --theory:#97a6ff; --theory-soft:#1a2140; --theory-line:#2e3868;
+  --prod:#4ec9a7; --prod-soft:#0d2a25; --prod-line:#1c463d;
+  --instr:#f2879f; --instr-soft:#331520; --instr-line:#5d2937;
+  --teach:#c3a4f2; --teach-soft:#221a36; --teach-line:#403060;
+  --due:#e0a45e; --due-soft:#2f2312; --due-line:#4d3a1c;
+  --ok:#6dc290; --ok-soft:#152c21;
+  --st-s:72%; --st-l:78%; --st-bg-s:40%; --st-bg-l:17%; --st-ln-s:34%; --st-ln-l:33%;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.7);
+}
+/* PATCH-012 — the school has THREE domains, not two: `instrument` is a real value on
+   classes 8/9 and courses 17/18 and was rendering as theory. Every accented component now
+   reads --accent, and a [data-domain] wrapper repoints it. These are indirections to the
+   theme tokens above, so both themes resolve without a second declaration. */
+:root{--accent:var(--theory);--accent-soft:var(--theory-soft);--accent-line:var(--theory-line);--h:231;}
+[data-domain="theory"]{--accent:var(--theory);--accent-soft:var(--theory-soft);--accent-line:var(--theory-line);}
+[data-domain="production"]{--accent:var(--prod);--accent-soft:var(--prod-soft);--accent-line:var(--prod-line);}
+[data-domain="instrument"]{--accent:var(--instr);--accent-soft:var(--instr-soft);--accent-line:var(--instr-line);}
+/* PATCH-151 — a FOURTH accent, for lessons with a real teacher. Nate: "make outside lessons a
+   different color than red." They were riding `instrument`, which is the crimson classes 8/9
+   already own, so a teacher's lesson looked like a Hanon lesson. Violet is the one real gap in
+   the wheel here: theory sits at ~231deg, production ~168, instrument ~340 and due ~35, which
+   leaves ~275 as the furthest any new hue can get from all four. Not a domain in the data —
+   nothing in the curriculum has `domain: teacher` — it is a render-time label for work the
+   school schedules but does not teach. */
+[data-domain="teacher"]{--accent:var(--teach);--accent-soft:var(--teach-soft);--accent-line:var(--teach-line);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+:focus-visible{outline:2px solid var(--theory);outline-offset:2px;border-radius:3px;}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* ---------------------------------------------------------------- shell */
+#app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:100vh;
+  transition:grid-template-columns .15s ease;}
+.rail{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface);
+  border-right:1px solid var(--line);display:flex;flex-direction:column;gap:22px;padding:24px 18px;
+  transition:padding .15s ease;}
+/* Nate: "make the lefthand menu collapsible" (2026-08-23) — the toggle stays in flow as the
+   rail's first child rather than an overlapping circle on the divider, so it never has to
+   fight the sticky rail's edge for space at narrow widths. Shut hides everything else and
+   #app's --rail column (set in render()) shrinks to just enough for the button. */
+.rail-toggle{align-self:flex-start;display:flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:6px;color:var(--muted);flex:0 0 auto;}
+.rail-toggle:hover{background:var(--sunk);color:var(--ink);}
+/* Shape only, not shared with the later `.ovsec-t .car,.dfold .car` rule (PATCH-084) — that
+   rule bakes its own transform into the same declaration, and picking it up here via the
+   selector list would have it win the cascade (it comes later in the file) and stomp the
+   rotate(180deg)/(0deg) pair below. */
+.rail-toggle .car{width:0;height:0;flex:0 0 auto;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transform:rotate(180deg);transition:transform .12s ease;}
+.rail.shut{align-items:center;padding:24px 10px;}
+.rail.shut .rail-toggle .car{transform:rotate(0deg);}
+.rail.shut .mast,.rail.shut nav,.rail.shut .rail-foot{display:none;}
+.mast{display:flex;flex-direction:column;gap:2px;}
+.mast h1{font-family:var(--disp);font-weight:400;font-size:25px;line-height:1.02;margin:0;
+  letter-spacing:-.01em;text-wrap:balance;}
+.mast .sem{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;margin-top:5px;}
+nav{display:flex;flex-direction:column;gap:1px;}
+nav button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+  padding:7px 10px;border-radius:6px;font-size:14px;font-weight:500;color:var(--ink-2);text-align:left;}
+nav button:hover{background:var(--sunk);color:var(--ink);}
+nav button[aria-current="page"]{background:var(--theory-soft);color:var(--theory);font-weight:600;}
+nav .n{font-size:11.5px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums;}
+nav button[aria-current="page"] .n{color:var(--theory);}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;
+  font-size:11.5px;color:var(--muted);}
+.savechip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.savechip b{width:6px;height:6px;border-radius:50%;background:var(--line-2);}
+.savechip[data-s="dirty"] b{background:var(--due);}
+.savechip[data-s="saving"] b{background:var(--due);animation:pulse 1s ease-in-out infinite;}
+.savechip[data-s="saved"] b{background:var(--ok);}
+.savechip[data-s="ro"] b{background:var(--due);}
+.savechip[data-s="ro"]{color:var(--due);}
+.savechip[data-s="wait"] b{background:var(--line-2);}
+@keyframes pulse{50%{opacity:.25;}}
+main{padding:36px 40px 96px;max-width:1180px;}
+.view{display:flex;flex-direction:column;gap:26px;}
+
+/* ---------------------------------------------------------------- type */
+h2.vh{font-family:var(--disp);font-weight:400;font-size:29px;margin:0;letter-spacing:-.015em;
+  text-wrap:balance;}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 6px;}
+.lede{font-family:var(--read);font-size:17px;line-height:1.6;color:var(--ink-2);max-width:64ch;margin:0;}
+/* PATCH-109 — the Classes lede broke into two lines well before it ran out of column, because
+   64ch above is a READING MEASURE and this one sentence is a caption, not a passage. Widened
+   FOR THIS VIEW ONLY: the global cap is deliberate and every other lede on the page keeps it.
+   Two things had to give — the measure itself, and the heading block's share of the .spread it
+   sits in, which is `flex:0 1 auto` and so was being sized by the very cap being lifted.
+   The sentence is ~140 characters and cannot reach ONE line in this column at 17px — the
+   column is ~930px, it would need ~1190 — so it is two lines either way and the question is
+   which two. `pretty` (not `balance`) on purpose, and that was decided in a render: balance
+   minimises the LONGEST line, which pulled it straight back to the short, early-breaking
+   shape the patch exists to get rid of. pretty fills the first line to the column and only
+   guards the last one. Judged at render size, not in source. */
+.classesv .cv-head{flex:1 1 auto;min-width:0;}
+.classesv .cv-head .lede{max-width:none;text-wrap:pretty;}
+/* A quiet caption — the page explaining one of its own devices, under the lede rather than
+   beside it. It has been in the markup since PATCH-011 and never had a rule, so it rendered
+   at full body size in full ink and shouted over the lede above it. */
+.calnote{font-size:12.5px;line-height:1.5;color:var(--muted);max-width:72ch;margin:6px 0 0;}
+.prose{font-family:var(--read);font-size:16.5px;line-height:1.65;max-width:68ch;color:var(--ink);}
+.prose p{margin:0 0 .85em;}
+/* list-style is inherited, and .tasks sets it to none — so prose nested inside a task row
+   (PATCH-010's reading) has to ask for its markers back rather than assume them. */
+.prose ul{margin:0 0 .9em;padding-left:1.25em;list-style:disc;}
+.prose ol{margin:0 0 .9em;padding-left:1.25em;list-style:decimal;}
+.prose li{margin:.32em 0;}
+.prose li::marker{color:var(--faint);}
+.prose strong{font-weight:600;}
+/* Real <a> hrefs turn up in the inlined reading (PATCH-010) — the textbook cites its sources.
+   Left to the browser they are default blue, which is unreadable on the dark ground and is
+   the one colour on the page that isn't a token. They read like a cross-link instead. */
+.prose a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line);}
+.prose a:hover{border-bottom-color:var(--accent);}
+/* h5/h6 exist because PATCH-010's inlined reading is demoted to sit under the lesson's own
+   h3 — a pulled note's `##` becomes h4 and its `###` becomes h5. Same treatment, one step
+   quieter, so a long section still shows its own structure. */
+.prose h3,.prose h4,.prose h5,.prose h6{font-family:var(--ui);font-size:14px;font-weight:700;
+  letter-spacing:.02em;margin:1.4em 0 .5em;}
+.prose h5,.prose h6{font-size:12.5px;letter-spacing:.06em;color:var(--ink-2);}
+.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:.08em .35em;}
+.prose blockquote{margin:1em 0;padding-left:14px;border-left:2px solid var(--line-2);color:var(--ink-2);}
+/* Fenced blocks — signal-flow diagrams drawn in box characters, mostly. They arrived with
+   PATCH-010's reading; before it the page had no multi-line code anywhere. Scrolls in its own
+   box so a wide diagram can never widen the page. */
+.prose pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.45;
+  background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+  overflow-x:auto;margin:1em 0;color:var(--ink-2);}
+.prose pre code{background:none;border:none;padding:0;font-size:inherit;}
+.prose hr{border:none;border-top:1px solid var(--line);margin:1.5em 0;}
+.tablewrap,.prose table{display:block;overflow-x:auto;}
+.prose table{width:100%;border-collapse:collapse;font-family:var(--ui);font-size:13.5px;margin:1em 0;}
+.prose th{text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--line-2);padding:0 10px 6px 0;font-weight:700;}
+.prose td{padding:7px 10px 7px 0;border-bottom:1px solid var(--line);vertical-align:top;}
+
+/* cross-links */
+.xlink{font:inherit;padding:0;border-bottom:1px solid currentColor;line-height:1.1;}
+/* PATCH-053 — `cursor:help` turned the pointer into a question mark over the one thing on a
+   Read line that looks clickable. A vault span with nothing behind it in this page is plain
+   text now; a Read line whose material HAS been pulled in gets .xlink-read instead, which is
+   a real button that opens it. */
+.xlink-vault{color:var(--ink-2);border-bottom:1px dotted var(--line-2);cursor:default;}
+.xlink-read{color:var(--accent);border-bottom:1px solid var(--accent-line);cursor:pointer;}
+.xlink-read:hover{border-bottom-color:var(--accent);}
+
+/* PATCH-144 — the contents strip on a note page. A chip row rather than a bulleted list:
+   these are 3-14 short section names and they are for orientation and one jump, so they want
+   to read as controls in one band and never as a second table of contents down the page. */
+.srctoc{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 2px;}
+.srcsec{font-family:var(--ui);font-size:12px;font-weight:600;color:var(--ink-2);
+  background:var(--sunk);border:1px solid var(--line);border-radius:99px;padding:4px 11px;
+  cursor:pointer;line-height:1.3;}
+.srcsec:hover{color:var(--accent);border-color:var(--accent-line);}
+/* The note is the page here, so the card is sized to the reading measure rather than to the
+   viewport: .prose already stops at 68ch, and a full-width card around it left two-fifths of
+   the panel empty on a desktop. Tables and code blocks inside still scroll in their own
+   overflow box, so the wide material is not clipped by this. */
+.srccard{max-width:74ch;}
+.xlink-concept,.xlink-course,.xlink-class{color:var(--accent);}
+
+/* callouts */
+.callout{border:1px solid var(--line);border-left:2px solid var(--line-2);border-radius:0 7px 7px 0;
+  background:var(--sunk);padding:12px 15px;margin:1.1em 0;font-family:var(--ui);font-size:14px;}
+.callout .co-title,.callout summary{font-weight:700;font-size:12.5px;letter-spacing:.02em;margin:0;}
+.callout summary{cursor:pointer;list-style:none;}
+.callout summary::marker,.callout summary::-webkit-details-marker{display:none;}
+.callout summary::before{content:"▸ ";color:var(--muted);}
+.callout[open] summary::before{content:"▾ ";}
+.co-body{margin-top:6px;}
+.co-body>*:last-child{margin-bottom:0;}
+.co-warning{border-left-color:var(--due);background:var(--due-soft);}
+.co-info,.co-abstract{border-left-color:var(--theory);background:var(--theory-soft);}
+.co-question{border-left-color:var(--prod);background:var(--prod-soft);}
+/* PATCH-007 — "What this unlocks", folded shut. Same collapsible shape as a `[!x]-` callout,
+   carrying the course's own domain accent so it reads as part of the course rather than as a
+   warning, and set in the label type the page uses for every other section heading. */
+.callout.co-unlocks{border-left-color:var(--accent);background:var(--sunk);margin:1.4em 0;}
+.callout.co-unlocks summary{font-size:10.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);}
+.callout.co-unlocks summary:hover{color:var(--ink);}
+.co-unlocks .co-body ul,.co-unlocks .co-body ol{margin:.6em 0 0;padding-left:1.15em;}
+.co-unlocks .co-body li{margin:.35em 0;}
+.co-unlocks .co-body li::marker{color:var(--faint);}
+.co-unlocks .co-body>*:last-child{margin-bottom:0;}
+
+/* ---------------------------------------------------------------- bits */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;padding:3px 8px;border-radius:20px;
+  border:1px solid var(--line-2);color:var(--muted);white-space:nowrap;}
+.pill-theory{color:var(--theory);border-color:var(--theory-line);background:var(--theory-soft);}
+.pill-prod{color:var(--prod);border-color:var(--prod-line);background:var(--prod-soft);}
+.pill-instr{color:var(--instr);border-color:var(--instr-line);background:var(--instr-soft);}
+.pill-due{color:var(--due);border-color:var(--due-line);background:var(--due-soft);}
+.pill-ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft);}
+.strand{font-size:10.5px;font-weight:700;letter-spacing:.11em;color:var(--muted);}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:7px;
+  white-space:nowrap;
+  border:1px solid var(--line-2);background:var(--raised);font-size:13.5px;font-weight:600;
+  color:var(--ink);box-shadow:var(--shadow);
+  /* .btn is worn by <a> as well as <button> (the Drills Library's external watch links must be
+     real anchors — see watchCard in app.js). Anchors bring their own underline and no pointer
+     cursor, so neutralise both here rather than in a one-off rule. */
+  text-decoration:none;cursor:pointer;}
+a.btn:hover,a.btn:focus-visible{text-decoration:none;}
+.btn:hover{border-color:var(--ink-2);}
+.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;}
+/* the primary action takes its domain's accent — teal on a production tile, garnet on an
+   instrument one — and stays indigo everywhere --accent has not been repointed. */
+.btn-go{background:var(--accent);border-color:var(--accent);color:#fff;}
+:root[data-theme="dark"] .btn-go,:root:not([data-theme="light"]) .btn-go{color:var(--ground);}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn-go{color:#fff;}}
+.btn-go:hover{filter:brightness(1.08);border-color:var(--accent);}
+.btn-quiet{box-shadow:none;background:transparent;}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.spread{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;}
+.grid{display:grid;gap:14px;}
+
+/* PATCH-036 — the week band. The one line at the top of the Overview that says where you
+   are: which week, which dates, and the control that moves the start. It is the start-date
+   editor's home now that PATCH-038 has deleted the stat tiles it used to live inside.
+   Baseline-aligned rather than boxed — a heading's companion, not a card. */
+.weekband{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0;}
+.wb-n{display:flex;align-items:baseline;gap:8px;flex:0 0 auto;}
+.wb-k{font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
+.wb-n b{font-family:var(--disp);font-weight:400;font-size:29px;line-height:1;
+  font-variant-numeric:tabular-nums;color:var(--accent);}
+.wb-n small{font-family:var(--ui);font-size:13px;color:var(--faint);font-variant-numeric:tabular-nums;}
+.wb-d{flex:1 1 auto;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums;}
+/* RETIRED 2026-08-21 (PATCH-105) — the "moved from <syllabus start>" note is no longer drawn.
+   The rule stays so the reason is on the record and the mark can come back without being
+   re-derived: it explained why week 1 does not begin on the syllabus's own semester.start
+   once PATCH-015's per-person start has moved it. Nothing emits .wb-m today. */
+.wb-m{margin-left:10px;font-size:12px;color:var(--due);}
+.wb-a{flex:0 0 auto;}
+/* Nate: "under weeks add total days with start and end date. remove term length from week
+   like" (2026-08-23) — replaces PATCH-106's .wb-t, which said the same thing (days count)
+   crowded onto the current week's own date range. Its own line under the band now, naming
+   the term's actual start and end rather than just a count. */
+.wb-total{width:100%;font-size:12px;color:var(--faint);margin-top:-4px;
+  font-variant-numeric:tabular-nums;}
+@media (max-width:640px){.wb-d{flex:1 1 100%;}}
+
+/* PATCH-015 — changing when YOUR semester starts, from the page. Quiet until asked for:
+   a text link in the week band, an input in its place while editing. */
+.lnkedit{font:inherit;font-size:12px;color:var(--accent);border-bottom:1px solid var(--accent-line);
+  padding:0;line-height:1.1;}
+.lnkedit:hover{border-bottom-color:var(--accent);}
+.startedit{display:flex;flex-direction:column;gap:7px;}
+.startedit input[type="date"]{font:inherit;font-size:13px;padding:5px 8px;border-radius:6px;
+  border:1px solid var(--line-2);background:var(--raised);color:var(--ink);
+  font-variant-numeric:tabular-nums;}
+
+/* Nate's day-picker at Start — "what days do you want to take the lessons". Same shape as
+   .startedit (a text prompt, a row of inputs, a confirm row) since it is asked in the same
+   spot for the same reason: a decision made once, in place, without leaving the course page. */
+.daypick{display:flex;flex-direction:column;gap:9px;align-items:flex-start;}
+.daypick-k{font-size:13px;color:var(--ink-2);}
+.daypick-days{display:flex;flex-wrap:wrap;gap:6px;}
+.daypick-d{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
+  border:1px solid var(--line-2);background:var(--raised);font-size:12.5px;font-weight:600;
+  color:var(--ink-2);cursor:pointer;}
+.daypick-d input{margin:0;}
+.daypick-d.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+
+/* PATCH-037 — the term as a CALENDAR. Two to four months side by side, and the important
+   structural fact is that a row is a school WEEK, not a Sunday-to-Saturday week: app.js
+   anchors the columns to the weekday the semester starts on, so the left gutter can carry a
+   week number and the whole row can take the in-term tint. That is what "weeks highlighted
+   to signify length" means here — you read the term's length by counting tinted rows.
+
+   Colour discipline as everywhere else, except the hue: Nate wanted the calendar's own
+   highlights orange rather than following --accent (indigo by default, since the calendar
+   sits outside any [data-domain] wrapper) — so this one component reads off --due/--due-soft
+   instead, the palette's only orange, rather than --accent-soft for the in-term ground and
+   --accent for the current week's rule and today's marker. Nothing is declared inside a theme
+   block, so both themes resolve off the tokens they already have. */
+.cal{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}
+.cmo{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px 13px 13px;}
+.cmo-h{font-family:var(--disp);font-weight:400;font-size:17px;line-height:1;margin-bottom:9px;
+  letter-spacing:-.01em;}
+.cgrid{display:grid;grid-template-columns:20px repeat(7,minmax(0,1fr));gap:1px;
+  font-variant-numeric:tabular-nums;}
+.cdh{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+  text-align:center;padding-bottom:4px;}
+/* the week-number gutter — a call number for the row, blank outside the term */
+.cw{font-size:9.5px;font-weight:700;color:var(--faint);display:flex;align-items:center;
+  justify-content:flex-end;padding-right:5px;}
+.cw.in{color:var(--muted);}
+.cw.now{color:var(--due);}
+.cwh{padding-bottom:4px;}                     /* the gutter's own (empty) header cell */
+.cd{font-size:11.5px;color:var(--ink-2);text-align:center;padding:8px 0;border-radius:4px;
+  line-height:1.15;}
+.cd.out{color:var(--faint);opacity:.55;}
+/* PATCH-076 — the current week reads differently again, which PATCH-073 had flattened away.
+   The original complaint was never that the two differed, it was that they differed in
+   UNRELATED colours: --sunk (a dark neutral) beside --accent-soft (a tint). So this keeps
+   PATCH-073's single family and puts the difference back as STRENGTH within it — a half-tint
+   for the term, the full tint for the week you are in, the solid accent for today. Three
+   steps of one hue, and no colour declared inside a theme block: color-mix resolves against
+   whichever --surface the theme has already set. */
+.cd.in{background:color-mix(in srgb, var(--due-soft) 50%, var(--surface));}
+.cd.in.now{background:var(--due-soft);color:var(--ink);font-weight:600;}
+/* Today is the one mark that has to survive a glance across four months, so it has to beat
+   the in-term and current-week fills it sits inside — hence the compound selector rather
+   than a bare `.cd.today`, which loses to `.cd.in.now` on specificity. */
+.cd.today,.cd.in.today,.cd.in.now.today{background:var(--due);color:var(--surface);
+  font-weight:700;box-shadow:0 0 0 1.5px var(--ground);}
+
+/* PATCH-046 — the next two weeks, a day at a time. It replaced a 17-week projection laid out
+   as one row per week (PATCH-017's .sched, and PATCH-044/045's asks against it, all
+   superseded). A lesson reads as a class you have on a day, so the DAY is the spine: a date
+   gutter down the left and whatever falls on it beside. Quizzes sit on the same spine off
+   their own due dates (PATCH-059) — same shape, quieter fill, so the two kinds of work read
+   as one schedule without reading as the same thing. */
+.tl{display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;background:var(--line);}
+/* PATCH-085 — the week band, given real separation. Nate: "make the week rows more contrasted
+   - maybe darker." It sat on --sunk, which is one step off the --surface the day rows use and
+   a small one in both themes (11/255 in light, 5/255 in dark) — a difference you have to go
+   looking for. --ground is the darkest surface token the system has, in BOTH themes, so it is
+   at once "darker" and the most contrast obtainable here without declaring a colour, which is
+   the rule this file runs on. In dark there is nothing below --ground to reach for, so the
+   rest of the separation is made structurally rather than tonally: a --line-2 rule top and
+   bottom (the strong line token, against the --line hairlines .tl already draws between rows),
+   a label lifted from --muted to --ink-2, and a little more height. The insets matter for a
+   second reason — --ground is also the page's own background, and without them a band that
+   matches it reads as a gap punched through the card rather than a divider inside it. */
+.tl-wh{display:flex;align-items:center;gap:10px;background:var(--ground);padding:9px 14px;
+  box-shadow:inset 0 1px 0 var(--line-2),inset 0 -1px 0 var(--line-2);
+  font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);}
+.tl-wh .rule{flex:1;height:1px;background:var(--line-2);}
+.tl-wr{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--faint);
+  font-variant-numeric:tabular-nums;}
+.tl-d{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:center;
+  background:var(--surface);padding:8px 14px;}
+/* PATCH-154 — the lane gutter. Width is driven off the container's lane count rather than a calc()
+   so the zero-lane case is the ORIGINAL two-track row, byte for byte: a term with nothing spanning
+   should not pay a collapsed-but-present column or the gap beside it. */
+.tl-sp{display:flex;gap:4px;align-self:stretch;align-items:stretch;}
+.tl[data-lanes="0"] .tl-sp{display:none;}
+.tl[data-lanes="1"] .tl-d{grid-template-columns:76px 104px minmax(0,1fr);}
+.tl[data-lanes="2"] .tl-d{grid-template-columns:76px 212px minmax(0,1fr);}
+.tl[data-lanes="3"] .tl-d{grid-template-columns:76px 320px minmax(0,1fr);}
+/* One segment per day row, stitched into a continuous block by a negative block margin equal to the
+   row's own 8px padding — the seams close and the column reads as one calendar bar. Continuation
+   segments carry the side borders only; the start and end rows add the cap they are named for.
+
+   PATCH-155 — `justify-content:center` and nothing that sets a height. A segment must never be TALLER
+   than the row it sits in: Nate, on the first version, "i dont want the first day row to be big cus
+   of the text". The header truncates to one line and the wrapped chips are the same height as the
+   chips beside them, so every row stays exactly as tall as its content would have made it anyway. */
+.tl-ln{flex:1;min-width:0;margin:-8px 0;border-radius:0;background:var(--accent-soft);
+  border:1px solid var(--accent-line);border-top:0;border-bottom:0;
+  display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 8px;text-align:left;}
+.tl-ln.off{background:none;border-color:transparent;}
+.tl-ln.start{margin-top:0;border-top:1px solid var(--accent-line);border-radius:9px 9px 0 0;}
+.tl-ln.end{margin-bottom:0;border-bottom:1px solid var(--accent-line);border-radius:0 0 9px 9px;}
+.tl-ln.start.end{border-radius:9px;}
+/* The header is a bare button inside the block, not a chip — the block already draws the border and
+   the fill, and a chip's own would read as a box in a box. */
+.tl-ln .tl-lnh{display:flex;align-items:baseline;gap:7px;min-width:0;max-width:100%;
+  background:none;border:0;padding:4px 0;margin:0;cursor:pointer;text-align:left;font:inherit;}
+.tl-ln .tl-lnh .tl-k{font-size:9px;color:var(--accent);}
+.tl-ln .tl-lnh .tl-t{font-size:12px;color:var(--ink);}
+/* Work that belongs to this lesson, drawn on its due row inside the block. */
+.tl-lnw{display:flex;flex-wrap:wrap;gap:4px;padding:3px 0;min-width:0;}
+.tl-lnw .tl-i{max-width:100%;}
+
+/* Nate, 2026-09-03: *"i cant read the guitar sight reading text. wrap it within the column."*
+   PATCH-155 pinned this header to one line so the opening row would not grow — his own earlier
+   note, "i dont want the first day row to be big cus of the text". But the lane column is 104px
+   wide, and one line of it is about a dozen characters: "Guitar Sight Reading · Reading I — First
+   Position, Part One · lesson 1" arrived as "GUITAR SIGHT READ" and stopped. The rule meant to
+   protect the row height was costing the label its entire job, so readability wins and the row is
+   allowed to be as tall as its label needs.
+
+   These are the SAME three unwrappings the phone breakpoint at the bottom of this file has been
+   doing all along (.tl-t, .tl-lt, .tl-n/.tl-s) — a narrow column is a narrow column, and the lane
+   is one on every screen. Scoped under .tl-ln so ordinary day-row chips are untouched: they sit in
+   the wide right-hand column where one line is plenty and an ellipsis is the correct answer.
+   Only the row a lesson OPENS on draws a header at all, so at most one row per lesson grows. */
+.tl-ln .tl-lnh{flex-wrap:wrap;align-items:flex-start;gap:2px 7px;}
+.tl-ln .tl-lnh .tl-k{min-width:0;white-space:normal;overflow-wrap:anywhere;}
+.tl-ln .tl-lnh .tl-t{white-space:normal;overflow:visible;text-overflow:clip;}
+.tl-ln .tl-lt{flex-wrap:wrap;gap:2px 7px;overflow:visible;}
+.tl-ln .tl-n,.tl-ln .tl-s{white-space:normal;overflow:visible;text-overflow:clip;
+  overflow-wrap:anywhere;}
+.tl-d.empty{padding:4px 14px;}
+.tl-d.now{background:var(--accent-soft);}
+.tl-dt{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;}
+.tl-dt b{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink-2);}
+.tl-dt span{font-size:11px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums;}
+.tl-d.now .tl-dt b{color:var(--accent);}
+.tl-td{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);flex:0 0 100%;}
+.tl-items{display:flex;flex-wrap:wrap;gap:6px;}
+.tl-e{font-size:12px;color:var(--faint);}
+.tl-i{display:inline-flex;align-items:baseline;gap:8px;max-width:100%;padding:4px 10px;
+  border-radius:6px;border:1px solid var(--line);background:var(--raised);text-align:left;}
+.tl-i:hover{border-color:var(--line-2);}
+.tl-k{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);flex:0 0 auto;}
+.tl-t{font-size:12.5px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* the verdict, if the quiz already has one — same two-state vocabulary as .qz-r */
+.tl-t em{font-style:normal;font-weight:700;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ok);}
+.tl-t em[data-pass="n"]{color:var(--due);}
+/* PATCH-077 — a LESSON and a QUIZ should not need reading to tell apart, and neither should
+   a quiz you have sat and one you have not. Three separations, all structural rather than
+   just tonal, so they survive both themes and a quick scan:
+     · a lesson is a solid block with an accent rule down its edge — it is the work;
+     · a quiz is a dashed pill — a check on work already done;
+     · a sat quiz goes green and carries its verdict; an unsat one stays neutral, or takes
+       the due accent when it is late. */
+/* PATCH-149 — `.tl-xl` is an outside lesson, and it is a SEPARATE CLASS from `.tl-l` on
+   purpose even though it is drawn identically. `.tl-l` is not just a look, it is a SCRAPER
+   CONTRACT: cap-assert.py counts `.tl-l` per course and calendar-plan.py syncs every `.tl-l`
+   to Google Calendar by reading `data-course` and `data-lesson-n` off it. An outside lesson
+   has neither — it belongs to no course — so wearing `.tl-l` made it read as a lesson of
+   course `null` in both, which is a miscounted cap in one and a broken calendar event in the
+   other. Same reasoning that made lessonItem's chip use `data-lesson-n` and not `data-lesson`:
+   a name already carrying a contract is not free to reuse. */
+.tl-l,.tl-xl{background:var(--accent-soft);border-color:var(--accent-line);
+  border-left:3px solid var(--accent);border-radius:4px 6px 6px 4px;}
+.tl-l .tl-t,.tl-xl .tl-t{color:var(--ink);font-weight:500;}
+.tl-q{background:var(--surface);border-style:dashed;border-radius:20px;padding:3px 12px;}
+/* PATCH-152 — scoped to .tl-w, never .tl-q: course-start markers share the dashed pill and are not
+   work. Courier Prime runs narrow and light at this size, so the label gets its letter-spacing
+   pulled in (mono is already wide) and the title a little more weight to hold against Archivo. */
+.tl-w .tl-k{font-family:var(--mono);font-weight:700;letter-spacing:.02em;}
+.tl-w .tl-t{font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:-.01em;}
+/* PATCH-153 — work carries the colour of the lesson it belongs to. Nate: "make the quiz, homework,
+   and test events have a colored outline and maybe text that correspond to the main event theyre a
+   part of."
+
+   Every work chip already carried `data-domain`, which repoints --accent/--accent-line one rule
+   block up; it was simply being painted --muted on top of that, so a test and its lesson sat on the
+   same row looking unrelated. Nothing new is computed here — the tie was already in the DOM.
+
+   The state rules deliberately still win on specificity: `.tl-q.done` (green), `.tl-i.late` (red)
+   and `.tl-q.pend` (faint) are all one class heavier than these and keep their colour. Status
+   outranks category — a late test must read as late first and as theory second. */
+.tl-w{border-color:var(--accent-line);}
+/* Qualified `.tl-q.tl-w` rather than `.tl-w`: the muted defaults these override (`.tl-q .tl-k`) sit
+   FURTHER DOWN the file and are the same weight, so a plain `.tl-w` here lost on source order and
+   the labels stayed grey while the borders — which nothing else at that weight sets — came through.
+   Written as one class heavier instead of relocated, so the rule cannot be broken again by someone
+   moving a block. It still sits UNDER `.tl-q.done`, `.tl-i.late` and `.tl-q.pend`, which are equally
+   weighted and later: status outranks category, so a late test reads late first and theory second. */
+.tl-q.tl-w .tl-k{color:var(--accent);}
+.tl-q.tl-w .tl-t{color:var(--ink-2);}
+.tl-q .tl-k{color:var(--muted);font-size:9px;}
+.tl-q .tl-t{color:var(--muted);}
+.tl-q.done{background:var(--ok-soft);border-color:var(--ok);border-style:solid;}
+.tl-q.done .tl-k{color:var(--ok);}
+.tl-q.done .tl-t{color:var(--ink-2);}
+/* PATCH-085 — the chip, re-ranked. Nate, on a Piano Technique chip: "maybe make hanon I -
+   lesson 2 bold. or maybe underline too idk. whatever makes sense." The chip was carrying
+   three things at nearly one weight — the class eyebrow, the course-and-lesson, and the
+   lesson's own title — the last two run together into a single 12.5px string joined by an em
+   dash, so the part that IDENTIFIES the chip did not lead.
+
+   Weight plus a size step plus --ink, and deliberately NOT an underline: the whole chip is
+   already a button, so a rule under a phrase inside it reads as a second, nested link target;
+   and at this density — a term's worth of chips, several to a day — an underline on every one
+   is a lot of strokes to buy a distinction that weight already makes cleanly. The title drops
+   to --muted a size down and becomes the subordinate clause it always was; the em dash goes
+   with it, since the gap and the tonal step now say the same thing more quietly.
+
+   The identity must not be the first thing to be ellipsised, which is what would happen if
+   both halves shrank alike — hence the lopsided shrink factors: the title gives up its space
+   long before the name starts to. */
+.tl-lt{display:inline-flex;align-items:baseline;gap:7px;min-width:0;overflow:hidden;}
+.tl-n{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:13px;font-weight:700;color:var(--ink);}
+.tl-s{flex:1 20 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:11.5px;font-weight:400;color:var(--muted);}
+/* Nate: "lesson # underlined in the today and schedule views. helps to see what lesson"
+   (2026-08-23) — same chips draw both, so one rule covers it everywhere. Offset rather than
+   flush against the text so it reads as emphasis, not a broken link. */
+.lnum{text-decoration:underline;text-underline-offset:2px;}
+/* The class mark. It sits in the 9.5px eyebrow but is deliberately sized well past it, because
+   the emoji is the one thing on the chip meant to resolve before you read anything — two
+   classes that share a domain share its tint, and this is what tells them apart. Its colour is
+   the font's own and no theme's, which is exactly why it works where the tint cannot.
+   14px, not the 12.5px this started at: emoji are dense little drawings and the last 1.5px is
+   the difference between a speaker and a grey box (see the note on the table in app.js).
+   Nothing desaturates them either — at this size chroma is most of what makes two of them
+   tell apart, and dulling it was buying quiet at the cost of the whole point.
+   letter-spacing is reset because the eyebrow's .12em tracking would otherwise push the glyph
+   off its own margin. */
+.tl-em{font-size:14px;line-height:1;margin-right:5px;letter-spacing:0;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+.tl-q .tl-em{font-size:12.5px;}
+.tl-i.late{border-color:var(--due-line);background:var(--due-soft);}
+.tl-i.late .tl-k{color:var(--due);}
+.tl-more{border-style:dashed;font-size:12px;color:var(--muted);}
+.tl-late{background:var(--surface);padding:9px 14px;display:flex;flex-direction:column;gap:7px;}
+.tl-lh{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--due);}
+
+/* PATCH-110 — a PENDING quiz: on the schedule because it is coming, not because it is yours
+   yet. PATCH-077 gave the timeline three states already (lesson = solid block, quiz = dashed
+   pill, sat quiz = green), and this is a fourth that must not be mistaken for any of them —
+   least of all for the plain dashed pill of a quiz you actually owe, which is the one thing it
+   sits right next to. So it keeps the pill shape and gives up everything else: no fill, a
+   hairline in the weak line token, and both labels down to --faint. Reads as an outline of a
+   quiz rather than a quiet quiz, which is exactly what it is. Not `opacity`, which would fade
+   the emoji too — the class mark is the one glyph on the chip meant to survive a glance. */
+.tl-q.pend{background:transparent;border-color:var(--line);border-style:dashed;cursor:pointer;}
+.tl-q.pend .tl-k,.tl-q.pend .tl-t{color:var(--faint);}
+.tl-q.pend:hover{border-color:var(--line-2);}
+.tl-q.pend:hover .tl-k,.tl-q.pend:hover .tl-t{color:var(--muted);}
+
+/* PATCH-126 — the ear-training shelf's one row. It is not a drill and does not want a drill's
+   tile: one wide row that says what the set is and how far through it you are. */
+.earrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:baseline;
+  width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:13px 16px;}
+.earrow:hover{border-color:var(--line-2);background:var(--sunk);}
+.earrow-t{font-size:14px;font-weight:600;color:var(--ink);}
+.earrow-s{font-size:12.5px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;}
+.earrow-n{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
+
+/* PATCH-126 — the drill shelf. The class tile's grammar at about half the size: a coloured rule,
+   the name, one fact. Four or five across where a class grid takes three, because a drill needs a
+   name and a tempo and a class tile needs a course list. */
+.dtiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
+.dtile{display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:0;
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.dtile:hover{border-color:var(--line-2);background:var(--sunk);}
+.dtile-bar{height:3px;background:var(--accent);flex:0 0 auto;}
+.dtile-t{padding:11px 13px 0;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--ink);}
+.dtile-b{padding:6px 13px 12px;font-size:12.5px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;margin-top:auto;}
+.dtile-b b{font-weight:700;}
+.dtile-b span{color:var(--faint);}
+
+/* The drill page's stat strip. Each figure gets a label above it and a qualifier below, so a
+   number that is missing can say WHY ("no printed mark") instead of rendering as a bare dash the
+   reader has to interpret. Tabular figures so four of them line up. */
+.dstats{display:grid;gap:1px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.dstat{background:var(--surface);padding:11px 14px;display:flex;flex-direction:column;gap:3px;}
+.ds-k{font-size:9.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);}
+.ds-v{font-size:19px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1;}
+.ds-s{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;}
+.dread .lbl{margin-bottom:4px;}
+
+/* PATCH-124 — a missed question, on the Tests page. It is a READING block, not a chip: the whole
+   point is the prose — the question, the answer and why the answer is what it is — so it is set in
+   the reading face at reading size, with the machine parts (the number, the verdict, the date) held
+   to the eyebrow scale above it. Left rule in the due tone for a missed one and the ok tone once
+   retaken, so a card that has been closed out reads differently from one still owed without either
+   disappearing. */
+.tcard{margin-bottom:14px;}
+.tqs{display:flex;flex-direction:column;gap:14px;margin-top:14px;
+  border-top:1px solid var(--line);padding-top:14px;}
+.tq{border-left:2px solid var(--due);padding-left:13px;}
+.tq[data-kind="partial"]{border-left-color:var(--due-line);}
+.tq-h{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:5px;}
+.tq-n{font-size:12px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;}
+.tq-k{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--due);}
+.tq-c{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ok);}
+.tq-d{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);}
+.tq-q{font-family:var(--read);font-size:15.5px;line-height:1.5;color:var(--ink);}
+.tq-a{font-size:13.5px;color:var(--ink-2);margin-top:6px;}
+.tq-a b{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin-right:6px;}
+.tq-w{font-family:var(--read);font-size:14px;line-height:1.55;color:var(--muted);margin-top:6px;}
+.tq-refs{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:8px;}
+.tq-rl{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);}
+
+/* PATCH-122 — the class page opens on the same 4px rule and icon the tiles carry, not on a
+   banner illustration. Same reasoning, and it keeps the two surfaces reading as one system. */
+.clsbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.clsbar::after{content:"";flex:1;height:4px;background:var(--accent);border-radius:2px;}
+.clsbar-ic{font-size:22px;line-height:1;flex:0 0 auto;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+
+/* Two columns, because they are two ends of one question — what you need before this class, and
+   what closes it. They collapse to one at the width where two would each be too narrow to hold a
+   line of prose rather than at a device size. */
+.clscols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;}
+.clscol .prose{font-size:15px;max-width:none;}
+.clscol .prose ul{margin:0;padding-left:1.15em;}
+.clscol .prose li{margin:.3em 0;}
+.clscol .prose>*:last-child{margin-bottom:0;}
+
+/* The course row's blurb — the course note's own first sentence, on the class page only. */
+.rowcard-full{align-items:flex-start;}
+.rc-blurb{display:block;margin-top:5px;font-family:var(--read);font-size:13.5px;line-height:1.5;
+  color:var(--muted);max-width:62ch;}
+
+/* A recallable backup. Neutral, not alarming: the destructive thing already happened, and this row
+   is the way back from it. */
+.qz.qz-undo .st{background:var(--muted);}
+.qz.qz-undo .qz-t{color:var(--ink-2);}
+
+
+/* PATCH-115 — the activity log. A day is a group with its date in the left gutter and its events
+   beside it, the same spine the schedule uses (.tl-d), so the two read as one system seen from
+   opposite ends: the schedule is what is coming, this is what happened. The kind chip is a fixed
+   column so a day's events line up down the page rather than each starting wherever its label
+   ended. */
+.alog{display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;background:var(--line);}
+.alog-d{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;background:var(--surface);
+  padding:9px 14px;}
+.alog-day{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;}
+.alog-rows{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.alog-r{display:grid;grid-template-columns:66px minmax(0,1fr) auto;gap:10px;align-items:baseline;}
+.alog-k{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);}
+.alog-r[data-k="test"] .alog-k{color:var(--accent);}
+.alog-r[data-k="retake"] .alog-k{color:var(--due);}
+.alog-r[data-k="sync"] .alog-k{color:var(--ok);}
+.alog-r[data-k="course"] .alog-k{color:var(--instr);}
+.alog-t{font-size:13px;color:var(--ink-2);min-width:0;overflow-wrap:anywhere;}
+.alog-at{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;}
+@media (max-width:640px){
+  .alog-d{grid-template-columns:minmax(0,1fr);gap:5px;}
+  .alog-r{grid-template-columns:60px minmax(0,1fr);}
+  .alog-at{display:none;}
+}
+
+/* PATCH-114 — a retired quiz's row: nailed, out of rotation, kept on the page as a record. Reads
+   in the ok tone and at rest — nothing about it is owed. */
+.qz.qz-ret .st{background:var(--ok);}
+.qz.qz-ret .qz-t{color:var(--ink-2);}
+.qz.qz-ret .qz-d[data-d]{color:var(--faint);}
+
+/* PATCH-113 — the retake's row in the quiz list. It borrows .qz wholesale and repaints only
+   what has to differ: the status dot and the due slot take the due accent, since a retake is
+   never routine, and the paper's name gets a subordinate clause for the concept it tests. */
+.qz.qz-miss .st{background:var(--due);}
+.qz.qz-miss .qz-d[data-d]{color:var(--due);}
+.qz-sub{font-weight:400;color:var(--muted);font-size:12px;}
+
+/* PATCH-112 — a RETAKE: a question you missed on a test, come back as a pop quiz. It borrows
+   the repeat ring (it is a second sitting) and adds the due accent, because unlike a spaced
+   review this one is not routine — it exists because something was wrong, and it should read
+   as the most pointed thing on the day it lands. */
+.tl-q.miss{background:var(--due-soft);border-color:var(--due-line);
+  box-shadow:inset 0 0 0 1px var(--due-soft);}
+.tl-q.miss .tl-k{color:var(--due);}
+.tl-q.miss .tl-t{color:var(--ink-2);}
+
+/* The retake card's own two marks: what it was marked first time, and the grader's note on
+   why. The note sits under the answer in the reading face, since it is prose about the answer
+   rather than more answer. */
+.misstag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--due);}
+.misswhy{margin-top:10px;font-family:var(--read);font-size:14.5px;line-height:1.55;
+  color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;}
+
+/* PATCH-111 — the rail, in two named groups. Nate: "i just want to segment between what my
+   stuff is verse whats in the system in general." A heading rather than a rule, because a bare
+   divider says "these are apart" without saying WHY, and the why is the whole request. Set in
+   the same eyebrow type every other section label on the page uses, so the rail reads as part
+   of the same system rather than as a menu with its own vocabulary. */
+.navgrp{font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);padding:0 10px 5px;}
+.navgrp-2{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+
+/* PATCH-111 — the term line, now under the calendar it describes. Same type as it had under
+   the week band; the top margin is what it gains, since it is captioning a block of month
+   cards rather than trailing a single line of text. */
+.wb-total-cal{margin:12px 0 0;}
+
+/* PATCH-111 — a REPEAT pop quiz. It is a sat quiz (so it keeps .done's green) that has come
+   back around, and the one thing it must not read as is unfinished work. The ring is what
+   carries it — an outline in the ok tone rather than another fill — and `was Nailed` is set
+   in the faint tone so the previous rating reads as history rather than as this sitting's
+   verdict, which is exactly the confusion it exists to remove. */
+.tl-q.rep{border-style:solid;box-shadow:inset 0 0 0 1px var(--ok-soft);}
+.tl-q.rep .tl-k{color:var(--ok);letter-spacing:.06em;}
+.tl-q .wasr{font-style:normal;font-weight:700;font-size:9.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--faint);}
+
+/* PATCH-110 — the Completed record, under the term rather than inside it. Shut by default: it
+   only grows, and the schedule is what the section is for. A row is a LESSON — its own heading
+   line, then the same chips the timeline draws — because "what did week 2 actually come to"
+   is a per-lesson question and a flat list of thirty green pills answers nothing. */
+.tl-done{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
+.tl-done>summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;
+  list-style:none;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ok);}
+.tl-done>summary::-webkit-details-marker{display:none;}
+.tl-done>summary::before{content:"▸";color:var(--muted);letter-spacing:0;}
+.tl-done[open]>summary::before{content:"▾";}
+.tl-done>summary:hover{background:var(--sunk);border-radius:9px 9px 0 0;}
+.tl-dn{margin-left:auto;font-weight:600;letter-spacing:.04em;text-transform:none;
+  color:var(--faint);font-variant-numeric:tabular-nums;}
+.tl-dbody{display:flex;flex-direction:column;gap:1px;background:var(--line);
+  border-top:1px solid var(--line);border-radius:0 0 9px 9px;overflow:hidden;}
+.tl-drow{background:var(--surface);padding:9px 14px;display:flex;flex-direction:column;gap:7px;}
+/* Same two-tier ranking as a timeline chip (PATCH-085): the identity leads, the title is the
+   subordinate clause, and the date sits out at the end where a date belongs. */
+.tl-dh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0;}
+.tl-dh b{font-size:13px;font-weight:700;color:var(--ink);}
+.tl-dh span{flex:1 1 auto;min-width:0;font-size:11.5px;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.tl-dh em{flex:0 0 auto;font-style:normal;font-size:11px;font-weight:600;color:var(--faint);
+  font-variant-numeric:tabular-nums;}
+@media (max-width:640px){.tl-dh span{flex:1 1 100%;white-space:normal;}}
+
+/* The Overview's "Today & next up" card — the same .tl-i chips the Schedule section draws,
+   grouped by day inside a plain card rather than the Schedule's own week-striped rows, since
+   this lives above the calendar as a status check, not as a second copy of the schedule. */
+.tncard{display:flex;flex-direction:column;gap:14px;}
+.tnd{display:flex;flex-direction:column;gap:7px;}
+@media (max-width:640px){
+  .tl-d{grid-template-columns:minmax(0,1fr);gap:5px;}
+  /* The lane rules are a class heavier than the line above, so specificity carries them into this
+     breakpoint and a phone would render a 320px gutter beside a 40px column of content. They are
+     undone by name rather than by !important, and the lane DEGRADES rather than disappearing: the
+     start segment is a real lesson chip, so showing only that returns the phone to exactly what it
+     drew before lanes existed — the lesson on its opening day — while the continuation segments,
+     which carry no information without the column to run down, drop out. */
+  .tl[data-lanes="1"] .tl-d,.tl[data-lanes="2"] .tl-d,.tl[data-lanes="3"] .tl-d{
+    grid-template-columns:minmax(0,1fr);}
+  .tl-sp{display:contents;}
+  /* A continuation segment is pure column and there is no column here — but one carrying work keeps
+     its place, or the phone would silently lose a test that the desktop shows. */
+  .tl-ln:not(.start):not(.has){display:none;}
+  .tl-ln{margin:0;padding:4px 10px;border:1px solid var(--accent-line);border-radius:9px;}
+  .tl-ln.off{display:none;}
+  .tl-t{white-space:normal;}
+  /* On a phone the chip has the column to itself, so the two halves wrap onto their own lines
+     rather than fighting for one — the identity keeps the first line, the title falls under
+     it. Both stop truncating: there is room, and an ellipsis here would hide the title
+     entirely rather than shorten it. */
+  .tl-lt{flex-wrap:wrap;gap:2px 7px;}
+  .tl-n,.tl-s{white-space:normal;overflow:visible;text-overflow:clip;}
+}
+
+
+/* course + class rows */
+.rowcard{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:13px 16px;
+  text-align:left;width:100%;}
+.rowcard:hover{border-color:var(--line-2);}
+.rowcard .num{font-family:var(--disp);font-size:21px;font-weight:400;color:var(--faint);
+  font-variant-numeric:tabular-nums;}
+.rowcard h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.005em;}
+.rowcard .meta{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.rowcard .num{color:var(--accent);}
+.bar{height:4px;border-radius:2px;background:var(--sunk);overflow:hidden;min-width:74px;}
+.bar i{display:block;height:100%;background:var(--accent);}
+
+/* course reading view */
+.coursehead{display:flex;flex-direction:column;gap:12px;}
+.readwrap{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:40px;align-items:start;
+  max-width:920px;}
+.uindex{position:sticky;top:24px;display:flex;flex-direction:column;gap:2px;
+  border-left:1px solid var(--line);padding-left:14px;}
+.uindex button{text-align:left;font-size:12.5px;padding:5px 0;color:var(--muted);line-height:1.3;}
+.uindex button:hover{color:var(--ink);}
+.uindex button.done{color:var(--ok);}
+.uindex .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:6px;}
+.lesson{border-top:1px solid var(--line);padding-top:22px;margin-top:8px;}
+.lesson-h{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;}
+.lesson-h .u{font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);}
+.lesson-h h3{margin:0;font-family:var(--read);font-size:23px;font-weight:600;letter-spacing:-.01em;
+  text-wrap:balance;}
+.blk{margin-top:16px;}
+.blk .lbl{font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:7px;display:flex;gap:9px;align-items:baseline;}
+/* Turn-in counter beside a lesson's Read / Homework label — says what the lesson still owes
+   without making the reader count checkboxes. Goes green once the block is fully turned in. */
+.blk .lbl .done{font-weight:600;letter-spacing:.06em;color:var(--faint);text-transform:none;}
+.blk .lbl .done.is-all{color:var(--ok);}
+/* Every one of these is scoped to a DIRECT child. PATCH-010 nests the reading — lists and
+   all — inside a task's own <li>, and a descendant `.tasks li` rule turned each of those
+   inner list items into a flex container, which put every <strong> and cross-link on its own
+   line and ate the bullets. Direct-child selectors keep the task row's layout to the task row. */
+.tasks{display:flex;flex-direction:column;gap:7px;list-style:none;padding:0;margin:0;}
+.tasks>li{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;font-family:var(--read);
+  font-size:15.5px;line-height:1.5;}
+/* flex-basis 0, not auto: with wrapping on, an `auto` basis makes a long task line demand its
+   max-content width and drop below its own checkbox on a phone. */
+.tasks>li>label{flex:1 1 0;min-width:0;cursor:pointer;}
+.tasks>li>input{appearance:none;flex:0 0 auto;width:16px;height:16px;margin-top:3px;border-radius:4px;
+  border:1.5px solid var(--line-2);background:var(--raised);cursor:pointer;}
+.tasks>li>input:checked{background:var(--ok);border-color:var(--ok);}
+.tasks>li>input:checked::after{content:"";display:block;width:4px;height:8px;margin:1px 0 0 4.5px;
+  border:solid var(--surface);border-width:0 2px 2px 0;transform:rotate(45deg);}
+.tasks>li>input:disabled{cursor:not-allowed;opacity:.5;}
+.tasks>li.on>label{color:var(--muted);}
+/* The Homework block on the LESSON page (Nate's call) — a plain bullet, not a disabled
+   checkbox. A greyed-out checkbox still reads as clickable; the tick mark reads as a report
+   instead, which is what this row actually is once homework only checks off on its own page. */
+.tasks>li.ro{cursor:default;}
+.tasks>li.ro>.tick{flex:0 0 auto;width:16px;margin-top:1px;text-align:center;
+  font-weight:700;color:var(--faint);}
+.tasks>li.ro.on>.tick{color:var(--ok);}
+.tasks>li.ro>.tlabel{flex:1 1 0;min-width:0;}
+.tasks>li.ro.on>.tlabel{color:var(--muted);}
+/* PATCH-010 — the reading itself, folded under the Read line that assigns it. It borrows
+   .callout's shape (hairline box, accent rule down the left, radius open on that edge) so a
+   pulled section reads as quoted material from elsewhere rather than as the lesson's own
+   voice, and the body is plain .prose — the same Spectral the rest of the page reads in. */
+.reading{flex:0 0 100%;margin:9px 0 3px 26px;display:flex;flex-direction:column;gap:7px;}
+.rd{border:1px solid var(--line);border-left:2px solid var(--accent-line);border-radius:0 8px 8px 0;
+  background:var(--surface);}
+.rd>summary{cursor:pointer;list-style:none;padding:9px 14px 10px;display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;align-items:baseline;}
+.rd>summary::marker,.rd>summary::-webkit-details-marker{display:none;content:"";}
+.rd>summary:hover{background:var(--sunk);}
+.rd-t{font-family:var(--ui);font-size:13px;font-weight:600;line-height:1.35;color:var(--ink);}
+.rd-t::before{content:"▸ ";color:var(--muted);font-weight:400;}
+.rd[open] .rd-t::before{content:"▾ ";}
+.rd-m{font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--faint);
+  white-space:nowrap;font-variant-numeric:tabular-nums;}
+/* The first sentence, so a closed fold still says what is behind it. It goes away on open —
+   it would otherwise repeat the first line of the body directly beneath it. */
+.rd-l{grid-column:1/-1;font-family:var(--read);font-size:13.5px;line-height:1.45;color:var(--muted);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rd[open] .rd-l{display:none;}
+.rd-b{padding:13px 16px 15px;border-top:1px solid var(--line);}
+.rd-b .prose{max-width:64ch;}
+.rd-f{margin:15px 0 0;padding-top:10px;border-top:1px solid var(--line);font-family:var(--ui);
+  font-size:11.5px;line-height:1.45;color:var(--muted);}
+.rd-f b{font-weight:600;color:var(--ink-2);}
+
+/* spec-172 — the book fold. It borrows the reading fold's shape on purpose: a scanned page
+   of Hanon and a pulled section of a vault note are the same kind of thing on a lesson —
+   material from elsewhere, quoted under the task that assigns it — so they read as siblings
+   rather than as two inventions. It sits at block level (under Homework) rather than inside a
+   task's <li>, so it takes no left indent.
+   The body is EMPTY in the markup and filled by app.js on open; nothing here may assume it
+   has content, which is why the padding lives on .bk-b and not on the <details>. */
+.bk{border:1px solid var(--line);border-left:2px solid var(--accent-line);border-radius:0 8px 8px 0;
+  background:var(--surface);}
+.bk>summary{cursor:pointer;list-style:none;padding:9px 14px 10px;display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;align-items:baseline;}
+.bk>summary::marker,.bk>summary::-webkit-details-marker{display:none;content:"";}
+.bk>summary:hover{background:var(--sunk);}
+.bk-t{font-family:var(--ui);font-size:13px;font-weight:600;line-height:1.35;color:var(--ink);}
+.bk-t::before{content:"▸ ";color:var(--muted);font-weight:400;}
+.bk[open] .bk-t::before{content:"▾ ";}
+.bk-m{font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--faint);
+  white-space:nowrap;font-variant-numeric:tabular-nums;}
+.bk-b:not(:empty){padding:14px 16px 15px;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:14px;}
+/* The scan's paper is white in life and the image carries its own ground, so the theme cannot
+   reach inside it. `--scan` is declared at :root FIRST and then re-pointed in both dark states
+   — the media query for "system dark" and the attribute for an explicit choice — so nothing
+   here resolves in only one theme. In the dark one the page is dimmed rather than inverted:
+   inverted staves read as white-on-black, which is not what engraved music looks like, and the
+   glare was the actual complaint. */
+:root{--scan:none;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--scan:brightness(.74) contrast(1.06);}}
+:root[data-theme="dark"]{--scan:brightness(.74) contrast(1.06);}
+/* Each page is its own scroll container. Fitted to the column by default; clicking opens it to
+   the width it was rendered at, and the OVERFLOW STAYS IN THE FIGURE — the page body never
+   scrolls sideways, on any width. */
+.bkpg{margin:0;overflow-x:auto;border:1px solid var(--line);border-radius:7px;
+  background:var(--raised);padding:8px;}
+.bkpg img{display:block;width:100%;max-width:100%;height:auto;cursor:zoom-in;filter:var(--scan);}
+.bkpg.zoom{cursor:auto;}
+.bkpg.zoom img{width:auto;max-width:none;cursor:zoom-out;}
+.bkpg figcaption{margin-top:7px;font-family:var(--ui);font-size:10.5px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+  font-variant-numeric:tabular-nums;position:sticky;left:0;}
+.bk-f{margin:0;padding-top:11px;border-top:1px solid var(--line);font-family:var(--ui);
+  font-size:11.5px;line-height:1.5;color:var(--muted);}
+.bk-f b{font-weight:600;color:var(--ink-2);}
+
+/* PATCH-145 — an outside lesson's resources. Deliberately the SAME picture grammar as a book
+   scan (`.bkpg` above): fitted to the column, its own scroll container, click to open at full
+   size, `--scan` applied so a white handout does not glare in the dark theme. A teacher's
+   photocopy and a page of Leavitt are the same object to a reader, and they should not need
+   two sets of manners. What differs is that a resource is one FILE that may hold several
+   pages, so the caption names the file once and sits above its pages rather than under each. */
+/* SHUT BY DEFAULT, and unlike the book scans that is the right way round here. A book fold sits
+   in ONE lesson; this sits on a card in a list of every lesson Nate has ever had, so three
+   handouts unrolled at full column width is a page you scroll past rather than read. So a
+   resource opens as a strip of page thumbnails — enough to recognise which handout it is — and
+   one click on a page swaps the figure to full width, using the SAME `.zoom` toggle and the
+   same `data-bkzoom` handler the scans already have. No second control, no second state. */
+.res-b:not(:empty){display:flex;flex-direction:column;gap:12px;margin-top:9px;}
+.respg{margin:0;overflow-x:auto;border:1px solid var(--line);border-radius:7px;
+  background:var(--raised);padding:8px;display:flex;flex-wrap:wrap;gap:8px;}
+.respg img{display:block;width:auto;height:184px;max-width:none;border-radius:3px;
+  cursor:zoom-in;filter:var(--scan);}
+.respg.zoom{flex-direction:column;flex-wrap:nowrap;}
+.respg.zoom img{width:100%;max-width:100%;height:auto;cursor:zoom-out;}
+.respg figcaption{order:-1;flex:0 0 100%;font-family:var(--ui);font-size:10.5px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--faint);position:sticky;left:0;}
+.respg figcaption::after{content:" · click to open";font-weight:500;letter-spacing:.04em;
+  text-transform:none;color:var(--line-2);}
+.respg.zoom figcaption::after{content:" · click a page to shrink it";}
+.resfile{margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:7px;
+  background:var(--sunk);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;}
+.resfile-n{font-family:var(--ui);font-size:13.5px;font-weight:600;color:var(--ink-2);}
+.resfile-m{font-family:var(--ui);font-size:11.5px;color:var(--muted);}
+
+/* PATCH-146 — the upload control. A <label> wrapping a hidden file input rather than a button:
+   that is the one way to restyle a file picker without scripting the click, and the label IS the
+   control for accessibility, so keyboard and screen readers get it for free. Drawn as .lnkedit —
+   the same quiet inline affordance "open the homework page →" already uses in a block label —
+   because it belongs to the Resources heading, not beside the page's primary actions. */
+.upbtn{cursor:pointer;}
+.upbtn:hover{color:var(--accent);}
+/* A file that is in the page but not yet in the vault. The dashed edge is the whole message:
+   this one is in flight. It resolves to a normal .respg the moment /school sync files it. */
+.respg-up{border-style:dashed;border-color:var(--due);}
+.respg-up figcaption{color:var(--due);}
+.respg-up .resfile-m{flex:0 0 100%;}
+.upx{flex:0 0 auto;align-self:flex-start;font-size:11.5px;padding:3px 9px;}
+
+/* PATCH-057 — the quiz row. It replaced the .chip / .quizbar pair, where one block-level
+   "Take these 3 now" button spoke for every quiz in the lesson and went on inviting you long
+   after they were all sat. A quiz is a row now: what it is, when it is due, and either a
+   Take button or the verdict it already carries. The verdict is the SR rating — nailed /
+   solid / rusty / forgot — and there is no score behind it (PATCH-057's decision).
+   `.qz-r[data-pass]` is the whole pass/fail vocabulary: green when the rating says you knew
+   it, due-amber when it says you didn't. Both are tokens, both resolve in either theme. */
+.quizlist{display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);
+  border-radius:9px;overflow:hidden;background:var(--line);}
+.qz{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;
+  background:var(--surface);padding:6px 11px;}
+.qz-t{display:flex;align-items:center;gap:8px;min-width:0;text-align:left;font-size:13.5px;
+  color:var(--ink);padding:2px 0;}
+.qz-t:hover{color:var(--accent);}
+.qz-t .st{width:6px;height:6px;border-radius:50%;background:var(--line-2);flex:0 0 auto;}
+.qz[data-st="learning"] .st{background:var(--due);}
+.qz[data-st="maintenance"] .st{background:var(--ok);}
+/* PATCH-008 — a quiz's due date, in the lesson that teaches it. Late and due-today carry the
+   due accent; anything further out stays quiet so the row still reads as a title first. */
+.qz-d{font-size:11px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums;
+  white-space:nowrap;text-align:right;}
+.qz-d[data-d="late"],.qz-d[data-d="today"]{color:var(--due);}
+.qz-d[data-d="soon"]{color:var(--ink-2);}
+.qz-b{flex:0 0 auto;min-width:74px;justify-content:center;font-size:12px;}
+.qz-b.btn{padding:4px 12px;}
+/* the verdict, once it has one — a stamp, not a button, even though it is still clickable */
+.qz-r{display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;
+  border-radius:20px;border:1px solid var(--ok);background:var(--ok-soft);color:var(--ok);
+  font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
+.qz-r[data-pass="n"]{border-color:var(--due-line);background:var(--due-soft);color:var(--due);}
+.qz-r:hover{filter:brightness(1.06);}
+.qz-b[disabled]{opacity:.45;cursor:not-allowed;}
+/* PATCH-103 — a blocked quiz now sits IN the due-today list rather than in a section of its
+   own, so the row has to say "held" while standing next to takeable ones. It is a visual
+   mark, not a second explanation: the disabled Take, its title and the caption under the list
+   already carry the words. The bar is --due, the page's existing attention token, and the
+   sunk ground is the same one every quiet surface uses, so both themes resolve with no
+   colour declared here. `data-held` has been on the row since PATCH-058 and was unstyled. */
+.qz[data-held]{background:var(--sunk);box-shadow:inset 2px 0 0 var(--due-line);}
+.qz[data-held] .qz-t{color:var(--ink-2);}
+/* ...and it has to come back OFF in place. Inside a lesson, ticking the last homework box
+   unlocks its quizzes without a re-render (PATCH-058: the change handler flips `data-hw` on
+   the lesson and enables the Take buttons, deliberately never re-rendering, so the reader
+   keeps their scroll position mid-lesson). `data-held` is written at render and cannot be
+   flipped by that path, so a row would have gone on looking held under a live Take button.
+   Hung off the same `data-hw` hook that already shows and hides .qz-lock, so the mark and the
+   message can never disagree. */
+.lesson[data-hw="open"] .qz[data-held]{background:var(--surface);box-shadow:none;}
+.lesson[data-hw="open"] .qz[data-held] .qz-t{color:var(--ink);}
+.qz-off{display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;
+  font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);}
+/* PATCH-058 — the homework gate. The hint is always in the markup and CSS decides whether it
+   is on screen, so ticking the last homework box can unlock the quizzes in place — the
+   change handler flips `data-hw` on the lesson and never re-renders, which is what keeps the
+   reader's scroll position mid-lesson. */
+.qz-lock{display:none;margin:0 0 9px;font-size:12.5px;color:var(--due);}
+.lesson[data-hw="locked"] .qz-lock{display:block;}
+/* PATCH-069 — the same row, given room on the Quizzes page */
+.quizlist.wide .qz{padding:8px 13px;}
+@media (max-width:640px){
+  .qz{grid-template-columns:minmax(0,1fr) auto;row-gap:5px;}
+  .qz-t{grid-column:1/-1;}
+}
+/* PATCH-064 — where a test or a final is named, how to actually sit it. An `obsidian://`
+   link cannot fire from the artifact's sandboxed frame, so the page prints the command. */
+.runhint{flex:0 0 100%;margin:5px 0 0 26px;font-family:var(--ui);font-size:12px;
+  color:var(--muted);line-height:1.5;}
+.runhint + .reading{margin-top:7px;}
+@media (max-width:640px){.runhint{margin-left:0;}}
+.lessonfoot{margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  padding:12px 14px;border-radius:9px;background:var(--sunk);border:1px solid var(--line);}
+.lessonfoot .hint{font-size:12.5px;color:var(--muted);}
+code.cmd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:nowrap;
+  background:var(--raised);border:1px solid var(--line-2);border-radius:5px;padding:2px 6px;}
+
+/* drill */
+.drill{max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:30px 32px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;gap:16px;min-height:230px;}
+.qcard .q{font-family:var(--read);font-size:21px;line-height:1.45;}
+.qcard .q p{margin:0 0 .6em;}
+.answer{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:14px;}
+.answer .a{font-family:var(--read);font-size:16.5px;line-height:1.6;}
+.answer .a>*:first-child{margin-top:0;}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.rate button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 6px;
+  border:1px solid var(--line-2);border-radius:9px;background:var(--raised);font-size:11px;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.rate button em{font-style:normal;font-size:19px;line-height:1;}
+.rate button:hover{border-color:var(--ink-2);color:var(--ink);}
+.progressline{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);
+  font-variant-numeric:tabular-nums;}
+.progressline .bar{flex:1;}
+
+/* spec-172 — ear training. It reuses the drill's furniture (.drill column, .qcard, .answer,
+   .progressline) and the quiz row (.quizlist / .qz) on purpose: the reader already knows both
+   shapes, and the loop here — hear it, guess, reveal — is the drill's loop with a sound where
+   the question text goes. Nothing below declares a colour of its own; it is all tokens the
+   two themes already resolve. */
+.earcard{min-height:0;gap:18px;}
+.earq{font-family:var(--read);font-size:21px;line-height:1.45;color:var(--muted);}
+/* The play button is the one control on this surface that has to be found without reading, so
+   it is bigger than a .btn and carries the triangle. */
+.earplay{padding:11px 20px;font-size:15px;font-weight:600;}
+.earplay em{font-style:normal;font-size:13px;line-height:1;}
+/* Scoped through .answer so it outweighs the drill's own `.answer .a` — the revealed name is
+   the payoff on this surface and reading it at the drill's 16.5px buried it under the button
+   that had just been pressed. (Caught in a render; the rule looked right in the file.) */
+.answer .earans{font-family:var(--read);font-size:27px;font-weight:600;line-height:1.25;
+  letter-spacing:-.01em;color:var(--ink);}
+.earnav{justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;margin-top:auto;}
+.earnav .hint{flex:1 1 220px;font-size:12.5px;color:var(--muted);text-align:center;}
+/* A revealed clip gets the dot the quiz row gives a passed quiz, without borrowing the quiz
+   status vocabulary to say it — these have no SR state and never will. */
+.earlist .qz[data-seen] .st{background:var(--ok);}
+.earlist .qz[data-now]{background:var(--sunk);}
+.earlist .qz[data-now] .qz-t{font-weight:600;}
+/* The answers are words, not dates, so this column stops being tabular and is allowed to wrap
+   — "Minor ii-V-i (iiø7 - V7 - i)" does not fit on one line at a phone width. */
+.earlist .qz-d{white-space:normal;font-size:12.5px;font-weight:500;letter-spacing:0;
+  color:var(--ink-2);font-variant-numeric:normal;}
+.earlist .qz:not([data-seen]) .qz-d{color:var(--faint);font-style:italic;}
+
+/* ================================================================ PATCH-012
+   THE RULED PAGE — one visual system across classes, courses and the quiz bank.
+   Every device is drawn from the school's own printed material: a call number and a
+   measure of ticks. Two primitives, used on all three surfaces (the class tiles add a
+   third, the cut — see .art below, and PATCH-020 in app.js):
+
+     .sp     the strand plate — a call number. Hue is the strand's (set per-element from
+             the data as --h); S and L are the theme's, so 17 strands work in both themes
+             off a single rule and no strand colour lives inside a theme block.
+     .meter  a measure — one tick per lesson, filled when the lesson is turned in. Says
+             how many are left, which a percentage bar cannot.
+*/
+
+/* --- the strand plate ------------------------------------------------------ */
+.sp{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  min-width:36px;padding:4px 6px 3px;border-radius:4px;
+  font-size:10px;font-weight:700;letter-spacing:.12em;line-height:1.1;
+  color:hsl(var(--h) var(--st-s) var(--st-l));
+  background:hsl(var(--h) var(--st-bg-s) var(--st-bg-l));
+  border:1px solid hsl(var(--h) var(--st-ln-s) var(--st-ln-l));}
+
+/* --- a measure of lessons -------------------------------------------------- */
+.meter{display:inline-flex;gap:2px;align-items:stretch;height:15px;flex:0 0 auto;}
+.meter i{width:4px;border-radius:1px;background:var(--sunk);border:1px solid var(--line);}
+.meter i.on{background:var(--accent);border-color:var(--accent);}
+.meter.sm{height:11px;}
+.meter.sm i{width:3px;}
+
+/* --- classes, as a board of tiles (PATCH-011) ------------------------------ */
+/* auto-fill against a 300px floor gives 3 up on the 1180px page, 2 in the middle and 1
+   on a phone, without a media query doing the counting. */
+/* PATCH-122 — three across by default. Nate: "the class library page should have default 3
+   columns that be dynamic based on user page zoom level." auto-fill + a minmax floor already does
+   the zoom half on its own — zooming in shrinks the viewport in CSS px, so the track count falls
+   to 2 then 1 with no media query — but the old 300px floor fitted FOUR at this page's 1180px
+   measure. 336px is the largest floor that still yields 3 at full width and 1 on a phone. */
+.tiles{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+.tile{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);
+  border-radius:11px;overflow:hidden;}
+.tile:hover{border-color:var(--line-2);}
+/* PATCH-122 — a 4px rule in the class's own colour and its emoji, in place of the engraved cut
+   and the 37px numeral. The bar is the whole "image" now: it says which domain the class is in
+   at a glance and takes 4px to do it, where the artwork took 90 and said nothing the pill under
+   it did not already say. The icon sits ON the tile rather than in the bar so the bar stays a
+   rule rather than becoming a header strip. */
+.tile-bar{height:4px;background:var(--accent);flex:0 0 auto;}
+/* The icon sits IN the pill row, not floated over the bar: absolutely positioned it landed on top
+   of the domain pill at every width, which is the kind of collision that only shows once the
+   component is on a real page beside real content. In flow it simply leads the row. */
+.tile-ic{font-size:17px;line-height:1;margin-right:1px;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+.tile-b{padding:13px 16px 15px;display:flex;flex-direction:column;gap:9px;flex:1;}
+.tile-b h3{margin:0;font-family:var(--read);font-size:18.5px;font-weight:600;
+  letter-spacing:-.01em;line-height:1.25;text-wrap:balance;}
+.tile-meta{font-size:12.5px;color:var(--muted);line-height:1.45;}
+/* PATCH-079 — top-aligned. `margin-top:auto` pushed the list to the foot of the tile, so a
+   class with two courses had its list floating at the bottom while a class with five had one
+   under the title, and a row of tiles never lined up. The tiles still stretch to equal
+   height; only the list stops being pushed down. */
+.tile-courses{display:flex;flex-direction:column;gap:1px;
+  border-top:1px solid var(--line);padding-top:9px;margin-bottom:auto;}
+.crow{display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:9px;align-items:center;
+  width:100%;text-align:left;padding:5px 6px;border-radius:6px;font-size:13px;color:var(--ink-2);}
+.crow:hover{background:var(--sunk);color:var(--ink);}
+.crow .n{font-size:11.5px;font-weight:700;letter-spacing:.04em;color:var(--faint);
+  font-variant-numeric:tabular-nums;}
+.crow .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.crow[data-s="enrolled"] .n,.crow[data-s="completed"] .n{color:var(--accent);}
+.crow[data-s="completed"] .cn{color:var(--muted);}
+.tile-empty{font-size:12.5px;color:var(--faint);padding:6px 0 2px;}
+.tile-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-top:1px solid var(--line);padding:11px 16px;background:var(--sunk);}
+
+/* PATCH-018 — the standing track, set apart. A ruled band rather than a coloured one: these
+   are not a category of the term, they are outside it. The left rule reads as a margin note
+   against the term above it. */
+.alongside{border-left:2px solid var(--line-2);padding-left:16px;margin-left:2px;}
+.alongside .dhead .eyebrow{color:var(--muted);}
+@media (max-width:640px){.alongside{padding-left:11px;}}
+/* PATCH-111 — the "Runs alongside" description wrapped badly, and the render says why: the
+   paragraph is a .calnote, capped at 72ch, sitting under a heading rule that runs the full
+   column. At 1440 it broke after "…pacing, and" with the right HALF of the column empty —
+   two short lines under a wide rule, which is what reads as a bad wrap. The cap is right for
+   a caption beside body text and wrong for one under a full-width band, so it is lifted here
+   and nowhere else, and text-wrap:pretty keeps the tail off a one-word line.
+   The other two rules are GUARDS, not observed defects — they did not fire in any render
+   taken (1440 / 1050 / 820 / 620 / 400): a .dhead is a baseline flex row whose rule shrinks
+   to nothing before it wraps, and "2+1+2-a-week" is a hyphenated token a line break may
+   split. Both cost nothing and both fail badly in a band the reader cannot widen. */
+.alongside .dhead{flex-wrap:wrap;row-gap:2px;}
+.alongside .dhead .cnt{white-space:normal;}
+.alongside .calnote{max-width:none;text-wrap:pretty;}
+/* `.pace` is opt-in and global rather than scoped to .alongside, because the pace figure is
+   printed in two ledes and the break was REAL on the other one: the Homework tab rendered
+   "…and the 2+1+2-a-" / "week pacing…", split across lines at the token's own hyphen. Found in
+   a screenshot taken for something else. Outside PATCH-111's stated scope; the same defect,
+   one class away, and left broken it would have read as a bug the fix had missed. */
+.pace{white-space:nowrap;}
+
+/* PATCH-019 — outside lessons. Deliberately plainer than the curriculum: no cut, no strand
+   plate, no measure. Nothing here is paced or examined, and the page should not dress it up as
+   if it were. */
+.extl{display:flex;flex-direction:column;}
+.extl + .extl{margin-top:-12px;}
+.extform{display:flex;flex-direction:column;gap:12px;}
+.ef-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+.extform label,.ef-l{display:flex;flex-direction:column;gap:5px;font-size:10.5px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+/* spec-179 — `.origform` joins this list, and `select` joins the element list. The idea board's
+   note composer is a plain card, not an .extform, so its textarea fell through to the browser
+   default: a white box with black text, unreadable on the dark theme. The status dropdown had the
+   same gap for the same reason — the rule named input and textarea and nothing had used a select
+   here before. */
+.extform input,.extform textarea,.extform select,
+.origform input,.origform textarea,.origform select{font:inherit;font-size:14px;font-family:var(--ui);
+  padding:8px 10px;border-radius:7px;border:1px solid var(--line-2);background:var(--raised);
+  color:var(--ink);text-transform:none;letter-spacing:normal;font-weight:400;}
+.extform textarea,.origform textarea{resize:vertical;line-height:1.5;}
+.extform input:focus-visible,.extform textarea:focus-visible,.extform select:focus-visible,
+.origform input:focus-visible,.origform textarea:focus-visible,.origform select:focus-visible{
+  outline:2px solid var(--accent);outline-offset:1px;}
+
+/* --- a domain heading, for pages that group by it -------------------------- */
+.dhead{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;}
+.dhead .eyebrow{color:var(--accent);margin:0;}
+.dhead .rule{flex:1;height:1px;background:var(--line);}
+.dhead .cnt{font-size:11.5px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums;}
+/* PATCH-104 — a domain heading that is also a fold control. Set exactly like the .eyebrow it
+   replaces so a foldable section and a fixed one read as the same kind of heading; the caret
+   is the only difference, and it borrows .ovsec-t's (see below) rather than drawing a second
+   triangle. The rule and the count stay put whether the body is open or shut. */
+.dhead .dfold{display:flex;align-items:center;gap:7px;padding:0;font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.dhead .dfold:hover{color:var(--ink);}
+
+/* --- the quiz bank -------------------------------------------------------- */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filters select,.filters input{font:inherit;font-size:13px;padding:6px 9px;border-radius:7px;
+  border:1px solid var(--line-2);background:var(--raised);color:var(--ink);}
+/* The strand board IS the strand filter: 17 call numbers, each carrying its own share of
+   the 147 quizzes and how far through it you are. It replaced a <select> that could only
+   show one strand's name at a time and never said how big any of them was. */
+.sboard{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));}
+.sb{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;
+  gap:2px 9px;align-items:center;text-align:left;padding:8px 10px 7px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);}
+.sb .sp{grid-row:1/3;}
+.sb .sbl{font-size:12.5px;font-weight:600;line-height:1.22;}
+.sb .sbn{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;
+  display:flex;align-items:center;gap:6px;}
+.sb .sbn b{flex:1;height:3px;border-radius:2px;background:var(--sunk);
+  border:1px solid var(--line);overflow:hidden;max-width:52px;}
+.sb .sbn b em{display:block;height:100%;background:hsl(var(--h) var(--st-s) var(--st-l));}
+.sb:hover{border-color:var(--line-2);}
+.sb[aria-pressed="true"]{border-color:hsl(var(--h) var(--st-ln-s) var(--st-ln-l));
+  background:hsl(var(--h) var(--st-bg-s) var(--st-bg-l));}
+.sb[aria-pressed="true"] .sbl{color:hsl(var(--h) var(--st-s) var(--st-l));}
+.clist{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));}
+.ccard{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;
+  align-items:start;}
+.ccard:hover{border-color:var(--line-2);}
+.ccard .sp{grid-row:1/3;margin-top:2px;}
+.ccard .t{font-size:14px;font-weight:600;line-height:1.32;}
+.ccard .m{font-size:11.5px;color:var(--muted);display:flex;gap:7px;align-items:center;
+  flex-wrap:wrap;}
+.qst{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--faint);}
+.qst::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line-2);}
+.qst[data-st="learning"]{color:var(--due);} .qst[data-st="learning"]::before{background:var(--due);}
+.qst[data-st="maintenance"]{color:var(--ok);} .qst[data-st="maintenance"]::before{background:var(--ok);}
+
+/* sync */
+pre.json{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.5;
+  background:var(--sunk);border:1px solid var(--line);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;max-height:420px;overflow-y:auto;margin:0;color:var(--ink-2);}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:9px;
+  border:1px solid var(--due-line);background:var(--due-soft);color:var(--due);font-size:13px;
+  font-weight:500;}
+
+@media (max-width:1080px){.readwrap{grid-template-columns:minmax(0,1fr);}.uindex{display:none;}}
+/* a file path is not a label — don't uppercase it */
+.eyebrow.path{text-transform:none;letter-spacing:.01em;font-size:12px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-2);}
+.card .note{max-width:68ch;}
+@media (max-width:640px){
+  .rowcard{grid-template-columns:34px minmax(0,1fr);row-gap:9px;}
+  .rowcard .num{font-size:18px;}
+  .rowcard>.row{grid-column:1/-1;}
+  /* one column, and the board drops to two call numbers across rather than one giant one */
+  .tiles{grid-template-columns:minmax(0,1fr);}
+  .sboard{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));}
+  .clist{grid-template-columns:minmax(0,1fr);}
+  .view > .ovsec{border-top:1px solid var(--line);padding-top:24px;}
+}
+/* PATCH-081/082 — the armed state of a destructive control. It has to look like it will do
+   something you cannot undo, without inventing a colour: --due is the page's existing
+   "attention" token and already resolves in both themes. */
+.btn.danger{border-color:var(--due);background:var(--due-soft);color:var(--due);box-shadow:none;}
+.btn.danger:hover{border-color:var(--due);filter:brightness(1.05);}
+
+/* PATCH-084 — a foldable Overview section. The header is the control: a caret, the title,
+   and whatever action the section carries on the right. Folding hides the body only, so the
+   rule above the header stays and the page keeps its structure when everything is shut. */
+.ovsec-h{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.ovsec-t{display:flex;align-items:center;gap:8px;padding:0;font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.ovsec-t:hover{color:var(--ink);}
+.ovsec-t .car,.dfold .car{width:0;height:0;flex:0 0 auto;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transform:rotate(90deg);transition:transform .12s ease;}
+.ovsec.shut .ovsec-t .car,.dfold.shut .car{transform:rotate(0deg);}
+.ovsec.shut .ovsec-b{display:none;}
+.ovsec.shut .ovsec-h{margin-bottom:0;}
+
+/* ================================================================ spec-173: homework
+   Homework became a page of its own, a rail tab, and — with the Test lifted out of it — a
+   third gate on the lesson. Everything below is built from tokens that already exist:
+   --accent (repointed per domain), --due for "owed", --ok for "in", --sunk/--surface/--line
+   for the furniture. No colour is declared here at all, so both themes resolve off the
+   palette at the top of this file and neither needs a second block. */
+
+/* --- the tab's rows. Same .qz frame the Quizzes page uses, so a reader who has learned one
+   list has learned both. The state dot gets its OWN attribute rather than borrowing the
+   quiz's `data-st`: homework has no learning/maintenance, and putting spaced-repetition
+   vocabulary on something that is not spaced repetition would be a lie in CSS. */
+.qz[data-hwst="open"] .st{background:var(--due);}
+.qz[data-hwst="in"] .st{background:var(--ok);}
+.qz-t .hw-c{font-weight:600;}
+.qz-t .hw-n{flex:0 0 auto;font-size:10.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--accent);}
+.qz-t .hw-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--muted);}
+@media (max-width:640px){.qz-t .hw-t{display:none;}}
+/* the door from a lesson's Homework block to its page — a link, not a button: the block
+   already carries a count and a checklist, and a third solid control would compete with the
+   ticks that are the actual work on that screen. */
+.hw-go{margin-left:auto;text-transform:none;letter-spacing:normal;font-weight:500;}
+
+/* --- the page itself. The turn-in card sits at the TOP because a Leavitt lesson runs to
+   twenty scans and a hand-in button below them is a hand-in button nobody finds. */
+.hw-turn{display:flex;flex-direction:column;gap:12px;border-color:var(--accent-line);
+  background:var(--accent-soft);}
+.hw-tally{font-family:var(--disp);font-size:23px;font-weight:400;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;color:var(--ink);}
+.hw-tally.is-all{color:var(--ok);}
+.hw-sub{font-size:12.5px;line-height:1.5;color:var(--ink-2);max-width:56ch;margin-top:3px;}
+/* The sentence this whole feature stands on: handing homework in is not turning the lesson
+   in. It is set apart with a rule rather than a colour so it reads as a caveat and not as an
+   error, and it is repeated on the tab for the same reason. */
+.hw-not{margin:0;padding-top:11px;border-top:1px solid var(--accent-line);
+  font-size:12.5px;line-height:1.55;color:var(--ink-2);max-width:74ch;}
+.hw-not b{color:var(--ink);font-weight:600;}
+.hw-next{font-size:13.5px;line-height:1.55;color:var(--ink-2);}
+.hw-next b{color:var(--ink);font-weight:600;}
+@media (max-width:640px){.hw-turn .spread{flex-direction:column;align-items:flex-start;gap:12px;}}
+
+/* --- the practice log (spec-160's `drills`, given the surface it never had).
+   The current tempo is the biggest thing in the block because it is the one number the whole
+   store exists to hold — everything else is context for it. */
+.plog{display:flex;flex-direction:column;gap:0;}
+.pl-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:11px;}
+.pl-cur{font-family:var(--disp);font-size:27px;line-height:1.05;color:var(--ink);}
+.bpm{font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+.pl-none{font-family:var(--ui);font-size:13px;color:var(--faint);}
+.pl-st{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  padding:2px 9px;border-radius:20px;border:1px solid var(--line-2);color:var(--muted);}
+.pl-st[data-s="learning"]{border-color:var(--due-line);background:var(--due-soft);color:var(--due);}
+.pl-st[data-s="maintenance"]{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);}
+.pl-c{font-size:12px;color:var(--muted);margin-left:auto;}
+/* PATCH-160 — an extra Time column between Tempo and Note. Tempo widened from 92px: its
+   placeholder went from a bare number ("120") to a hint ("target 120", "last 96") and 92px
+   clipped it. */
+.pl-form{display:grid;grid-template-columns:auto 112px 92px minmax(0,1fr) auto;gap:10px;
+  align-items:end;margin-bottom:12px;}
+.pl-form label{display:flex;flex-direction:column;gap:5px;font-size:10.5px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.pl-form input{font:inherit;font-family:var(--ui);font-size:14px;font-weight:400;
+  letter-spacing:normal;text-transform:none;padding:8px 10px;border-radius:7px;
+  border:1px solid var(--line-2);background:var(--raised);color:var(--ink);min-width:0;}
+.pl-form input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+@media (max-width:760px){.pl-form{grid-template-columns:1fr 1fr;}
+  .pl-form .pl-wide,.pl-form .btn{grid-column:1/-1;}
+  .pl-c{margin-left:0;}}
+/* The log is the one thing on this page that can outgrow its column, so it scrolls inside
+   its own box. The page body never moves sideways — same rule the book scans follow. */
+.pl-tw{overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:var(--surface);}
+.pl-t{width:100%;border-collapse:collapse;font-size:13px;}
+.pl-t th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);padding:8px 12px 7px;
+  border-bottom:1px solid var(--line);white-space:nowrap;}
+.pl-t td{padding:7px 12px;border-top:1px solid var(--line);vertical-align:top;}
+.pl-t tbody tr:first-child td{border-top:none;}
+.pl-d{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums;}
+.pl-b{white-space:nowrap;font-weight:600;color:var(--ink);}
+/* PATCH-160 — Time column, next to Date/Tempo/Note; same tabular numerals as the rest of the row. */
+.pl-m{white-space:nowrap;color:var(--ink);font-variant-numeric:tabular-nums;}
+.pl-n{color:var(--ink-2);min-width:16ch;}
+/* PATCH-160 — the delete `×`. Quiet until you mean to use it; no confirm sits behind it, so it
+   should never read as a bigger button than "close this tooltip". */
+.pl-x{background:none;border:none;padding:0 4px;font-size:16px;line-height:1;
+  color:var(--faint);cursor:pointer;}
+.pl-x:hover{color:var(--ink);}
+
+/* --- the lesson test, out of homework and into its own section.
+   It reads as a gate rather than as another checklist: a heading, a reason it is shut, and
+   the one item. `.tsec-lock` is a list because there are up to THREE separate reasons it can
+   be shut (course paused, homework not handed in, quizzes outstanding) and asking the reader
+   to guess which is exactly the defect PATCH-095 was filed for. Deliberately always in the
+   markup and never hidden — unlike .qz-lock it does not need to flip in place, because
+   nothing that opens this gate happens without a render. */
+.tsec{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);}
+.tsec .lbl{margin-bottom:9px;}
+.tsec .lbl .pill{margin-left:auto;}
+.tsec-lock{padding:11px 14px;border-radius:9px;border:1px solid var(--due-line);
+  background:var(--due-soft);color:var(--due);font-size:12.5px;line-height:1.5;
+  margin-bottom:11px;}
+.tsec-lock b{font-weight:700;}
+.tsec-lock ul{margin:5px 0 0;padding-left:1.15em;list-style:disc;}
+.tsec-lock li{margin:.25em 0;}
+.tsec-lock .btn{border-color:var(--due-line);color:var(--due);}
+.tsec-open{margin:0 0 10px;font-size:12.5px;color:var(--muted);}
+.tsec[data-tst="done"] .tsec-open{color:var(--ok);}
+/* A locked test still shows its item, greyed — hiding it would make the section read as
+   empty rather than as shut, which is the same "a quiz that simply vanished" complaint
+   PATCH-058 answered on the Quizzes page. */
+.tsec[data-tst="locked"] .tasks>li>label{color:var(--faint);}
+/* The reasons the test is still shut, on the homework page. Same list the lesson's own
+   .tsec-lock carries and for the same reason — three reasons run into one paragraph is three
+   dashes and no way to see where one ends. Quieter than .tsec-lock: here it is context for a
+   section on another screen, not a lock on the control in front of you. */
+.hw-why{margin:9px 0 0;padding-left:1.15em;list-style:disc;font-size:13px;color:var(--due);}
+.hw-why li{margin:.25em 0;}
+.hw-why li::marker{color:var(--due-line);}
+.hw-ok{margin:9px 0 0;font-size:13px;color:var(--ok);}
+/* How many items are still unticked, on the tab's row. It sits with the title rather than in
+   the button because a button labelled "3 left" says nothing about what pressing it does. */
+.qz-t .hw-left{flex:0 0 auto;margin-left:auto;padding-left:10px;font-size:11px;font-weight:600;
+  color:var(--due);font-variant-numeric:tabular-nums;white-space:nowrap;}
+/* `.hwpage` deliberately has no rule of its own — it is a SCOPING HOOK, not a style. The
+   change handler uses it to find the turn-in card's tally without re-rendering, and the
+   layout comes from `.view` like every other route. Don't "clean it up" as an unused class. */
+
+/* ================================================================ PATCH-102: patch notes
+   The page talking back — a note Nate writes here, carried home by /school sync. Everything
+   below is built from tokens that already exist: --sunk for a quiet row, --due for the mark
+   on one still owed an answer, --ok for one the vault has filed. No colour is declared in a
+   theme block, so both themes resolve off the palette at the top of this file.
+
+   The note TEXT is set in --read at reading size, not in the UI face at chrome size: it is
+   the one thing on this screen written by a person, and the surrounding furniture is not. */
+.pnform{gap:10px;}
+.pnform textarea{min-height:76px;}
+.pnlist{display:flex;flex-direction:column;gap:1px;margin:0;padding:0;list-style:none;
+  border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--line);}
+.pn{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start;
+  background:var(--surface);padding:11px 14px;box-shadow:inset 2px 0 0 var(--due-line);}
+.pn-at{grid-column:1;display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  font-variant-numeric:tabular-nums;}
+.pn-t{grid-column:1;font-family:var(--read);font-size:15.5px;line-height:1.55;color:var(--ink);
+  overflow-wrap:anywhere;text-wrap:pretty;}
+/* The Remove control sits in its own column and spans both rows, so a two-line note does not
+   push it out of reach of the stamp it belongs to. */
+.pn-x{grid-column:2;grid-row:1/3;align-self:start;font-size:11.5px;padding:3px 9px;
+  color:var(--muted);}
+.pn-x:hover{color:var(--due);border-color:var(--due-line);}
+/* Filed = the vault has acted on it. Muted, no left mark, no Remove — see notesView() for why
+   removing one here would not remove anything anywhere. */
+.pn.filed{background:var(--sunk);box-shadow:none;}
+.pn.filed .pn-t{color:var(--ink-2);}
+.pn-f{display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ok);border:1px solid var(--ok);background:var(--ok-soft);
+  border-radius:20px;padding:1px 7px;}
+@media (max-width:640px){
+  .pn{grid-template-columns:minmax(0,1fr);}
+  .pn-x{grid-column:1;grid-row:auto;justify-self:start;}
+}
+
+/* ---------------------------------------------------------------- spec-174: Drills Library */
+.drillsview .grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));}
+.drillcard .dt{font-family:var(--read);font-size:16px;line-height:1.3;margin:0;color:var(--ink);}
+.drillcard .dmeta{font-size:12px;color:var(--muted);margin-top:3px;}
+/* practiceLog()'s .pl-form is built for the full-width homework page; a drill card is narrower
+   than that everywhere, not just under the site's mobile breakpoint, so it gets the same
+   2-column stacked layout the homework page only switches to at <=760px viewport width. */
+.drillcard .pl-form{grid-template-columns:1fr 1fr;}
+.drillcard .pl-form .pl-wide,.drillcard .pl-form .btn{grid-column:1/-1;}
+.drillcard .pl-c{margin-left:0;}
+.dchips{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:10px;}
+.dchips .xlink{border:1px solid var(--accent-line);border-radius:20px;padding:2px 10px;
+  font-size:11.5px;background:var(--accent-soft);}
+.drillcard.meth .dt{font-size:14.5px;}
+/* Watch-and-do: a click-to-play façade, not a player. The CSP blocks an <iframe> to an external
+   host the same as any other request (spec-174 Phase 0) -- the thumbnail and the button both
+   hand off to a real new tab via window.open, they do not pretend to embed anything. */
+.watchgrid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+/* Soundslice link row on an outside lesson (2026-08-23). Wraps, because a teacher may send
+   several pages for one lesson and they are all equal-weight doors. */
+.sslist{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.ssbtn{text-decoration:none;}
+
+/* spec-178 — the Soundslice shelf. Two-up rather than the drill shelf's three: each card carries
+   a paragraph of the teacher's prose plus its homework, and at 280px that measure collapses to
+   four or five words a line. 340px is the narrowest track the brief still reads at. */
+.slicesview .grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));}
+.slicecard{display:flex;flex-direction:column;gap:12px;}
+.slicecard .dt{margin:0;overflow-wrap:anywhere;}
+.slicecard .dmeta{margin-top:2px;}
+/* The open link is the card's whole job, so it sits on the bottom edge whatever the card above
+   it holds — `margin-top:auto` inside the flex column keeps the buttons on one baseline across a
+   row of uneven cards, which a plain stack of blocks would not. */
+.slicecard .ssbtn{margin-top:auto;align-self:flex-start;}
+/* The teacher's brief. Set in the reading face, not the UI one: it is someone's written
+   instruction, the only prose on the card, and it should not read like chrome. The left rule
+   marks it as quoted rather than authored here — cheaper than a card-inside-a-card, and it keeps
+   the block from reading as a second object competing with the homework list below it. */
+.slicebrief{border-left:2px solid var(--instr-line);padding-left:12px;}
+.slicebrief .lbl{margin:0 0 4px;}
+/* A slice whose URL 404s at build time. Warning colour, not error red: the material is real and
+   the homework still stands — it is the LINK that is wrong, and that is a thing to fix rather
+   than a failure of the page. */
+.slicedead{color:var(--due);}
+.ssbtn-dead{border-style:dashed;color:var(--due);border-color:var(--due-line);}
+.slicebrief p:last-child{margin:0;font-family:var(--read);font-size:15px;line-height:1.5;
+  color:var(--ink-2);}
+
+/* The Read fold inside a drill/watch card (2026-08-23).
+   `.rd>summary` is a two-column grid — title `minmax(0,1fr)` beside meta `auto` — and `.rd-m`
+   is `white-space:nowrap`. That is fine on a full-width lesson page. In a three-up card grid
+   the meta ("from 6 DIFFERENT WAYS TO PLAY THE SAME CHORD C-7 · 133 words · 1 min") cannot
+   wrap, so the `auto` column eats the row and starves the title to a few characters — every
+   label rendered one word per line ("What / to / watch / for"). The existing remedy at the
+   `.rd-m{white-space:normal}` media query is keyed to VIEWPORT width and never fires here,
+   because these cards are narrow at full desktop width. Stack the summary instead. */
+.drillcard .rd>summary{grid-template-columns:minmax(0,1fr);gap:2px;}
+.drillcard .rd-m{white-space:normal;line-height:1.3;}
+.drillcard .rd-t{overflow-wrap:anywhere;}
+
+.wthumb{display:block;text-decoration:none;cursor:pointer;position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);
+  border-radius:8px;overflow:hidden;padding:0;background:var(--sunk);margin-bottom:10px;cursor:pointer;}
+.wthumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.wplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:26px;color:#fff;background:rgba(10,12,18,.28);text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.wthumb:hover .wplay{background:rgba(10,12,18,.44);}
+.watchcard .btn{margin-top:10px;}
+
+/* ---------------------------------------------------------------- spec-176: the song library
+   A record shelf. The sleeve is the control — it is what you recognise a song by — so the tile is
+   art first and the words are a caption under it, not a card with a picture in it. Fixed 1:1 art
+   (build.py crops to square) is what makes the rows line up; `object-fit:cover` guards the one or
+   two sleeves that are not square in the source.
+
+   `--h` on a tile without art is the derived hue from app.js, and everything else about that plate
+   is the theme's, so both light and dark resolve from the one rule (the same trick PATCH-012's
+   strand plates use). No separate dark-mode block below. */
+.stiles{display:grid;gap:18px 14px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+.stile{display:flex;flex-direction:column;text-align:left;gap:0;position:relative;padding:0;}
+.stile-art,.songhead-art{display:block;position:relative;width:100%;aspect-ratio:1;border-radius:9px;
+  overflow:hidden;border:1px solid var(--line);background:var(--sunk);box-shadow:var(--shadow);}
+.stile-art img,.songhead-art img{width:100%;height:100%;object-fit:cover;display:block;}
+/* `container-type` so the initials scale with the tile rather than with the viewport: the same
+   plate is 150px on the shelf and 180px on the detail page, and a viewport-relative size would be
+   wrong on one of them at every window width. */
+.no-art{display:flex;align-items:center;justify-content:center;container-type:inline-size;
+  background:hsl(var(--h) var(--st-bg-s) var(--st-bg-l));border-color:hsl(var(--h) var(--st-ln-s) var(--st-ln-l));}
+.no-art>span{font-family:var(--disp);font-size:clamp(20px,30cqw,52px);letter-spacing:.02em;
+  color:hsl(var(--h) var(--st-s) var(--st-l));}
+.stile:hover .stile-art,.stile:hover .no-art{border-color:var(--line-2);}
+.stile:hover .stile-t{color:var(--accent);}
+.stile-t{margin-top:9px;font-size:13px;font-weight:600;line-height:1.3;color:var(--ink);
+  overflow-wrap:anywhere;}
+.stile-a{margin-top:2px;font-size:11.5px;color:var(--muted);line-height:1.3;overflow-wrap:anywhere;}
+/* The key sits ON the sleeve rather than in the caption: it is the one fact you scan a shelf for,
+   and a third line of text under every tile would bury it in the thing it is meant to stand out
+   from. Legible over any artwork because it carries its own scrim. */
+.stile-k{position:absolute;top:7px;right:7px;padding:2px 7px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.04em;color:#fff;background:rgba(10,12,18,.62);
+  backdrop-filter:blur(2px);}
+
+.songhead{display:grid;grid-template-columns:180px minmax(0,1fr);gap:22px;align-items:start;}
+.songhead-art{width:180px;}
+.songhead-b{display:flex;flex-direction:column;gap:0;min-width:0;}
+.songhead-b .vh{margin:2px 0 0;}
+.songhead-m{margin:6px 0 0;font-size:13px;color:var(--muted);}
+/* These figures are WORDS ("jazz blues", "mysterious, hypnotic"), not the tempo numbers .ds-v was
+   sized for, so they come down a step and are allowed to wrap. The qualifier under Key can be a
+   whole sentence — see songKey() — and gets a readable measure rather than one long line. */
+.songhead-s{margin-top:14px;}
+.songhead-s .ds-v{font-size:15px;line-height:1.25;font-variant-numeric:normal;overflow-wrap:anywhere;}
+.songhead-s .ds-long .ds-v{font-size:12.5px;font-weight:500;line-height:1.45;color:var(--ink-2);}
+.songhead-s .ds-s{line-height:1.4;max-width:46ch;}
+.songhead .dchips .pill{text-transform:none;letter-spacing:.02em;}
+.songsview .filters{margin-top:-6px;}
+
+/* spec-176b — the chord chart. It reuses the reading fold (.rd) wholesale so a chart and a piece of
+   assigned reading open the same way; only the body differs, and it differs completely.
+
+   `white-space:pre` with NO wrapping is the entire point and must not be "fixed": pdftotext -layout
+   encodes a chart's meaning as column position — the chord name sits above the syllable it changes
+   on, and a tab stave is a six-row grid. Reflowing it to the column width destroys the information.
+   So it scrolls sideways inside its own box (the page body never does), and the mono stack is the
+   theme's --mono, which is a typewriter face and reads like the printout it came from. */
+.chartsec{margin-top:-4px;}
+.chart{margin-top:8px;}
+.chartbody{margin:0;padding:14px 16px 16px;border-top:1px solid var(--line);background:var(--sunk);
+  font-family:var(--mono);font-size:12px;line-height:1.45;color:var(--ink);
+  white-space:pre;overflow-x:auto;overflow-wrap:normal;tab-size:4;
+  border-radius:0 0 7px 0;-webkit-text-size-adjust:100%;}
+@media (max-width:640px){.chartbody{font-size:11px;line-height:1.4;padding:11px 12px 12px;}}
+@media (max-width:640px){
+  .songhead{grid-template-columns:minmax(0,1fr);gap:14px;}
+  .songhead-art{width:56%;max-width:200px;}
+  .stiles{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:14px 10px;}
+}
+
+/* ---------------------------------------------------------------- PATCH-136 (B10): the phone
+   These live at the END of the file on purpose. The first attempt put them beside `.cal`, ahead of
+   `.rail`'s own rule — same specificity, so the base `position:sticky` won on source order and the
+   rail stayed in flow while the shell had already dropped to one column. Result: the whole page
+   shifted under the rail and clipped on the left. Order is the mechanism here, not an accident. */
+.calwrap{overflow-x:auto;}
+@media (max-width:700px){
+  /* One column, and the rail leaves the flow entirely so nothing reserves a gutter for it. */
+  #app{grid-template-columns:minmax(0,1fr)!important;}
+  .rail{position:fixed;left:0;top:0;z-index:20;width:auto;max-width:86vw;height:100vh;
+    box-shadow:var(--shadow);}
+  /* SHUT it is not a bar at all — just the toggle, floating. The first attempt left it full-height
+     and opaque at ~46px, so it sat ON TOP of the text: every heading lost its first character
+     ("verview"). A collapsed rail on a phone should occupy nothing; only the control remains. */
+  .rail.shut{height:auto;background:transparent;border-right:0;box-shadow:none;padding:8px 6px;}
+  .rail.shut .rail-toggle{background:var(--surface);border:1px solid var(--line);
+    box-shadow:var(--shadow);width:32px;height:32px;border-radius:8px;}
+  /* Clears the floating toggle above, not a gutter beside it. */
+  main{padding:52px 14px 80px;max-width:100%;}
+  .cal{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
+  .tiles,.dtiles{grid-template-columns:minmax(0,1fr);}
+}
+
+/* ---------------------------------------------------------------- spec-177: the tools shelf
+   The shelf reuses .drillcard wholesale — same grammar, same grid, same fold — so what is
+   added here is only the two things a tool card has that a drill card does not: a link OUT
+   that has to read as a link and not as a page route, and a muted state for an entry nobody
+   has verified. */
+
+/* An external destination, inline in a chip row. It is an <a>, and it must LOOK like one:
+   .xlink-read next to it is a page route, and the two doing the same thing while going to
+   different places is how a reader learns to distrust both. Solid underline, accent colour,
+   plus the arrow so the difference survives a greyscale printout and a colour-blind reader. */
+.xlink-tool{color:var(--accent);border-bottom:1px solid var(--accent-line);cursor:pointer;
+  text-decoration:none;}
+.xlink-tool:hover{border-bottom-color:var(--accent);}
+.xlink-tool::after{content:"\2197";font-size:.85em;margin-left:2px;opacity:.7;}
+
+/* The strand plates on a tool card are labels, not filters you are being urged to press —
+   they sit at the quiet end of .btn-quiet rather than competing with the Open button. */
+.toolcard .row .btn-quiet{padding:3px 9px;font-size:11px;}
+.toolcard .btn-go{margin-top:12px;width:100%;justify-content:center;}
+.toolcard .rd{margin-top:10px;}
+
+/* `superseded` (the link is dead) and `unverified` (nobody has opened it). Muted, and the
+   card's own meta line says which and why — a shelf that renders an unread page identically
+   to a used one is a shelf that quietly lies about what has been checked. */
+.toolcard-off{opacity:.72;}
+.toolcard-off .dt{color:var(--ink-2);}
+.toolcard-off .dmeta{color:var(--faint);}
+.toolcard-off:hover{opacity:1;}
+
+/* ---------------------------------------------------------------- spec-179: the idea board
+   The one shelf on this page that takes input, so it is styled as a place to write rather than
+   a catalogue to browse: full-width cards in one column, not the tile grid Songs and Tools use.
+   A grid says "pick one of many"; there will be a handful of these and each one is a thread. */
+.origcard{display:block;width:100%;text-align:left;font:inherit;color:inherit;
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;
+  cursor:pointer;margin-bottom:12px;}
+.origcard:hover{border-color:var(--line-2);}
+.origcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.origt{font-size:16px;font-weight:650;margin:0;color:var(--ink);}
+/* `.cnt` is scoped to `.dhead .cnt` in this sheet, and neither of these headers is a .dhead —
+   reusing the name gave a bare unstyled numeral at the right margin. Its own class instead. */
+.origcount{font-size:11.5px;font-weight:600;color:var(--faint);
+  font-variant-numeric:tabular-nums;flex:0 0 auto;}
+.origmeta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:8px;}
+.origfact{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+.origfact + .origfact::before{content:"·";margin-right:7px;color:var(--line-2);}
+.origlede{font-size:13.5px;line-height:1.55;color:var(--ink-2);margin:10px 0 0;max-width:78ch;}
+.origempty{color:var(--muted);font-size:14px;line-height:1.55;}
+
+/* Status reads at a glance or it is just a word in a row of words. `spark` is the loud one on
+   purpose — it is the state that wants somebody to come and do something about it. */
+.origst[data-st="spark"]{color:var(--accent);border-color:var(--accent-line);
+  background:var(--accent-soft);}
+.origst[data-st="working"]{color:var(--ok);border-color:var(--ok);background:var(--ok-soft);}
+.origst[data-st="parked"],.origst[data-st="done"]{color:var(--faint);}
+
+/* The thread. A single rule down the left binds the notes into one conversation instead of a
+   stack of unrelated cards — the same reason a quoted reply is indented anywhere else. */
+.origthread{margin-top:14px;border-left:2px solid var(--line);padding-left:16px;}
+.orignote{padding:12px 0;border-bottom:1px solid var(--line);}
+.orignote:last-child{border-bottom:0;}
+.orignh{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-bottom:5px;}
+.orignh b{font-size:13px;font-weight:650;color:var(--ink);}
+.orignd{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
+.orignote .prose{font-size:14px;}
+.orignote .prose p:first-child{margin-top:0;}
+.orignote .prose p:last-child{margin-bottom:0;}
+/* A note that exists only in this tab, and would die with it. Marked, not hidden — the badge and
+   the board's banner are the only warning there is before a sync. */
+.orignote.pend{opacity:.9;}
+.orignote.pend .prose{color:var(--ink-2);}
+
+/* The board's log (2026-09-10). A three-column row per entry — date, who, what — so a month of
+   them scans down the date gutter the way the activity log and the schedule already do, rather
+   than as a paragraph of sentences that each start differently. */
+.origlog{margin-top:8px;border-top:1px solid var(--line);padding-top:14px;}
+.origlog summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.origlog summary::marker,.origlog summary::-webkit-details-marker{display:none;}
+.origlog summary::before{content:"▸";color:var(--faint);font-size:9px;}
+.origlog[open] summary::before{content:"▾";}
+.origlog summary:hover{color:var(--ink);}
+.origlogb{margin-top:12px;display:flex;flex-direction:column;gap:1px;}
+.origlogr{display:grid;grid-template-columns:88px 72px minmax(0,1fr);gap:12px;align-items:baseline;
+  padding:6px 0;border-bottom:1px solid var(--line);}
+.origlogr:last-child{border-bottom:0;}
+.origlogd{font-size:11.5px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;}
+.origlogw{font-size:11.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;}
+.origlogt{font-size:13px;color:var(--ink-2);line-height:1.5;}
+@media (max-width:640px){
+  /* Three columns in a phone's width gives the entry itself about a dozen characters. The date
+     and the name pair up on their own line and the entry gets the full column. */
+  .origlogr{grid-template-columns:88px minmax(0,1fr);}
+  .origlogt{grid-column:1 / -1;}
+}
+
+/* ================================================================ the app build: your own files
+   Slots for what the app does not ship (a book in copyright, chord charts, album art, a
+   screenshot in a note), the "My files" page, and the backup/sync card. All of it only ever
+   renders in the installable app — the single-file page emits none of these classes. */
+.byo{margin:1em 0;display:flex;flex-direction:column;gap:12px;}
+/* An empty slot: dashed, on the sunk ground, so it reads as "something goes here" rather than as
+   a broken image or as content. */
+.byo-miss{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:11px 14px;margin:8px 0 0;
+  border:1px dashed var(--line-2);border-radius:8px;background:var(--sunk);font-family:var(--ui);}
+.byo-n{font-size:13px;font-weight:600;color:var(--ink-2);overflow-wrap:anywhere;}
+.byo-m{font-size:11.5px;line-height:1.5;color:var(--muted);flex:1 1 220px;}
+.byo-book{flex-direction:column;align-items:flex-start;gap:7px;padding:16px 18px;margin:0;}
+.byo-book .byo-m{flex:none;max-width:62ch;font-size:12.5px;}
+.byo-act{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:10px 0 0;
+  font-family:var(--ui);font-size:12px;}
+.byo-act .byo-m{flex:0 1 auto;}
+.byo-media{display:block;width:100%;max-width:720px;border-radius:7px;}
+.chart .rd-b{display:flex;flex-direction:column;}
+.fview{display:flex;flex-direction:column;gap:12px;}
+.fview .chartbody{border:1px solid var(--line);border-radius:7px;}
+/* A PDF page that has not been drawn yet holds roughly a page's height, so the lesson does not
+   jump as pages arrive. Letter and A4 are both ~1.3-1.4 tall; the cap is for wide screens. */
+.fpg.loading,.fpg.fail{min-height:min(120vw,860px);display:flex;align-items:center;justify-content:center;
+  background:var(--sunk);}
+.fpg.loading::before{content:"Drawing the page…";font-family:var(--ui);font-size:11.5px;color:var(--faint);}
+.fpg.fail{min-height:120px;}
+.fpg.fail::before{content:"This page is not in the PDF — check the page offset under My files.";
+  font-family:var(--ui);font-size:11.5px;color:var(--due);padding:0 16px;text-align:center;}
+.fpg.loading img,.fpg.fail img,.fpg.loading figcaption{display:none;}
+.fimg img{filter:none;}                       /* a photo or screenshot, not a scan: never dimmed */
+.songhead-c{margin-top:12px;}
+
+.fgrps{display:flex;flex-direction:column;gap:10px;}
+.fgrp .rd-l{font-family:var(--ui);font-size:12px;}
+.fgrp[open] .rd-l{display:block;}
+.flist{padding-top:4px;padding-bottom:6px;}
+.frow{display:grid;grid-template-columns:16px minmax(0,1fr) auto auto;gap:4px 12px;align-items:baseline;
+  padding:8px 0;border-top:1px solid var(--line);font-family:var(--ui);font-size:13px;}
+.frow:first-child{border-top:none;}
+.fr-s{color:var(--ok);font-weight:700;font-size:12px;}
+.fr-n{color:var(--ink-2);overflow-wrap:anywhere;min-width:0;}
+.frow.on .fr-n{color:var(--ink);font-weight:600;}
+.fr-w{display:block;font-size:11.5px;font-weight:400;color:var(--muted);}
+.fr-m{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.frow:not(.on) .upbtn{grid-column:3/-1;justify-self:end;}
+.fr-off{grid-column:2/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;
+  font-size:12px;font-weight:600;color:var(--ink-2);}
+.fr-off input{font:inherit;width:64px;padding:3px 6px;border:1px solid var(--line-2);border-radius:6px;
+  background:var(--raised);color:var(--ink);}
+.fr-off span{font-weight:400;font-size:11.5px;color:var(--muted);flex:1 1 240px;}
+.fadd{align-items:center;flex-wrap:wrap;}
+label.btn{cursor:pointer;}
+.syncin{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line-2);border-radius:7px;
+  background:var(--raised);color:var(--ink);min-width:0;flex:1 1 220px;max-width:340px;}
+@media (max-width:640px){
+  .frow{grid-template-columns:16px minmax(0,1fr) auto;}
+  .frow .fr-m{display:none;}
+  .frow:not(.on) .upbtn{grid-column:3;}
+}
+.xa{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line);}
+.xa:hover{border-bottom-color:var(--accent);}
+
+/* ---------------------------------------------------------------- inside the Music app */
+.rail-home{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;margin:-10px 0 -6px;
+  padding:5px 10px 5px 8px;border-radius:7px;font-size:12px;font-weight:600;letter-spacing:.04em;
+  color:var(--muted);text-decoration:none;}
+.rail-home:hover{background:var(--sunk);color:var(--ink);}
+.rail.shut .rail-home{display:none;}
+.byo-wait{border-style:solid;}
+.byo-wait .byo-m::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--due);margin-right:7px;animation:pulse 1s ease-in-out infinite;}
+.fr-c{color:var(--ok);}
+.acct{flex-wrap:wrap;gap:8px;}
+
+/* ---------------------------------------------------------------- a test, sat on the page */
+.paperv{gap:16px;max-width:820px;}
+.pq{display:flex;flex-direction:column;gap:10px;}
+.pq-h{display:flex;align-items:baseline;gap:10px;}
+.pq-n{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--accent);}
+.pq-t{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--faint);}
+.pq-q{font-size:16px;max-width:none;}
+.pq-q p:last-child{margin-bottom:0;}
+.pq-a{font-family:var(--read);font-size:16px;line-height:1.5;width:100%;resize:vertical;padding:10px 12px;
+  border:1px solid var(--line-2);border-radius:8px;background:var(--raised);color:var(--ink);}
+.pq-a:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.pq-v{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 8px;border-radius:99px;}
+.pq[data-v="ok"] .pq-v{background:var(--ok-soft);color:var(--ok);}
+.pq[data-v="part"] .pq-v,.pq[data-v="no"] .pq-v{background:var(--due-soft);color:var(--due);}
+.pq[data-v="part"],.pq[data-v="no"]{border-color:var(--due-line);}
+.pq-mine,.pq-key,.pq-why{font-family:var(--read);font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;}
+.pq-mine b,.pq-key b{display:block;font-family:var(--ui);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;margin-bottom:2px;}
+.pq-mine i{color:var(--faint);}
+.pq-key{padding-top:10px;border-top:1px solid var(--line);}
+.pq-why{color:var(--ink-2);font-size:14px;}
+.pr-ban{display:flex;flex-direction:column;gap:4px;padding:14px 18px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface);font-size:12.5px;color:var(--muted);}
+.pr-ban b{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--ink);}
+.pr-ban[data-r="pass"]{border-color:var(--ok);background:var(--ok-soft);}
+.pr-ban[data-r="pass"] b{color:var(--ok);}
+.pr-ban[data-r="fail"]{border-color:var(--due-line);background:var(--due-soft);}
+.pr-ban[data-r="fail"] b{color:var(--due);}
+.runhint .btn{vertical-align:baseline;}

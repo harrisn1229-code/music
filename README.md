@@ -10,9 +10,12 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
 | Library | `library/` | Look up any mode, chord, arpeggio or voicing in any key |
+| School | `school/` | Classes, lessons, quizzes, tests and a song library |
 
-Everything runs in the browser. Charts and ratings are saved on the device
-(each tool's optional GitHub sync is the only thing that leaves it).
+Everything runs in the browser and is saved on the device. Three optional
+things reach outside it, each only when you turn it on: GitHub sync (Barline,
+Note Cards), a Music account (School), and Claude (Barline's assistant,
+School's test marking).
 
 ## What's in here
 
@@ -25,9 +28,15 @@ icon*.png, icon.svg    Music's own icon
 fonts/                 Big Shoulders Display, the home screen's headline typeface
 shared/theory.js       Music theory used by Note Cards and Library
 shared/account.js      The one GitHub connection every tool syncs with
+shared/ai.js           The one Claude connection (your Anthropic API key) every tool uses
+shared/cloud.js        The one email account: sign-in, saved data, private files
+shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
+shared/vendor/         The Supabase browser library
+cloud/setup.sql        One-time database setup for accounts
 barline/               Barline, self-contained
 note-cards/            Note Cards (reads shared/theory.js)
 library/               Library (reads shared/theory.js)
+school/                School, built from the music-school repo. Do not edit by hand.
 ```
 
 Each tool is a single `index.html` in its own folder. The home screen only
@@ -59,6 +68,51 @@ ratings, so do not change how a key is built.
 4. Raise `version` in `apps.js`.
 5. Optional: add a shortcut for it in `manifest.webmanifest`, and a preview
    for its tile under `LIVE` in `index.html`.
+
+## School
+
+School is built from its own repo, [music-school](https://github.com/harrisn1229-code/music-school)
+(the lesson notes and the build), straight into `school/` here:
+`python3 Machine/Scripts/school-artifact/build.py --dest ../music/school`. Change it there, never
+in `school/`.
+
+It is much bigger than the other tools (the whole curriculum and a book of scans), so it is the
+one exception to "no service worker of its own": `school/sw.js` looks after `school/` and updates
+file by file. `apps.js` says so with `worker: "sw.js"`; Music's worker then leaves that folder
+alone, and the home screen starts School's worker in the background so School is saved for
+offline use as well. School does not need `version` raised when only `school/` changes.
+
+## Claude
+
+`shared/ai.js` is the one connection to Claude. The key is the musician's own Anthropic API key,
+saved on the device under `music:aiKey` (never in a backup, never synced), and requests go
+straight from the device to Anthropic. A key added in any tool works in all of them. A tool calls
+`MusicAI.call({ system, messages, tools, tool_choice })`.
+
+## Accounts
+
+A Music account is an email and a password. `shared/cloud.js` gives a tool three things: sign-in,
+one saved document per tool that follows the account (`MusicCloud.load` / `save`), and private
+files for the people on a members list (`member`, `listFiles`, `download`, `upload`). School
+keeps its progress there and gets its chord charts, album art and book scans from there: files
+that cannot be published with the app, so they live in a private bucket, never in this repo.
+
+Accounts run on a Supabase project. Until one is named in `shared/cloud-config.js`, Music has no
+accounts and everything simply stays on the device. To set it up:
+
+1. Create a free project at supabase.com.
+2. In the project's SQL Editor, paste and run `cloud/setup.sql`.
+3. Run the two `insert into public.members` lines at the bottom of that file with real emails:
+   `true` for an owner (may add files), `false` for a member (may see them).
+4. Authentication, URL Configuration: set Site URL to `https://harrisn1229-code.github.io/music/`.
+5. Project Settings, API: copy the Project URL and the `anon` `public` key into
+   `shared/cloud-config.js`, raise `version` in `apps.js`, and publish.
+
+Both values are meant to be public; what each signed-in person can read or write is decided by
+the rules `setup.sql` puts on the database. Never put the `service_role` key anywhere in this repo.
+
+An owner fills the files bucket from inside School: sign in, open My files, add a folder. Each
+file that matches a slot is kept on the device and sent to the account.
 
 ## Updating
 
