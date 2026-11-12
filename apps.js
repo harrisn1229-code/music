@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.14.0",
+  version: "1.15.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js"],
   apps: [
@@ -68,6 +68,14 @@ self.MUSIC = {
       color: "#C2570C",
       icon: "icon-192.png",
       sync: { at: "ear:syncedAt" },
+      files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
+    },
+    {
+      id: "tuner",
+      name: "Tuner",
+      about: "Microphone tuner for guitar, bass and ukulele",
+      color: "#2F8F4E",
+      icon: "icon-192.png",
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
     }
   ]

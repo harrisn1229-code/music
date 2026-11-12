@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tuner</title>
+<meta name="description" content="Tune a guitar, bass or ukulele with the microphone, or by ear from a reference tone. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Tuner is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#2F8F4E"/><path d="M118 322a150 150 0 0 1 276 0" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" opacity=".55"/><rect x="241" y="130" width="30" height="62" rx="15" fill="#fff"/><path d="M256 360 322 222" stroke="#fff" stroke-width="30" stroke-linecap="round"/><circle cx="256" cy="360" r="34" fill="#fff"/><rect x="132" y="418" width="248" height="20" rx="10" fill="#fff" opacity=".55"/></svg>
+    <h1 class="brand">Tuner</h1>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap" id="view">
+  <div class="col">
+    <div class="mode" id="mode" role="radiogroup" aria-label="Mode"></div>
+
+    <section class="card gauge-card" aria-label="Tuner">
+      <div class="gauge" id="gauge" data-live="0" data-tune="0">
+        <svg viewBox="0 0 320 196" id="dial" role="meter" aria-label="Cents" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0"></svg>
+        <div class="note" id="note" aria-live="off"><span class="nl">–</span><span class="na"></span><span class="no"></span></div>
+      </div>
+      <div class="readout">
+        <b class="cents" id="cents">–</b>
+        <span class="status" id="status" aria-hidden="true"></span>
+        <span class="hz" id="hz"></span>
+      </div>
+    </section>
+
+    <section class="card strings-card" id="strings-card" aria-label="Strings">
+      <div class="card-head">
+        <button class="picker-btn" id="tuning-btn" type="button" aria-haspopup="dialog"><span id="tuning-name"></span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+        <button class="icon-btn sm" id="ref-btn" type="button" aria-pressed="false" aria-label="Reference tone"></button>
+        <button class="chip" id="reset-btn" type="button">Reset</button>
+      </div>
+      <div class="strs" id="strs" role="group" aria-label="Strings"></div>
+    </section>
+
+    <div class="actions">
+      <p class="err" id="err" role="status" hidden></p>
+      <button class="go" id="go" type="button">Start</button>
+      <div class="a4" role="group" aria-label="A4 reference">
+        <button class="step" id="a4-dn" type="button" aria-label="Lower A4"></button>
+        <span class="a4-v"><small>A4</small><b id="a4-val">440</b><small>Hz</small></span>
+        <button class="step" id="a4-up" type="button" aria-label="Raise A4"></button>
+      </div>
+    </div>
+  </div>
+</main>
+<noscript><p class="wrap">Tuner needs JavaScript turned on.</p></noscript>
+
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  /* ---------- assistant ---------- */
+  var T = window.__tunerTest;
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "tuner", button: document.getElementById("ai-btn"),
+    context: function () { return window.__tunerContext ? window.__tunerContext() : "In Tuner."; }
+  });
+
+  /* ---------- offline: Music's shared service worker, one folder up ---------- */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>

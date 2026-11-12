@@ -636,7 +636,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   const ui = { adding: false, keyErr: "", pend: null, bkErr: "", undo: null };
 
   // What goes in a backup: what the tools keep, never keys or sign-in state or anything tied to one device.
-  const BK_PREFIX = ["barline:", "shed-deck:", "school:", "ear:", "library:"];
+  const BK_PREFIX = ["barline:", "shed-deck:", "school:", "ear:", "library:", "tuner:", "metronome:"];
   const BK_ONLY = ["music:settings"];
   const BK_NOT = /(^|:)(ghToken|ghUser|ghMoved|aiKey|gistId|cloudUser|cloudEmail|syncedAt|syncUser|syncBase|cloudFiles|accountAsked)$/;
   const inBackup = (k) => typeof k === "string" && !/^sb-/.test(k) && !BK_NOT.test(k) && (BK_ONLY.indexOf(k) >= 0 || BK_PREFIX.some((p) => k.indexOf(p) === 0));
