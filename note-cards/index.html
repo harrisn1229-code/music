@@ -66,6 +66,7 @@ img{max-width:100%}
   --k-arps:#2F7BEA;     --w-arps:#E0ECFD;     --tt-arps:#1D58B8;
   --k-triads:#F0941A;   --w-triads:#FDEDD6;   --tt-triads:#975400;
   --k-sevenths:#8A5CF5; --w-sevenths:#EEE7FE; --tt-sevenths:#6439D0;
+  --k-feelings:#D9468F; --w-feelings:#FBE3EF; --tt-feelings:#A8266B;
   --shadow:22 26 52;
   --sh-1:0 0 0 1px var(--edge),0 1px 2px rgb(var(--shadow) / .06);
   --sh-card:0 0 0 1px var(--edge),0 1px 2px rgb(var(--shadow) / .05),0 10px 28px -14px rgb(var(--shadow) / .2);
@@ -91,6 +92,7 @@ img{max-width:100%}
     --k-arps:#3B82F0; --w-arps:#14243F; --tt-arps:#93BBFF;
     --k-triads:#EF9420; --w-triads:#33250F; --tt-triads:#FFC46B;
     --k-sevenths:#8E62F6; --w-sevenths:#251E42; --tt-sevenths:#C0A9FF;
+    --k-feelings:#DB4A93; --w-feelings:#35172A; --tt-feelings:#FFA6D2;
     --shadow:0 0 0;
     color-scheme:dark;
   }
@@ -107,6 +109,7 @@ img{max-width:100%}
   --k-arps:#3B82F0; --w-arps:#14243F; --tt-arps:#93BBFF;
   --k-triads:#EF9420; --w-triads:#33250F; --tt-triads:#FFC46B;
   --k-sevenths:#8E62F6; --w-sevenths:#251E42; --tt-sevenths:#C0A9FF;
+  --k-feelings:#DB4A93; --w-feelings:#35172A; --tt-feelings:#FFA6D2;
   --shadow:0 0 0;
   color-scheme:dark;
 }
@@ -181,6 +184,7 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 .deck[data-deck="arps"],.icard[data-deck="arps"]{--k:var(--k-arps);--w:var(--w-arps);--tt:var(--tt-arps)}
 .deck[data-deck="triads"],.icard[data-deck="triads"]{--k:var(--k-triads);--w:var(--w-triads);--tt:var(--tt-triads)}
 .deck[data-deck="sevenths"],.icard[data-deck="sevenths"]{--k:var(--k-sevenths);--w:var(--w-sevenths);--tt:var(--tt-sevenths)}
+.deck[data-deck="feelings"],.icard[data-deck="feelings"]{--k:var(--k-feelings);--w:var(--w-feelings);--tt:var(--tt-feelings)}
 .deck-row{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem .7rem .7rem}
 .deck-main{flex:1;min-width:0;display:flex;align-items:center;gap:.85rem;border:0;background:none;padding:.2rem;margin:0;text-align:left;cursor:pointer;border-radius:var(--r-sm)}
 .dicon{width:3rem;height:3rem;border-radius:14px;display:grid;place-items:center;background:var(--k);color:#fff;flex:none;
@@ -344,6 +348,7 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 .fuse i{position:absolute;inset:0;background:var(--k);transform-origin:left center;transform:scaleX(0)}
 .icard-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:.3rem;padding:1.5rem 1.25rem 1rem}
 .ptitle{font-weight:800;font-size:var(--t-hero);line-height:1.02;letter-spacing:-.03em;color:var(--text);margin:0;text-wrap:balance;overflow-wrap:anywhere}
+.ptitle.d-r,.ptitle.d-3,.ptitle.d-5,.ptitle.d-7{color:var(--dc)}
 .psub{margin:0;color:var(--muted);font-size:1.0625rem;font-weight:600}
 .plines{display:flex;flex-wrap:wrap;justify-content:center;gap:.45rem;margin-top:.9rem}
 .pline{margin:0;font-weight:700;font-size:clamp(1rem, .9rem + .5vw, 1.1875rem);line-height:1.2;color:var(--text);padding:.45rem .95rem;border-radius:999px;background:var(--surface);box-shadow:var(--sh-1)}
@@ -384,6 +389,10 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 .voices.scale .deg.ct{width:1.7rem;height:1.7rem;min-width:0;padding:0}
 .voices.scale .gap{min-width:.75rem}
 .voices.scale .gap::after{top:1.15rem}
+.ftext{margin:0;font-size:clamp(1.0625rem, 1rem + .4vw, 1.25rem);font-weight:600;line-height:1.4;text-wrap:pretty;overflow-wrap:anywhere}
+.yours{display:inline-block;vertical-align:.12em;margin-left:.5rem;padding:.12rem .55rem;border-radius:999px;font-size:.6875rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--tt);background:var(--w)}
+.fedit{justify-self:start;font-size:.875rem;font-weight:700;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:.3rem 0}
+.fedit:hover{color:var(--accent-text)}
 .facts{display:grid;grid-template-columns:max-content 1fr;gap:.45rem 1rem;margin:0;align-items:center}
 .facts div{display:contents}
 .facts dt{color:var(--muted);font-size:.9375rem}
@@ -609,14 +618,22 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 </dialog>
 
 <script src="../shared/theory.js"></script>
+<script src="../shared/feelings.js"></script>
 <script src="../shared/account.js"></script>
 <script src="../shared/cloud-config.js"></script>
 <script src="../shared/cloud.js"></script>
 <script>
+function FEEL_GROUP_OF(semi) { return [0,2,4,5,7,9,11].includes(semi) ? 'major' : [3,8,10].includes(semi) ? 'minor' : 'chromatic'; }
 // Music theory (note spelling, modes, chords, voicings, buildCards) lives in ../shared/theory.js,
 // loaded just above this script, so Library can use the same data.
 
-const CARDS = buildCards();
+// Feelings: one card per scale degree, worded by ../shared/feelings.js (also read by Ear Training,
+// where the words can be rewritten). The words are read when a card is drawn, not stored here.
+const FEEL_CARDS = MusicFeelings.list.map(d => ({
+  key: 'feel-' + d.semitone, deck: 'feelings', tags: { g: FEEL_GROUP_OF(d.semitone), deg: String(d.semitone) },
+  title: d.label, sub: d.name, lines: [], notes: [], gaps: [],
+}));
+const CARDS = buildCards().concat(FEEL_CARDS);
 const BY_KEY = Object.fromEntries(CARDS.map(c => [c.key, c]));
 const TRIAD_VOICINGS = VOICINGS.filter(v => !(v.minVoices > 3));
 const TRIAD_INV = INVERSIONS.slice(0, 3);
@@ -668,6 +685,12 @@ const DECKS = [
       { key:'sevV',    label:'Voicing',   items: VOICINGS.map(v => ({ id:v.id, label:v.label })) },
     ],
     match:(c, s) => s.sevKeys.includes(c.tags.key) && s.sevQ.includes(c.tags.q) && s.sevInv.includes(c.tags.inv) && s.sevV.includes(c.tags.v) },
+  { id:'feelings', label:'Feelings', tag:'Feelings',
+    blurb:'How each scale degree feels, in your own words.',
+    groups:[
+      { key:'feelDeg', label:'Degrees', items:[{ id:'major', label:'Major scale' }, { id:'minor', label:'Minor degrees' }, { id:'chromatic', label:'Chromatic' }] },
+    ],
+    match:(c, s) => s.feelDeg.includes(c.tags.g) },
 ];
 const DECK = Object.fromEntries(DECKS.map(d => [d.id, d]));
 const TIMERS = [0, 5, 10, 15, 30];
@@ -678,7 +701,7 @@ const OPTIONS = { status: STATUS_GROUP.items.map(it => it.id) };
 DECKS.forEach(d => d.groups.forEach(g => { OPTIONS[g.key] = g.items.map(it => it.id); }));
 const DEFAULTS = Object.assign({}, OPTIONS, { triadQ: ['maj','min','aug','dim'], sevInv: ['root'], arpStart: ['s1'] });
 function load() {
-  const st = { on: { modes:true, arps:true, triads:true, sevenths:true }, timer: 0, show: { guitar:true, piano:true } };
+  const st = { on: { modes:true, arps:true, triads:true, sevenths:true, feelings:true }, timer: 0, show: { guitar:true, piano:true } };
   for (const k in OPTIONS) st[k] = DEFAULTS[k].slice();
   try {
     const s = JSON.parse(localStorage.getItem(STORE) || 'null');
@@ -977,6 +1000,7 @@ const DECK_ICON = {
   modes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 19.5h4v-4h4v-4h4v-4h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   arps: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18.5 10 12l4 3.5 5-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/><circle cx="5" cy="18.5" r="2.6" fill="currentColor"/><circle cx="10" cy="12" r="2.6" fill="currentColor"/><circle cx="14" cy="15.5" r="2.6" fill="currentColor"/><circle cx="19" cy="6.5" r="2.6" fill="currentColor"/></svg>',
   triads: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="18" rx="4.2" ry="3.1" fill="currentColor"/><ellipse cx="12" cy="12" rx="4.2" ry="3.1" fill="currentColor"/><ellipse cx="12" cy="6" rx="4.2" ry="3.1" fill="currentColor"/></svg>',
+  feelings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3.5V16.5H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7.5 10.5c1.3-2.2 2.7-2.2 4 0s2.7 2.2 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   sevenths: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="19.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="14.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="9.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="4.5" rx="3.8" ry="2.7" fill="currentColor"/></svg>',
 };
 const openDecks = new Set();
@@ -1497,7 +1521,23 @@ function guitarHTML(c) {
 }
 
 // ---------- card ----------
+const feelBadge = semi => { const d = MusicFeelings.by[semi]; return `<span class="deg ${degClass(d.label)}" title="${esc(d.name)}">${esc(d.label)}</span>`; };
+function feelingHTML(c) {
+  const d = MusicFeelings.by[c.tags.deg], mine = MusicFeelings.edited(d.semitone);
+  return `
+    <div class="ahead">
+      <span class="alabel">Feeling</span>
+      <div class="atools"><button class="ghost small play" type="button" id="play" data-play>${SPEAKER}<span>Play</span></button></div>
+    </div>
+    <p class="ftext">${esc(MusicFeelings.text(d.semitone))}${mine ? '<span class="yours">yours</span>' : ''}</p>
+    <dl class="facts">
+      ${d.confused.length ? `<div><dt>Confused with</dt><dd>${d.confused.map(feelBadge).join('')}</dd></div>` : ''}
+      ${d.family ? `<div><dt>Family</dt><dd>${esc(d.family)}</dd></div>` : ''}
+    </dl>
+    <a class="fedit" href="../ear/#/feelings/${d.slug}">Edit</a>`;
+}
 function answerHTML(c) {
+  if (c.deck === 'feelings') return feelingHTML(c);
   const line = isLine(c);
   const voices = c.notes.map((nt, i) =>
     (i ? `<span class="gap"><i>${esc(c.gaps[i - 1])}</i></span>` : '') +
@@ -1534,6 +1574,7 @@ function renderCard() {
   $('count').textContent = fmt(session.pos + 1) + ' of ' + fmt(session.order.length);
   $('round').textContent = session.round > 1 ? 'Round ' + session.round : 'Practice';
   $('ptitle').textContent = c.title;
+  $('ptitle').className = 'ptitle' + (c.deck === 'feelings' ? ' ' + degClass(c.title) : '');
   $('psub').textContent = c.sub;
   $('psub').hidden = !c.sub;
   $('plines').innerHTML = c.lines.map(l => `<p class="pline">${esc(l)}</p>`).join('');
@@ -1559,7 +1600,7 @@ function toggleReveal() {
 }
 function cycleShape(dir) {
   const c = current();
-  if (!c || isLine(c) || guitarOf(c).shapes.length < 2) return;
+  if (!c || c.deck === 'feelings' || isLine(c) || guitarOf(c).shapes.length < 2) return;
   shapeIdx += dir;
   const focusId = document.activeElement && document.activeElement.id;
   $('gslot').innerHTML = guitarHTML(c);
@@ -1609,19 +1650,20 @@ function audio() {
   } catch (e) { return null; }
 }
 // Scales and arpeggios play up and back down, one note at a time; chords roll up and ring.
+// A feeling plays the tonic (C), then the degree above it (the octave for 1).
 function play(c) {
   const a = c && audio();
   if (!a) return;
-  const line = isLine(c);
-  const up = c.notes.map(n => n.midi);
-  const midis = line ? up.concat(up.slice(0, -1).reverse()) : up;
-  const t0 = a.currentTime + .04, step = line ? .24 : .11;
+  const feel = c.deck === 'feelings', line = feel || isLine(c);
+  const up = feel ? [60, 60 + (Number(c.tags.deg) || 12)] : c.notes.map(n => n.midi);
+  const midis = line && !feel ? up.concat(up.slice(0, -1).reverse()) : up;
+  const t0 = a.currentTime + .04, step = feel ? .8 : line ? .24 : .11;
   const end = t0 + step * (midis.length - 1) + (line ? .6 : 1.9);
   const out = a.createGain();
   out.gain.value = line ? .3 : .45 / Math.sqrt(midis.length);
   out.connect(a.destination);
   midis.forEach((m, i) => {
-    const f = 440 * Math.pow(2, (m - 69) / 12), t = t0 + i * step, stop = line ? t + .5 : end;
+    const f = 440 * Math.pow(2, (m - 69) / 12), t = t0 + i * step, stop = feel ? t + .9 : line ? t + .5 : end;
     const o1 = a.createOscillator(), o2 = a.createOscillator(), g2 = a.createGain(), lp = a.createBiquadFilter(), g = a.createGain();
     o1.type = 'triangle'; o1.frequency.value = f;
     o2.type = 'sine'; o2.frequency.value = f * 2; g2.gain.value = .14;
@@ -1634,6 +1676,15 @@ function play(c) {
     o1.start(t); o2.start(t); o1.stop(stop + .05); o2.stop(stop + .05);
   });
 }
+
+// ---------- feeling words are Ear Training's: re-read them when they may have changed ----------
+function refreshFeeling() {
+  const c = current();
+  if (view === 'practice' && c && c.deck === 'feelings') $('answer').innerHTML = answerHTML(c);
+}
+window.addEventListener('storage', e => { if (e.key === null || e.key === MusicFeelings.PROG_KEY) refreshFeeling(); });
+window.addEventListener('pageshow', refreshFeeling);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshFeeling(); });
 
 // ---------- keep the screen awake while drilling ----------
 let lock = null;

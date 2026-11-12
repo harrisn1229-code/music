@@ -86,24 +86,14 @@ function detectPitch(buf, sampleRate) {
     master: { min: 4, max: 6, step: [0.4, 0.2, 0.4] }
   };
   var MEL_N = 10, SING_N = 10;
-  /* The feel of each degree, after Max Konyi's scale-degree ear training: [feeling, confused with (degrees), family].
-     These are only a starting vocabulary: each can be rewritten (kept in the progress document as `feelings`). */
-  var FEEL = {
-    0: ["Perfect, complete, whole, resolved, stable \u2014 the minimum-energy state", [], ""],
-    7: ["Pure, stable, consonant, smooth, but active \u2014 open, expansive, outward", [0, 5], "5 world"],
-    5: ["Neutral and pure like 5, but contractive, inward-curling, \"square\"", [0, 10], "5 world"],
-    4: ["Sweetness, warmth, glow, vitality \u2014 a whole extra dimension 5 doesn't have", [9, 11], "3 world"],
-    2: ["Clean, crystalline, placid, \"5 multiplied\" \u2014 sharper and more amped than 5", [7, 9], "5 world"],
-    9: ["3's warmth mixed with 4's neutrality \u2014 softer, more pastel and muted than 3", [2, 4], "3 world"],
-    11: ["Melancholy, bittersweet \u2014 the 5 feeling and the 3 feeling together, sharpened by the half step against the tonic", [4, 6], "3 world"],
-    6: ["One of the strongest, most energized states \u2014 bright, strange, \"alien\", spiky; the opposite of 1", [11, 1], ""],
-    10: ["Lightest of the minor-leaning degrees \u2014 powerful, playful, \"fun minor\", not dark", [5, 3], ""],
-    3: ["Defines minorness itself \u2014 dark, serious, gloomy; a bit of sorrow", [10, 8], ""],
-    8: ["More intense than \u266d3, less than \u266d2 \u2014 desperate, hopeless, no joy", [3, 1], ""],
-    1: ["The most extreme and dissonant \u2014 in-your-face, bitter, strongest tension", [8, 6], ""]
-  };
-  var FEEL_ORDER = [0, 7, 5, 4, 2, 9, 11, 6, 10, 3, 8, 1];
-  var SLUG = ["1", "b2", "2", "b3", "3", "4", "s4", "5", "b6", "6", "b7", "7"];
+  /* The feel of each degree, after Max Konyi's scale-degree ear training, lives in ../shared/feelings.js
+     (Note Cards deals the same words): [feeling, confused with (degrees), family]. These are only a
+     starting vocabulary: each can be rewritten (kept in the progress document as `feelings`). */
+  var FEEL = {}, FEEL_ORDER = [], SLUG = [];
+  MusicFeelings.list.forEach(function (d) {
+    FEEL[d.semitone] = [d.text, d.confused.slice(), d.family];
+    FEEL_ORDER.push(d.semitone); SLUG[d.semitone] = d.slug;
+  });
 
   /* ---------- storage ---------- */
   var lsGet = function (k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
