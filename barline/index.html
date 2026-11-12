@@ -470,37 +470,10 @@
   .sync-steps b{color:var(--ink)}
   .sync-link{margin:0 0 12px;color:var(--chord);text-decoration:none}
   .sync-btns{display:flex;flex:none;gap:6px}
-  /* ---------- AI assistant ---------- */
+  /* ---------- sheets that hold a short form (the sync token sheet) ---------- */
   .ai-body{padding:0 18px 14px}
   .ai-note{margin:0 0 12px;font-size:13.5px;line-height:1.45;color:var(--muted)}
   .ai-body .name-in{width:100%;margin:0 0 12px}
-  .ai-in{display:block;width:100%;min-height:86px;padding:11px 13px;border:1px solid var(--rule-strong);border-radius:12px;background:var(--surface-2);font-size:16px;line-height:1.4;color:var(--ink);resize:vertical}
-  .ai-in:focus{outline:none;border-color:var(--chord)}
-  .ai-row{display:flex;align-items:center;gap:10px;margin:10px 0 8px}
-  .ai-mic{height:36px;padding:0 13px}
-  .ai-mic.on{background:var(--beat-soft);color:var(--beat)}
-  .ai-tip{font-size:12.5px;color:var(--faint)}
-  .ai-ex{display:flex;flex-wrap:wrap;gap:6px}
-  .ai-ex .chip{height:30px;padding:0 11px;font-size:13px}
-  .ai-reply{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--chord-soft);font-size:14.5px;line-height:1.45;color:var(--ink)}
-  .ai-reply.err{background:var(--surface-2);background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
-  .bsheet-cancel.busy{opacity:.75}
-  .ai-undo{margin-left:4px;padding:0 2px;font-weight:700;color:var(--chord);text-decoration:underline;text-underline-offset:3px}
-  .ai-head{position:relative}
-  .ai-new{position:absolute;right:14px;top:13px;font-size:13.5px;font-weight:600;color:var(--chord)}
-  .ai-log{display:flex;flex-direction:column;gap:8px;max-height:42vh;max-height:42dvh;overflow-y:auto;margin:0 0 12px;padding:2px}
-  .ai-msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:14.5px;line-height:1.45}
-  .ai-msg.user{align-self:flex-end;background:var(--accent-fill);color:var(--on-accent);border-bottom-right-radius:5px}
-  .ai-msg.assistant{align-self:flex-start;background:var(--surface-2);color:var(--ink);border-bottom-left-radius:5px}
-  .ai-msg.err{color:var(--danger)}
-  .ai-msg.pending{color:var(--muted);font-style:italic}
-  .ai-text{white-space:pre-wrap;overflow-wrap:anywhere}
-  .ai-act{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:7px;padding-top:7px;border-top:.5px solid var(--rule-strong);font-size:13.5px;font-weight:600}
-  .ai-act button{font-weight:700;color:var(--chord);text-decoration:underline;text-underline-offset:3px}
-  .ai-src{margin-top:6px;font-size:12px;color:var(--muted)}
-  .ai-src a{color:var(--chord)}
-  .ai-set{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13.5px;line-height:1.4;color:var(--muted)}
-  .ai-set .btn{flex:none;height:36px}
   /* ---------- score ---------- */
   .sc-set{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
   .sc-field{display:flex;align-items:center;gap:4px;height:36px;padding:0 6px 0 12px;background:var(--surface-2);border-radius:11px;font-size:13px;color:var(--muted)}
@@ -580,7 +553,7 @@
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3.5" width="1.6" height="11" rx=".8" fill="#ECF0E6"/><circle cx="7.6" cy="9" r="1.7" fill="#F2B65C"/><rect x="10.6" y="3.5" width="1.6" height="11" rx=".8" fill="#ECF0E6"/><rect x="13.3" y="3.5" width="2.5" height="11" rx=".9" fill="#ECF0E6"/></svg>
         </span>
         <span class="appname">Barline</span>
-        <button class="iconbtn" id="libAi" aria-label="AI assistant"></button>
+        <button class="iconbtn" id="libAi" data-assistant aria-label="Assistant"></button>
         <button class="iconbtn" id="libMenu" aria-label="Backup and import"></button>
       </div>
       <label class="search">
@@ -615,7 +588,7 @@
           </button>
         </div>
         <div class="navtitle" id="navTitle"></div>
-        <div class="nav-side end"><button class="iconbtn" id="chartAi" aria-label="AI assistant"></button><button class="iconbtn" id="chartMenu" aria-label="Chart options"></button></div>
+        <div class="nav-side end"><button class="iconbtn" id="chartAi" data-assistant aria-label="Assistant"></button><button class="iconbtn" id="chartMenu" aria-label="Chart options"></button></div>
       </div>
       <div class="segbar">
         <div class="seg" id="viewSeg" role="tablist" aria-label="View">
@@ -703,6 +676,7 @@
 
 <script src="../shared/account.js"></script>
 <script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
 <script src="../shared/cloud-config.js"></script>
 <script src="../shared/cloud.js"></script>
 <script>
@@ -724,6 +698,9 @@
     get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } },
     set(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
   };
+  // Opened as a hidden frame by the assistant in another tool (?bridge=1): no sheets, no sound, no prompts;
+  // it only answers the assistant's chart calls and saves to the same storage as ever.
+  const BRIDGE = /[?&]bridge=1(&|$)/.test(location.search) && window.parent !== window;
   const coarse = window.matchMedia("(pointer: coarse)").matches;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -738,7 +715,6 @@
     note20: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 15V4.5l8-1.5v10.5"/><circle cx="5.8" cy="15" r="2.2"/><circle cx="13.8" cy="13.5" r="2.2"/></svg>',
     x20: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>',
     sparkle: '<svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>',
-    mic: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="6" height="10" rx="3"/><path d="M4.5 9.5a5.5 5.5 0 0011 0M10 15v2.5"/></svg>',
     sync: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 8A6 6 0 005 5.5L3.5 7M4.5 12a6 6 0 0010.5 2.5l1.5-1.5"/><path d="M3.5 3.5V7H7M16.5 16.5V13H13"/></svg>',
     trash: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h13M8 5.5V3.5h4v2M5.5 5.5l.8 10.6a1 1 0 001 .9h5.4a1 1 0 001-.9l.8-10.6"/></svg>',
     up: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16V4M5 9l5-5 5 5"/></svg>',
@@ -1040,7 +1016,7 @@
     clearTimeout(saveTimer); saveTimer = null;
     if (!store.set(STORE_KEY, JSON.stringify(charts))) toast("Couldn't save. This phone's storage may be full.");
     queueSync();
-    if (!persistAsked && navigator.storage && navigator.storage.persist){
+    if (!persistAsked && !BRIDGE && navigator.storage && navigator.storage.persist){
       persistAsked = true;
       navigator.storage.persist().catch(() => {});
     }
@@ -1102,6 +1078,8 @@
     applyLook();
   }
   window.addEventListener("storage", (e) => { if (e.key === "barline:prefs" || e.key === null) reloadLook(); });
+  // The assistant changed accent or title font (it writes the same preferences the home Settings sheet does).
+  window.addEventListener("music:prefs-changed", reloadLook);
   window.addEventListener("pageshow", (e) => { if (e.persisted) reloadLook(); });
 
   const state = { screen: "lib", chartId: null, playing: false, pos: null, query: "", loopSection: false, loopIdx: undefined, flat: [], navFromLib: false, libScroll: 0 };
@@ -1428,75 +1406,12 @@
   }
   $("folderMenu").addEventListener("click", folderActions);
 
-  /* ============================ AI assistant ============================ */
-  // A chat assistant: talk or type ("create Wonderwall by Oasis", "add a bridge", "put it in Gigs").
-  // Claude works through tools: web search and fetch (run by Anthropic) to look songs up, and
-  // list/get/create/update/move tools that this page runs against the library, each change with Undo.
-  // Requests go straight from this device to Anthropic's API with the musician's own API key, kept in
-  // this browser only (never in backups or sync).
-  const AI_KEY = "barline:aiKey";
-  const AI_MODEL = "claude-opus-5-5";
-  // The key is shared by every tool in Music (shared/ai.js); Barline's own name for it is the fallback.
-  const aiKey = () => (self.MusicAI ? self.MusicAI.key() : "") || store.get(AI_KEY, "") || "";
-  const AI_SYSTEM = [
-    "You are the assistant inside Barline, a chord-chart app for working musicians. The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
-    "You can see and change their library with tools: list_charts, get_chart, create_chart, update_chart and move_chart. Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button.",
-    "",
-    "Creating a song from its name: search the web for its key, tempo (BPM), time signature, chord progression and structure (intro, verse, chorus, bridge and so on, with bar counts and repeats), and use web_fetch to read the most useful pages. Then call create_chart once with what you found. Fill in the artist. If sources disagree, go with the most reliable ones. If you can't find something, make a sensible musical choice and say which details are guesses.",
-    "Editing: call get_chart first, then update_chart with the complete chart. Keep everything they didn't ask to change exactly as it is. Each message starts with a note in square brackets saying what's on their screen; \"this song\" means the open chart.",
-    "",
-    "Chart fields:",
-    "- key: like \"C\", \"F#m\", \"Bb\", or \"\" if unknown. bpm: 20 to 320. Time signature: top (beats per bar, 1 to 12) over bot (2, 4 or 8).",
-    "- sections: in playing order, each with a name (Intro, Verse, Pre-Chorus, Chorus, Bridge, Solo, Outro and so on) and repeat, the number of times it plays in a row (1 if once).",
-    "- bars: one entry per bar. chords lists the chords in that bar in order: one chord fills the bar, two split it in half. For exact placement give exactly one entry per beat, using \"\" where the previous chord keeps sounding. An empty list means the chord from before carries on.",
-    "- Chord symbols use standard spelling: C, Am, F#m7b5, Bbmaj7, G/B, Dsus4, E7#9, C6/9, N.C.",
-    "- lyric: words sung in that bar, only when the musician gives you the words. Never write out the lyrics of published songs, even if you find them online; leave lyric empty.",
-    "- instrumental: true for songs with no vocals.",
-    "- folder (create_chart): a folder name to file the chart in, or \"\" for none. If the note says they're looking at a folder, use it unless they say otherwise.",
-    "",
-    "Reply in one to three short, plain sentences: what you did and anything worth double-checking. No headings, lists or markdown."
-  ].join("\n");
-  const CHART_PROPS = {
-    title: { type: "string" },
-    artist: { type: "string" },
-    key: { type: "string" },
-    bpm: { type: "integer" },
-    top: { type: "integer" },
-    bot: { type: "integer", enum: [2, 4, 8] },
-    instrumental: { type: "boolean" },
-    sections: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          repeat: { type: "integer" },
-          bars: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: { chords: { type: "array", items: { type: "string" } }, lyric: { type: "string" } },
-              required: ["chords", "lyric"],
-              additionalProperties: false
-            }
-          }
-        },
-        required: ["name", "repeat", "bars"],
-        additionalProperties: false
-      }
-    }
-  };
-  const CHART_REQ = Object.keys(CHART_PROPS);
-  const objSchema = (props, req) => ({ type: "object", properties: props, required: req, additionalProperties: false });
-  const AI_TOOLS = [
-    { name: "list_charts", description: "List every chart in the musician's library: id, title, artist, key, tempo, time signature and folder.", input_schema: objSchema({}, []), strict: true },
-    { name: "get_chart", description: "Read one chart in full: settings, sections, bars, chords and lyrics.", input_schema: objSchema({ chart_id: { type: "string" } }, ["chart_id"]), strict: true },
-    { name: "create_chart", description: "Create a new chart in the library from complete contents. Returns the new chart's id.", input_schema: objSchema(Object.assign({}, CHART_PROPS, { folder: { type: "string" } }), CHART_REQ.concat(["folder"])), strict: true },
-    { name: "update_chart", description: "Replace an existing chart's contents with the complete chart given. Read it with get_chart first and keep what wasn't asked to change.", input_schema: objSchema(Object.assign({ chart_id: { type: "string" } }, CHART_PROPS), ["chart_id"].concat(CHART_REQ)), strict: true },
-    { name: "move_chart", description: "File a chart in a folder by name (the folder is created if it doesn't exist), or pass an empty folder to take it out of its folder.", input_schema: objSchema({ chart_id: { type: "string" }, folder: { type: "string" } }, ["chart_id", "folder"]), strict: true },
-    { type: "web_search_20260209", name: "web_search", max_uses: 8 },
-    { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 }
-  ];
+  /* ============================ assistant tools ============================ */
+  // The assistant itself is Music's shared one (../shared/assistant.js): the chat sheet, the agent loop
+  // and the key all live there, and every tool opens it. Barline owns the chart tools: it lists, reads,
+  // creates, edits and files charts when the assistant asks, and says what to undo. When the assistant is
+  // open in Barline these run here and the screen updates live; from another tool they run in a hidden
+  // copy of this page (?bridge=1) and save to the same storage.
   function aiChartJson(c){
     return JSON.stringify({
       title: c.title, artist: c.artist, key: c.key, bpm: c.bpm, top: c.top, bot: c.bot, instrumental: c.instrumental,
@@ -1511,59 +1426,6 @@
       }))
     });
   }
-  class AiError extends Error {}
-  async function callClaude(messages, signal){
-    const send = (withFallback) => {
-      const headers = {
-        "content-type": "application/json",
-        "x-api-key": aiKey(),
-        "anthropic-version": "2026-10-21",
-        "anthropic-dangerous-direct-browser-access": "true"
-      };
-      const body = {
-        model: AI_MODEL,
-        max_tokens: 16000,
-        system: AI_SYSTEM,
-        tools: chat.noWeb ? AI_TOOLS.filter((t) => !t.type) : AI_TOOLS,
-        output_config: { effort: "medium" },
-        messages: messages
-      };
-      // If a request is declined by a safety check, let Anthropic retry it on a suitable model.
-      if (withFallback){ headers["anthropic-beta"] = "server-side-fallback-2026-07-01"; body.fallbacks = "default"; }
-      return fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: headers, body: JSON.stringify(body), signal: signal });
-    };
-    let res;
-    try {
-      res = await send(!chat.noFallback);
-      if (res.status === 400){
-        const err = await res.clone().json().catch(() => null);
-        const msg = err && err.error && err.error.message || "";
-        if (/fallback|anthropic-beta/i.test(msg)){ chat.noFallback = true; res = await send(false); }
-        else if (/web_search|web_fetch|web search|web fetch/i.test(msg) && !chat.noWeb){
-          // The account hasn't turned on web search: carry on without it and say so.
-          chat.noWeb = true; chat.webNote = true;
-          res = await send(!chat.noFallback);
-        }
-      }
-    } catch(e){
-      if (e && e.name === "AbortError") throw e;
-      throw new AiError("Couldn't reach Anthropic. Check your connection and try again.");
-    }
-    const data = await res.json().catch(() => null);
-    if (!res.ok){
-      const msg = data && data.error && data.error.message ? data.error.message : "";
-      if (res.status === 401) throw new AiError("That API key wasn't accepted. Check it in Music Settings.");
-      if (res.status === 403) throw new AiError("This API key isn't allowed to do that. " + msg);
-      if (res.status === 429) throw new AiError("Too many requests for now. Wait a moment and try again.");
-      if (res.status === 529 || res.status >= 500) throw new AiError("Claude is busy right now. Try again in a moment.");
-      throw new AiError("The request didn't go through" + (msg ? ": " + msg : "."));
-    }
-    if (!data || !Array.isArray(data.content)) throw new AiError("Got an empty answer. Try again.");
-    if (data.stop_reason === "refusal") throw new AiError("Claude couldn't help with that request.");
-    return data;
-  }
-
-  /* ---------- tools the assistant can use ---------- */
   function aiRerender(id){
     if (state.screen === "lib") renderLibrary();
     else if (!id || id === state.chartId) renderChartScreen();
@@ -1576,100 +1438,88 @@
     return f || null;
   }
   const okSections = (inp) => inp && Array.isArray(inp.sections) && inp.sections.length;
-  function runTool(name, inp, turn){
-    inp = inp || {};
-    const fail = (m) => ({ content: m, is_error: true });
-    if (name === "list_charts"){
+  const chartName = (c) => c.title || "Untitled chart";
+  const chartLink = (id) => ({ href: "barline/#c-" + id, label: "Open" });
+  // A hidden copy of this page may have been open a while: read what is stored before acting on it.
+  function aiFresh(){
+    if (!BRIDGE) return;
+    charts = {}; loadCharts(); loadFolders(); tombs = readTombs();
+  }
+  const aiFail = (m) => ({ content: m, is_error: true });
+  const ASSISTANT_TOOLS = {
+    list_charts(){
+      aiFresh();
       return { content: JSON.stringify(sortedCharts().slice(0, 300).map((c) => ({
-        chart_id: c.id, title: c.title || "Untitled chart", artist: c.artist, key: c.key, bpm: c.bpm, time: c.top + "/" + c.bot,
+        chart_id: c.id, title: chartName(c), artist: c.artist, key: c.key, bpm: c.bpm, time: c.top + "/" + c.bot,
         folder: (folderById(c.folderId) || {}).name || ""
       }))) };
-    }
-    if (name === "get_chart"){
+    },
+    get_chart(inp){
+      aiFresh();
       const c = charts[inp.chart_id];
-      return c ? { content: aiChartJson(c) } : fail("No chart with id " + inp.chart_id + ". Use list_charts.");
-    }
-    if (name === "create_chart"){
-      if (!okSections(inp)) return fail("A chart needs at least one section.");
+      return c ? { content: aiChartJson(c) } : aiFail("No chart with id " + inp.chart_id + ". Use list_charts.");
+    },
+    create_chart(inp){
+      aiFresh();
+      if (!okSections(inp)) return aiFail("A chart needs at least one section.");
       const c = blankChart();
       charts[c.id] = c;
       applyAiChart(c, inp);
       const f = folderNamed(inp.folder, true);
       if (f){ c.folderId = f.id; saveNow(); }
-      turn.actions.push({ text: "Created “" + (c.title || "Untitled chart") + "”", id: c.id, undo(){
-        delete charts[c.id]; tombstone("charts", c.id); saveNow();
-        if (state.chartId === c.id) goLibrary(); else aiRerender();
-      } });
       aiRerender(c.id);
-      return { content: JSON.stringify({ chart_id: c.id }) };
-    }
-    if (name === "update_chart"){
+      return { content: JSON.stringify({ chart_id: c.id }), action: { text: "Created “" + chartName(c) + "”", undo: { op: "delete", id: c.id } }, link: chartLink(c.id) };
+    },
+    update_chart(inp){
+      aiFresh();
       const c = charts[inp.chart_id];
-      if (!c) return fail("No chart with id " + inp.chart_id + ". Use list_charts.");
-      if (!okSections(inp)) return fail("A chart needs at least one section.");
+      if (!c) return aiFail("No chart with id " + inp.chart_id + ". Use list_charts.");
+      if (!okSections(inp)) return aiFail("A chart needs at least one section.");
       const snap = applyAiChart(c, inp);
-      turn.actions.push({ text: "Updated “" + (c.title || "Untitled chart") + "”", id: c.id, undo(){
-        snap.updatedAt = Date.now(); charts[snap.id] = normalize(snap); saveNow(); aiRerender(snap.id);
-      } });
       aiRerender(c.id);
-      return { content: JSON.stringify({ ok: true }) };
-    }
-    if (name === "move_chart"){
+      return { content: JSON.stringify({ ok: true }), action: { text: "Updated “" + chartName(c) + "”", undo: { op: "restore", snap: snap } }, link: chartLink(c.id) };
+    },
+    move_chart(inp){
+      aiFresh();
       const c = charts[inp.chart_id];
-      if (!c) return fail("No chart with id " + inp.chart_id + ". Use list_charts.");
-      const prev = c.folderId, f = folderNamed(inp.folder, true);
+      if (!c) return aiFail("No chart with id " + inp.chart_id + ". Use list_charts.");
+      const prev = c.folderId || "", f = folderNamed(inp.folder, true);
       c.folderId = f ? f.id : ""; c.updatedAt = Date.now(); saveNow();
-      turn.actions.push({ text: f ? "Moved “" + (c.title || "Untitled chart") + "” to " + f.name : "Took “" + (c.title || "Untitled chart") + "” out of its folder", id: c.id, undo(){
-        const cc = charts[c.id]; if (!cc) return; cc.folderId = prev; cc.updatedAt = Date.now(); saveNow(); aiRerender(c.id);
-      } });
       aiRerender(c.id);
-      return { content: JSON.stringify({ ok: true, folder: f ? f.name : "" }) };
+      return { content: JSON.stringify({ ok: true, folder: f ? f.name : "" }),
+        action: { text: f ? "Moved “" + chartName(c) + "” to " + f.name : "Took “" + chartName(c) + "” out of its folder", undo: { op: "folder", id: c.id, prev: prev } }, link: chartLink(c.id) };
+    },
+    __undo(p){
+      aiFresh();
+      p = p || {};
+      if (p.op === "delete"){
+        if (!charts[p.id]) return { content: "ok" };
+        delete charts[p.id]; tombstone("charts", p.id); saveNow();
+        if (state.chartId === p.id) goLibrary(); else aiRerender();
+        return { content: "ok" };
+      }
+      if (p.op === "restore" && p.snap && p.snap.id){
+        const snap = p.snap;
+        snap.updatedAt = Date.now(); charts[snap.id] = normalize(snap); untomb("charts", snap.id); saveNow(); aiRerender(snap.id);
+        return { content: "ok" };
+      }
+      if (p.op === "folder"){
+        const cc = charts[p.id];
+        if (!cc) return { content: "ok" };
+        cc.folderId = folderById(p.prev) ? p.prev : ""; cc.updatedAt = Date.now(); saveNow(); aiRerender(p.id);
+        return { content: "ok" };
+      }
+      return aiFail("Nothing to undo.");
     }
-    return fail("Unknown tool " + name);
-  }
+  };
   // What's on screen, as a note at the top of each message (the history itself is never edited).
   function aiContext(){
     const c = state.screen === "chart" ? cur() : null;
-    const bits = ["Library: " + Object.keys(charts).length + " charts."];
+    const bits = ["In Barline.", "Library: " + Object.keys(charts).length + " charts."];
     if (c) bits.push("Open chart: \"" + (c.title || "Untitled chart") + "\" (chart_id " + c.id + ").");
     else if (folderById(prefs.folder)) bits.push("Looking at the folder \"" + folderById(prefs.folder).name + "\".");
     else bits.push("Looking at the whole library.");
-    return "[" + bits.join(" ") + "]\n\n";
-  }
-  async function runAgent(text, signal){
-    const start = chat.messages.length;
-    const turn = { actions: [], sources: [] };
-    chat.messages.push({ role: "user", content: aiContext() + text });
-    try {
-      for (let step = 0; step < 14; step++){
-        const data = await callClaude(chat.messages, signal);
-        chat.messages.push({ role: "assistant", content: data.content });
-        data.content.forEach((b) => {
-          if (b && b.type === "text" && Array.isArray(b.citations)) b.citations.forEach((ci) => {
-            if (ci && ci.url && !turn.sources.some((s) => s.url === ci.url)) turn.sources.push({ url: ci.url, title: ci.title || "" });
-          });
-        });
-        if (data.stop_reason === "pause_turn") continue;
-        if (data.stop_reason === "tool_use"){
-          const results = data.content.filter((b) => b && b.type === "tool_use").map((b) => {
-            let r;
-            try { r = runTool(b.name, b.input, turn); } catch(e){ r = { content: "That didn't work: " + (e && e.message || e), is_error: true }; }
-            return Object.assign({ type: "tool_result", tool_use_id: b.id }, r);
-          });
-          chat.messages.push({ role: "user", content: results });
-          continue;
-        }
-        let reply = data.content.filter((b) => b && b.type === "text").map((b) => b.text).join("").trim();
-        if (data.stop_reason === "max_tokens") reply += (reply ? " " : "") + "(The answer was cut off.)";
-        return { text: reply || (turn.actions.length ? "Done." : "I'm not sure what to do with that. Try saying it another way."), actions: turn.actions, sources: turn.sources };
-      }
-      throw new AiError("That took too many steps. Try a smaller request.");
-    } catch(e){
-      // Drop this unfinished exchange so the next message starts from a clean history.
-      chat.messages.length = start;
-      e.actions = turn.actions;
-      throw e;
-    }
+    return bits.join(" ");
   }
 
   // Write the model's chart into the real one. Bars keep any sheet music written on them (matched by
@@ -1701,188 +1551,7 @@
     saveNow();
     return snap;
   }
-
-  /* ---------- chat sheet ---------- */
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const AI_EXAMPLES = ["Create Wonderwall by Oasis", "Make a 12-bar blues in A at 120", "Add a bridge to this song", "Put this song in my Gigs folder"];
-  const chat = { messages: [], items: [], busy: null, noWeb: false, noFallback: false, webNote: false };
-  function aiKeySheet(){
-    openSheet((body) => {
-      const card = h("div", "bsheet-card ai");
-      const head = h("div", "bsheet-head");
-      head.appendChild(h("div", "bsheet-title", "AI assistant"));
-      head.appendChild(h("div", "bsheet-msg", "Talk to it like a bandmate: create songs by name, fill in charts, change keys and tempos, file things in folders."));
-      card.appendChild(head);
-      const box = h("div", "ai-body");
-      box.appendChild(h("p", "ai-note", "To use the assistant, add your own Anthropic API key. Create one at console.anthropic.com (API keys). It's pay as you go: a request usually costs a few cents, a little more when it looks songs up online."));
-      const form = h("form", "");
-      const input = h("input", "name-in");
-      input.type = "password"; input.placeholder = "sk-ant-…"; input.autocomplete = "off"; input.spellcheck = false;
-      input.setAttribute("autocapitalize", "off"); input.setAttribute("aria-label", "Anthropic API key");
-      form.appendChild(input);
-      box.appendChild(form);
-      box.appendChild(h("p", "ai-note", "The key stays on this device, is never put in backups or synced, and is only sent to Anthropic. What you ask, and the charts the assistant reads, go to Anthropic to be answered."));
-      card.appendChild(box);
-      body.appendChild(card);
-      const save = h("button", "bsheet-cancel pri", "Save key");
-      save.type = "button";
-      const submit = () => {
-        const v = input.value.trim();
-        if (!/^sk-ant-[A-Za-z0-9_\-]{10,}$/.test(v)){ toast("That doesn't look like an Anthropic API key (they start with sk-ant-)."); input.focus(); return; }
-        if (!store.set(AI_KEY, v)){ toast("Couldn't save the key on this device."); return; }
-        if (self.MusicAI) self.MusicAI.setKey(v);
-        openAi();
-      };
-      form.addEventListener("submit", (e) => { e.preventDefault(); submit(); });
-      save.addEventListener("click", submit);
-      const cancel = h("button", "bsheet-cancel", "Cancel");
-      cancel.addEventListener("click", closeSheet);
-      body.appendChild(save); body.appendChild(cancel);
-    }, true);
-    const k = document.querySelector("#sheetBody .name-in");
-    if (k) k.focus();
-  }
-  function openAi(){
-    if (!aiKey()){ aiKeySheet(); return; }
-    if (state.playing) stop();
-    openSheet((body) => {
-      const card = h("div", "bsheet-card ai");
-      const head = h("div", "bsheet-head ai-head");
-      head.appendChild(h("div", "bsheet-title", "AI assistant"));
-      const fresh = h("button", "ai-new", "New chat");
-      fresh.id = "aiNew"; fresh.hidden = !chat.items.length;
-      fresh.addEventListener("click", () => { if (chat.busy) chat.busy.abort(); chat.messages = []; chat.items = []; renderChat(); });
-      head.appendChild(fresh);
-      card.appendChild(head);
-      const box = h("div", "ai-body");
-      const log = h("div", "ai-log"); log.id = "aiLog";
-      log.setAttribute("role", "log"); log.setAttribute("aria-live", "polite");
-      box.appendChild(log);
-      const ta = h("textarea", "ai-in");
-      ta.id = "aiIn"; ta.rows = 2; ta.placeholder = "e.g. Create Autumn Leaves, or: make the chorus twice as long";
-      ta.setAttribute("aria-label", "Message to the assistant");
-      box.appendChild(ta);
-      const row = h("div", "ai-row");
-      if (SR){
-        const mic = h("button", "btn ai-mic");
-        mic.innerHTML = ICON.mic; mic.appendChild(document.createTextNode(" Talk"));
-        mic.setAttribute("aria-label", "Talk instead of typing");
-        mic.addEventListener("click", () => dictate(ta, mic));
-        row.appendChild(mic);
-      }
-      row.appendChild(h("span", "ai-tip", SR ? "or use the keyboard's mic" : "Tip: tap the mic on your keyboard to talk"));
-      box.appendChild(row);
-      const ex = h("div", "ai-ex"); ex.id = "aiEx";
-      AI_EXAMPLES.forEach((t) => { const b = h("button", "chip", t); b.addEventListener("click", () => { ta.value = t; ta.focus(); }); ex.appendChild(b); });
-      box.appendChild(ex);
-      card.appendChild(box);
-      body.appendChild(card);
-      const go = h("button", "bsheet-cancel pri", "Send");
-      go.id = "aiGo"; go.type = "button";
-      const close = h("button", "bsheet-cancel", "Close");
-      close.addEventListener("click", closeSheet);
-      go.addEventListener("click", () => sendAi(ta, go));
-      ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)){ e.preventDefault(); sendAi(ta, go); } });
-      body.appendChild(go); body.appendChild(close);
-    }, true);
-    renderChat();
-    if (chat.busy) setBusy(true);
-    const ta = $("aiIn");
-    if (ta) ta.focus();
-  }
-  function setBusy(on){
-    const go = $("aiGo");
-    if (go){ go.textContent = on ? "Working… tap to stop" : "Send"; go.classList.toggle("busy", on); }
-  }
-  function renderChat(){
-    const log = $("aiLog");
-    if (!log) return;
-    log.innerHTML = "";
-    const ex = $("aiEx"), fresh = $("aiNew");
-    if (ex) ex.hidden = chat.items.length > 0;
-    if (fresh) fresh.hidden = !chat.items.length;
-    log.hidden = !chat.items.length;
-    chat.items.forEach((it) => {
-      const b = h("div", "ai-msg " + it.role + (it.err ? " err" : ""));
-      b.appendChild(h("div", "ai-text", it.text));
-      (it.actions || []).forEach((a) => {
-        const r = h("div", "ai-act");
-        r.appendChild(h("span", "", a.undone ? a.text + " (undone)" : a.text));
-        if (!a.undone && charts[a.id]){
-          const open = h("button", "", "Open");
-          open.addEventListener("click", () => { closeSheet(); if (state.chartId === a.id && state.screen === "chart") return; openChart(a.id); });
-          r.appendChild(open);
-        }
-        if (!a.undone){
-          const u = h("button", "", "Undo");
-          u.addEventListener("click", () => { a.undo(); a.undone = true; renderChat(); });
-          r.appendChild(u);
-        }
-        b.appendChild(r);
-      });
-      if (it.sources && it.sources.length){
-        const s = h("div", "ai-src");
-        s.appendChild(h("span", "", "Sources: "));
-        it.sources.slice(0, 4).forEach((src, i) => {
-          let host = src.url;
-          try { host = new URL(src.url).hostname.replace(/^www\./, ""); } catch(e){}
-          const a = h("a", "", host);
-          a.href = src.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.title = src.title;
-          if (i) s.appendChild(document.createTextNode(", "));
-          s.appendChild(a);
-        });
-        b.appendChild(s);
-      }
-      log.appendChild(b);
-    });
-    if (chat.busy) log.appendChild(h("div", "ai-msg assistant pending", "Working on it…"));
-    log.scrollTop = log.scrollHeight;
-  }
-  async function sendAi(ta, go){
-    if (chat.busy){ chat.busy.abort(); return; }
-    const text = ta.value.trim();
-    if (!text){ ta.focus(); return; }
-    ta.value = "";
-    chat.items.push({ role: "user", text: text });
-    chat.busy = new AbortController();
-    setBusy(true); renderChat();
-    try {
-      const out = await runAgent(text, chat.busy.signal);
-      chat.items.push({ role: "assistant", text: out.text, actions: out.actions, sources: out.sources });
-      if (chat.webNote){ chat.webNote = false; chat.items.push({ role: "assistant", err: true, text: "Web search is turned off for this Anthropic account, so I worked from what I know. An admin can turn it on in the Anthropic Console's settings." }); }
-      if ($("bsheet").hidden && out.actions.length) toast(out.actions[out.actions.length - 1].text + ".");
-    } catch(e){
-      const stopped = e && e.name === "AbortError";
-      chat.items.push({ role: "assistant", err: !stopped, text: stopped ? "Stopped." : (e instanceof AiError ? e.message : "Something went wrong. Try again."), actions: e && e.actions || [] });
-    } finally {
-      chat.busy = null;
-      setBusy(false); renderChat();
-    }
-  }
-  // Speech to text where the browser has it (Safari on iPhone does); the keyboard mic always works too.
-  let listening = null;
-  function dictate(ta, btn){
-    if (listening){ listening.stop(); return; }
-    let rec;
-    try { rec = new SR(); } catch(e){ toast("Talking isn't available here. Use the mic on your keyboard."); return; }
-    rec.lang = navigator.language || "en-US";
-    rec.interimResults = true;
-    rec.continuous = false;
-    const base = ta.value ? ta.value.replace(/\s*$/, " ") : "";
-    rec.onresult = (e) => {
-      let s = "";
-      for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript;
-      ta.value = base + s;
-    };
-    rec.onerror = (e) => { if (e.error === "not-allowed") toast("Allow microphone access to talk to the assistant."); };
-    rec.onend = () => { listening = null; btn.classList.remove("on"); btn.lastChild.textContent = " Talk"; };
-    listening = rec;
-    btn.classList.add("on"); btn.lastChild.textContent = " Listening…";
-    try { rec.start(); } catch(e){ listening = null; btn.classList.remove("on"); }
-  }
-  $("chartAi").addEventListener("click", openAi);
   document.addEventListener("click", (e) => { const k = e.target.closest && e.target.closest(".kn[data-sym]"); if (k) audition(k.dataset.sym); });
-  $("libAi").addEventListener("click", openAi);
 
   /* ============================ sync between devices ============================ */
   // Every device connected to the same GitHub account shares one secret gist ("Barline sync",
@@ -1903,10 +1572,11 @@
   const cloudReady = () => !!(self.MusicCloud && self.MusicCloud.configured);
   const syncOn = () => !!(cloud() || ghToken());
   const CLOUD_USER = "barline:cloudUser", CLOUD_EMAIL = "barline:cloudEmail";
-  let tombs = (function(){
+  const readTombs = () => {
     try { const t = JSON.parse(store.get(TOMB_KEY, "{}")) || {}; return { charts: t.charts || {}, folders: t.folders || {} }; }
     catch(e){ return { charts: {}, folders: {} }; }
-  })();
+  };
+  let tombs = readTombs();
   const saveTombs = () => store.set(TOMB_KEY, JSON.stringify(tombs));
   function tombstone(kind, id){ tombs[kind][id] = Date.now(); saveTombs(); }
   function untomb(kind, id){ if (tombs[kind][id]){ delete tombs[kind][id]; saveTombs(); } }
@@ -4258,7 +3928,13 @@
     self.MusicCloud.ready.then(() => { if (cloud()){ queueSync(300); if (state.screen === "lib") renderLibrary(); } });
     self.MusicCloud.onChange(() => { if (cloud()) queueSync(300); if (state.screen === "lib") renderLibrary(); });
   }
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")){
+  if (window.MusicAssistant){
+    MusicAssistant.mount({
+      app: "barline", button: [$("libAi"), $("chartAi")], context: aiContext, tools: ASSISTANT_TOOLS,
+      onOpen(){ if (state.playing) stop(); }
+    });
+  }
+  if (!BRIDGE && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")){
     window.addEventListener("load", () => { navigator.serviceWorker.register("../sw.js").catch(() => {}); });
   }
 })();

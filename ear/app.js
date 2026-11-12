@@ -162,6 +162,12 @@ function detectPitch(buf, sampleRate) {
     while (set[dayStr(t)]) { n++; t -= 864e5; }
     return n;
   }
+  /* One degree's own words (the Feelings page, and the assistant). Empty, or the starting words, resets it. */
+  function setFeel(d, txt) {
+    txt = String(txt || "").replace(/\s+/g, " ").trim().slice(0, 200);
+    if (!txt || txt === FEEL[d][0]) delete prog.feelings[d]; else prog.feelings[d] = txt;
+    persist();
+  }
   var lab = function (i) { return prefs.labels === "sol" ? DEG[i][1] : DEG[i][0]; };
   var feelOf = function (d) { return prog.feelings[d] || FEEL[d][0]; };
   var unlockedCount = function (path) { return prefs.unlockAll ? PATHS[path].length : prog.unlocked[path]; };
@@ -1134,11 +1140,6 @@ function detectPitch(buf, sampleRate) {
       try { history.replaceState(null, "", "#/feelings/" + SLUG[d]); } catch (e) {}
       if (scroll) { try { $("fl-card").scrollIntoView({ block: "start", behavior: reduced() ? "auto" : "smooth" }); } catch (e) {} }
     }
-    function setFeel(d, txt) {
-      txt = String(txt || "").replace(/\s+/g, " ").trim().slice(0, 200);
-      if (!txt || txt === FEEL[d][0]) delete prog.feelings[d]; else prog.feelings[d] = txt;
-      persist();
-    }
     function edit() {
       editing = true; drawCard();
       var ta = $("fl-ta");
@@ -1479,6 +1480,63 @@ function detectPitch(buf, sampleRate) {
     self.MusicCloud.ready.then(function () { if (cloud()) syncNow(); });
     self.MusicCloud.onChange(function () { if (cloud()) syncNow(); });
   }
+
+  /* ---------- the assistant ----------
+     Music's assistant (shared/assistant.js) opens from the bar here, and changes Ear Training's
+     preferences itself (it writes the same stored preferences this page reads). Ear Training owns
+     the feeling tools, so they run here: on the Feelings page itself when the assistant is open in
+     this page, or in a hidden copy of it (?bridge=1) when it is open in another tool. */
+  var BRIDGE = /[?&]bridge=1(&|$)/.test(location.search) && window.parent !== window;
+  function degreeIndex(v) {
+    var t = String(v == null ? "" : v).trim().toLowerCase().replace(/♭/g, "b").replace(/♯/g, "#").replace(/\s+/g, "");
+    var hit = -1;
+    MusicFeelings.list.forEach(function (d) {
+      var l = d.label.replace(/♭/g, "b").replace(/♯/g, "#").toLowerCase();
+      if (l === t || d.slug === t.replace("#", "s") || d.name.replace(/\s+/g, "") === t) hit = d.semitone;
+    });
+    return hit;
+  }
+  // A hidden copy may have been open a while: take what is stored before reading or changing it.
+  function fresh() { if (BRIDGE) { var sv = prog.savedAt; prefs = cleanPrefs(lsGet(PREFS_KEY)); prog = cleanProg(lsGet(PROG_KEY)); prog.savedAt = Math.max(sv, prog.savedAt); } }
+  function redrawFeelings() { if (/^feelings/.test(T.screen) && !$("fl-ta")) route(); }
+  function feelRow(d) { var x = MusicFeelings.by[d]; return { degree: x.label, name: x.name, text: feelOf(d), own_words: !!prog.feelings[d] }; }
+  var TOOLS = {
+    get_feelings: function () { fresh(); return { content: FEEL_ORDER.map(feelRow) }; },
+    set_feeling: function (inp) {
+      fresh();
+      var d = degreeIndex(inp && inp.degree);
+      if (d < 0) return { content: "Unknown degree. Use 1, b2, 2, b3, 3, 4, #4, 5, b6, 6, b7 or 7.", is_error: true };
+      var before = prog.feelings[d] || "";
+      setFeel(d, inp && inp.text);
+      redrawFeelings();
+      var now = prog.feelings[d] || "";
+      return { content: { degree: MusicFeelings.by[d].label, text: feelOf(d), own_words: !!now },
+        action: { text: (now ? "Saved your words for " : "Reset the words for ") + MusicFeelings.by[d].label, undo: { op: "feeling", d: d, prev: before } },
+        link: { href: "ear/#/feelings/" + SLUG[d], label: "Open" } };
+    },
+    __undo: function (p) {
+      fresh();
+      if (p && p.op === "feeling" && p.d >= 0 && p.d < 12) { setFeel(p.d, p.prev || ""); redrawFeelings(); return { content: "ok" }; }
+      return { content: "Nothing to undo.", is_error: true };
+    }
+  };
+  // Preferences changed from outside (the assistant here, or another tab): take them up, live.
+  function takePrefs(own) {
+    prefs = cleanPrefs(lsGet(PREFS_KEY));
+    Snd.applyVol();
+    var scr = T.screen.split("/")[0];
+    if (scr === "settings" || scr === "front") route();
+    if (own) persist();
+  }
+  window.addEventListener("music:prefs-changed", function () { takePrefs(true); });
+  window.addEventListener("storage", function (e) { if (e.key === PREFS_KEY && !BRIDGE) takePrefs(false); });
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "ear", button: $("b-ai"), tools: TOOLS, dark: true,
+    context: function () {
+      var t = document.title.replace(/ [–-] Ear Training$/, "");
+      return "In Ear Training, on: " + (!t || t === "Ear Training" ? "the front page" : t) + "." + (/^feelings/.test(T.screen) && T.feel != null ? " Degree selected: " + MusicFeelings.by[T.feel].label + "." : "");
+    }
+  });
 
   route();
 

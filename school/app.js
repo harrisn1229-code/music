@@ -22,7 +22,12 @@ const LOCAL = !!window.MS_APP;
    with `mode: 'library'`, which changes the menu, the name on it and where it starts. School's
    own menu keeps only what depends on what you are enrolled in, plus Classes. */
 const LIBMODE = LOCAL && window.MS_APP.mode === 'library';
-const ROUTE_KEY = LIBMODE ? 'hms.route.lib' : 'hms.route';
+/* BRIDGE. Music's assistant (shared/assistant.js) works across the tools: from another tool it opens
+   library.html in a hidden frame with ?bridge=1 and asks it to read or add Originals ideas. That
+   copy shows nothing to anyone, never touches the address, the history or the session's route, and
+   saves to the same place as ever. */
+const BRIDGE = LOCAL && /[?&]bridge=1(&|$)/.test(location.search) && window.parent !== window;
+const ROUTE_KEY = BRIDGE ? 'hms.route.bridge' : LIBMODE ? 'hms.route.lib' : 'hms.route';
 /* In the Music app pages say less: `lite(full, short)` is the artifact page's sentence there and the
    short form (often nothing) here. */
 function lite(full, short) { return LOCAL ? short : full; }
@@ -2114,11 +2119,13 @@ function rail() {
     home: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.6h9.6V8.2"/></svg>',
     back: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5"/></svg>',
     menu: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h12M4 10h12M4 13.5h12"/></svg>',
-    shut: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>'
+    shut: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>',
+    ai: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>'
   };
   const bar = (name, logo, href, label, icon) => `<div class="mbar">
       <a class="icon-btn" href="${href}" aria-label="${label}">${icon}</a>
       <img class="logo" src="${logo}" alt=""><span class="brand">${name}</span>
+      ${LOCAL ? `<button class="icon-btn" type="button" data-assistant aria-label="Assistant">${ICO.ai}</button>` : ''}
       <button class="icon-btn rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
         aria-label="${open ? 'Close menu' : 'Open menu'}">${open ? ICO.shut : ICO.menu}</button></div>`;
   const foot = `<div class="rail-foot">
@@ -6440,6 +6447,27 @@ function origAll() {
 }
 const origOne = id => origAll().filter(o => o.id === id)[0];
 
+/* The two writes behind the idea board, shared by the form here and by Music's assistant (see the
+   bottom of this file), so an idea added either way is the same thing, with the same kind of id. */
+function origCreate(f) {
+  /* Time-derived, never position-derived — PATCH-136 (B4) states the failure in full for the
+     lesson capture and it is identical here: `length + 1` reuses an id the moment anything is
+     removed, and a reused id is silently skipped by sync.py's dedupe as already-filed. */
+  const id = `idea-${TODAY.replace(/-/g, '')}-${Date.now().toString(36)}`;
+  const t = k => String(f[k] == null ? '' : f[k]).trim();
+  P.originals = P.originals || {};
+  P.originals.ideas = [...(P.originals.ideas || []), {
+    id, title: t('title') || 'Untitled idea', by: NAME, status: ORIG_STATUS[t('status')] ? t('status') : 'spark',
+    key: t('key'), bpm: t('bpm'), feel: t('feel'),
+    idea: t('idea'), started: TODAY, at: TODAY}];
+  return id;
+}
+function origRemove(id) {
+  P.originals = P.originals || {};
+  P.originals.ideas = (P.originals.ideas || []).filter(i => i.id !== id);
+  P.originals.notes = (P.originals.notes || []).filter(n => n.target !== id);
+}
+
 /* A capture is PLAIN TEXT — it has never been near build.py's markdown pass — so it is escaped
    and given paragraphs here. Deliberately not a second markdown renderer: the note it becomes
    will be rendered properly by the next build, and shipping a half-implementation of markdown
@@ -7707,6 +7735,7 @@ if (LOCAL) {
    change of route is one history entry, pushed by render(). */
 let histRoute = null;
 function trackRoute() {
+  if (BRIDGE) return;
   try { sessionStorage.setItem(ROUTE_KEY, route); } catch (e) {}
   if (histRoute === route) return;
   try { histRoute === null ? history.replaceState({r: route}, '') : history.pushState({r: route}, ''); } catch (e) {}
@@ -7870,12 +7899,7 @@ app.addEventListener('click', e => {
     /* Time-derived, never position-derived — PATCH-136 (B4) states the failure in full for the
        lesson capture and it is identical here: `length + 1` reuses an id the moment anything is
        removed, and a reused id is silently skipped by sync.py's dedupe as already-filed. */
-    const id = `idea-${TODAY.replace(/-/g, '')}-${Date.now().toString(36)}`;
-    P.originals = P.originals || {};
-    P.originals.ideas = [...(P.originals.ideas || []), {
-      id, title: title || 'Untitled idea', by: NAME, status: g('oi-status') || 'spark',
-      key: g('oi-key').trim(), bpm: g('oi-bpm').trim(), feel: g('oi-feel').trim(),
-      idea, started: TODAY, at: TODAY}];
+    origCreate({title, idea, status: g('oi-status'), key: g('oi-key'), bpm: g('oi-bpm'), feel: g('oi-feel')});
     addingIdea = false; dirty(); render();
     return toast(LOCAL ? 'Idea saved.' : 'Idea saved to this page. /school sync writes it to the vault.');
   }
@@ -7894,9 +7918,7 @@ app.addEventListener('click', e => {
      that deleted the note would be writing a third kind of capture nothing reads. */
   if (d.origDel) {
     if (readonly) return;
-    P.originals = P.originals || {};
-    P.originals.ideas = (P.originals.ideas || []).filter(i => i.id !== d.origDel);
-    P.originals.notes = (P.originals.notes || []).filter(n => n.target !== d.origDel);
+    origRemove(d.origDel);
     route = 'originals'; dirty(); render();
     return toast('Removed. Nothing already synced is touched.');
   }
@@ -8330,4 +8352,50 @@ document.addEventListener('visibilitychange', () => {
   reconcileReleases();
   render();
 });
+
+/* ---------------------------------------------------------------- Music's assistant
+   School owns the Originals tools: list the idea board, add an idea, take it back. They go through
+   origCreate/origRemove, the same writes as the form, and save at once (a hidden copy of this page
+   answering from another tool must not leave a change waiting for the quarter-second save timer). */
+if (LOCAL && window.MusicAssistant) {
+  /* A hidden copy may have been open a while: take the stored progress before changing it. */
+  const takeStored = () => {
+    if (!BRIDGE) return;
+    try { const t = localStorage.getItem(LS_KEY); if (t) P = JSON.parse(t); } catch (e) { return; }
+    for (const k of ['concepts','courses','classes','tests','homework','assignments','drills','misses']) P[k] = P[k] || {};
+    if (!Array.isArray(P.undo)) P.undo = [];
+    if (!Array.isArray(P.notes)) P.notes = [];
+  };
+  const changed = () => { dirty(); saveLocal(); render(); };
+  const brief = o => ({id: o.id, title: o.title, status: o.status || 'spark', key: o.key || '', bpm: o.bpm || '', feel: o.feel || '',
+    idea: String(o.source === 'page' ? (o.idea || '') : unesc(String(o.html || '').replace(/<[^>]+>/g, ' '))).replace(/\s+/g, ' ').trim().slice(0, 240),
+    notes: (o.notes || []).length});
+  MusicAssistant.mount({
+    app: 'school', tools: {
+      list_originals() { takeStored(); return {content: origAll().map(brief)}; },
+      add_original_idea(inp) {
+        takeStored();
+        inp = inp || {};
+        const idea = inp.idea != null ? inp.idea : inp.notes;
+        if (!String(inp.title || '').trim() && !String(idea || '').trim()) return {content: 'Give it a title, or write the idea.', is_error: true};
+        const id = origCreate(Object.assign({}, inp, {idea}));
+        changed();
+        const o = origOne(id);
+        return {content: {id, title: o ? o.title : inp.title},
+          action: {text: 'Added idea: ' + (o ? o.title : inp.title), undo: {op: 'delete', id}},
+          link: {href: 'school/library.html#originals', label: 'Open'}};
+      },
+      __undo(p) {
+        takeStored();
+        if (p && p.op === 'delete' && p.id) { origRemove(p.id); changed(); return {content: 'ok'}; }
+        return {content: 'Nothing to undo.', is_error: true};
+      }
+    },
+    context: () => {
+      const title = {overview: 'Overview', myclasses: 'My classes', classes: 'Classes', homework: 'Homework', drill: 'Quizzes', tests: 'Tests',
+        ext: 'Outside lessons', sync: 'Activity & backup', songs: 'Covers', drills: 'Drills', originals: 'Originals', tools: 'Tools', files: 'My files'}[route] || '';
+      return (LIBMODE ? 'In Library, on the ' : 'In School, on the ') + (title || route) + ' page.';
+    }
+  });
+}
 })();

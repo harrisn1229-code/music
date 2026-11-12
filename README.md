@@ -30,6 +30,7 @@ fonts/                 Big Shoulders Display, the home screen's headline typefac
 shared/theory.js       Music theory used by Note Cards and Library
 shared/account.js      The one GitHub connection every tool syncs with
 shared/ai.js           The one Claude connection (your Anthropic API key) every tool uses
+shared/assistant.js    The one AI assistant: a sheet opened from the home screen and every tool's top bar
 shared/cloud.js        The one email account: sign-in, saved data, private files
 shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
 shared/vendor/         The Supabase browser library
@@ -100,6 +101,17 @@ is `school/music-skin.css`, written from the `music-school` repo.
 saved on the device under `music:aiKey` (never in a backup, never synced), and requests go
 straight from the device to Anthropic. A key added in any tool works in all of them. A tool calls
 `MusicAI.call({ system, messages, tools, tool_choice })`.
+
+`shared/assistant.js` is the one assistant for the whole app (`MusicAssistant`). A page mounts it
+with `MusicAssistant.mount({ app, button, context, tools })` and puts the sparkle button in its top
+bar (any element with `data-assistant` opens it). `context()` says where the musician is; it is sent
+in square brackets at the start of each message. The tools a page owns go in `tools` (Barline: the
+chart tools; School: the Originals tools; Ear Training: the feeling tools). From any other page the
+assistant opens the owner in a hidden frame (`?bridge=1`, which shows nothing and opens no sheets)
+and calls it with `postMessage`. A tool result may carry an `action` with plain-data `undo`
+(handed back to the owner's `__undo`) and a `link` (`href` relative to the Music root). The theory,
+stats and settings tools are in `assistant.js` itself. The conversation is kept in sessionStorage
+so it follows the musician from tool to tool.
 
 ## Accounts
 

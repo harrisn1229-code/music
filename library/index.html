@@ -254,6 +254,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"></a>
     <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#9F2D3F"/><rect x="126" y="158" width="62" height="214" rx="11" fill="#fff"/><rect x="200" y="124" width="72" height="248" rx="11" fill="#F5A93B"/><rect x="292" y="150" width="60" height="222" rx="11" fill="#fff" transform="rotate(13 352 372)"/><rect x="104" y="380" width="304" height="20" rx="10" fill="#fff" opacity=".55"/></svg>
     <h1 class="brand">Library</h1>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
   </div>
 </header>
 
@@ -261,6 +262,8 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 <noscript><p class="wrap">Library needs JavaScript turned on.</p></noscript>
 
 <script src="../shared/theory.js"></script>
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
 <script>
 /* Library reads the same theory as Note Cards (../shared/theory.js) and lays it out
    for looking things up. Addresses:
@@ -832,6 +835,15 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   function refocus(attr, value) { const b = view.querySelector("[data-" + attr + '="' + value + '"]'); if (b) b.focus({ preventScroll: true }); }
 
   route();
+
+  /* ---------- assistant ---------- */
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "library", button: $("ai-btn"),
+    context: () => {
+      const r = parse(), t = document.title.replace(/ – Library$/, "");
+      return r.view === "shelves" ? "In Library, on the front page." : "In Library, looking at: " + t + ".";
+    }
+  });
 
   /* ---------- offline: Music's shared service worker, one folder up ---------- */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
