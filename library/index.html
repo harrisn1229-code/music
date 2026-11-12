@@ -102,11 +102,11 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .key:active,.chip:active{transform:scale(.95)}
 
 .lists{display:grid;gap:0 1.5rem;align-items:start}
-@media (min-width:62rem){ .lists.cols{grid-template-columns:1.35fr 1fr 1fr} }
+@media (min-width:62rem){ .lists.two{grid-template-columns:1fr 1fr} }
+.lists.one .sec{margin-top:1rem}
+.lists.one .rows{grid-template-columns:repeat(auto-fill, minmax(min(100%, 23rem), 1fr))}
 .sec h2.first{margin-top:.5rem}
 .sec h2{margin:1.5rem .125rem .6rem;font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
-.sec .hint{margin:-.35rem .125rem .6rem}
-.hint{font-size:.875rem;color:var(--muted)}
 .rows{display:grid;gap:.5rem}
 .row{display:block;padding:.75rem .9rem .7rem;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--sh)}
 .row:active{transform:scale(.99)}
@@ -121,10 +121,11 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .cell small{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .cell.ct small{color:var(--text);font-weight:800}
 .row.plain{display:flex;align-items:center;gap:.5rem;font-weight:700}
-/* a shelf: a title and a line about it, which wraps on a phone instead of pushing the page wide */
-.row.shelf{display:flex;align-items:center;gap:.75rem}
-.shelf-in{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:.1rem .6rem}
-.shelf-s{color:var(--muted);font-size:.875rem}
+/* front page: one tile per shelf, name only */
+.tiles{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:.75rem;margin-top:.75rem}
+@media (min-width:40rem){ .tiles{grid-template-columns:repeat(auto-fill, minmax(11rem, 1fr))} }
+.tile{display:flex;align-items:flex-end;min-height:6.5rem;padding:1rem;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--sh);font-size:1.125rem;font-weight:800;letter-spacing:-.01em;overflow-wrap:anywhere}
+.tile:active{transform:scale(.97)}
 .empty{margin-top:1.5rem;padding:1.25rem;border-radius:var(--r-md);background:var(--surface-2);color:var(--muted)}
 
 /* ---------- entry page ---------- */
@@ -152,6 +153,10 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .chip{height:2.125rem;padding:0 .8rem;border-radius:999px;background:var(--surface-2);font-size:.875rem;font-weight:600;white-space:nowrap}
 .say{color:var(--muted);font-size:.9375rem}
 .say b{color:var(--text);font-weight:700}
+.slot{display:contents}
+.head + .search{margin-top:.9rem}
+.pills{display:flex;flex-wrap:wrap;gap:.4rem}
+.related .label:first-child{margin-top:.25rem}
 
 /* degree badges: root orange, 3rd blue, 5th green, 7th red, other tones outlined; a mode's color tone is a diamond */
 .d-r{--dc:var(--d-r);--dt:var(--d-r-text)}
@@ -244,9 +249,11 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 <script>
 /* Library reads the same theory as Note Cards (../shared/theory.js) and lays it out
    for looking things up. Addresses:
-     #/                      the index: search, key picker, every mode and chord in that key
+     #/                      the front page: a tile for each shelf
+     #/modes  #/chords  #/arps   a shelf: search, key picker, every entry in that key (#/theory = #/modes)
      #/mode/<key>/<mode>     one mode        (key is 0-11, C = 0)
-     #/chord/<key>/<quality> one chord: spelling, arpeggio, inversions and voicings
+     #/chord/<key>/<quality> one chord: spelling, inversions and voicings
+     #/arp/<key>/<quality>   one arpeggio: notes, guitar neck and piano
      #/voicings              how inversions and voicings are named */
 (function () {
   "use strict";
@@ -281,7 +288,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   function remember(h, t) {
     const list = recents().filter((x) => x.h !== h);
     list.unshift({ h: h, t: t });
-    lsSet(RECENT_KEY, list.slice(0, 6));
+    lsSet(RECENT_KEY, list.slice(0, 18));
   }
 
   /* ---------- small pieces ---------- */
@@ -312,6 +319,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   }
   const modeRow = (pc, m) => { const c = modeCard(pc, m.id); return rowHTML("#/mode/" + pc + "/" + m.id, c.title, "", c); };
   const chordRow = (pc, q) => { const c = chordCard(pc, q); return rowHTML("#/chord/" + pc + "/" + q.id, c.title, c.sub, c); };
+  const arpRow = (pc, q) => { const c = arpCard(pc, q, "s1"); return rowHTML("#/arp/" + pc + "/" + q.id, c.title, c.sub, c); };
 
   /* ---------- piano ---------- */
   const isWhite = (m) => [0, 2, 4, 5, 7, 9, 11].includes(((m % 12) + 12) % 12);
@@ -405,7 +413,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   }
   function shapesHTML(c) {
     const found = guitarFor(c.notes.map((nt) => nt.midi));
-    if (!found.shapes.length) return '<p class="say">This spacing doesn’t fit on a guitar within a five-fret reach, so there’s no shape for it.</p>';
+    if (!found.shapes.length) return '<p class="say">No guitar shape fits this spacing.</p>';
     return '<div class="shapes">' + found.shapes.map((sh, i) =>
       '<figure class="shape">' + chordBox(c, sh) + "<figcaption><b>Shape " + (i + 1) + "</b>Strings " + sh.strings.map((s) => 6 - s).join(" ") +
       (found.stretch ? ", wide stretch" : "") + "</figcaption></figure>").join("") + "</div>";
@@ -483,12 +491,12 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   }
   const ALL_ALIASES = Object.values(QUAL_ALIASES).concat(Object.values(MODE_ALIASES));
   const bestFit = (word) => ALL_ALIASES.reduce((best, al) => Math.max(best, fit(word, al)), 0);
-  function search(query) {
+  function search(query, scope) {
     let words = norm(query).split(/\s+/).filter(Boolean);
     let pc = null, kind = null;
     const rest = [];
     words.forEach((w) => {
-      if (KIND_WORDS[w]) { kind = KIND_WORDS[w]; return; }
+      if (KIND_WORDS[w]) { if (scope !== "modes" && (KIND_WORDS[w] === "triad" || KIND_WORDS[w] === "seventh")) kind = KIND_WORDS[w]; return; }
       if (pc === null && ROOT_PC[w] !== undefined) { pc = ROOT_PC[w]; return; }
       // "dm7", "f#dorian", "bbmaj7": a root glued to a name. Try the two-character root first
       // ("bb7" is B-flat 7), and leave the word whole when it is itself a name ("dim", "dorian").
@@ -512,14 +520,13 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       return total;
     };
     const out = [];
-    if (kind !== "triad" && kind !== "seventh" && kind !== "chord") {
+    if (scope === "modes") {
       MODES.forEach((m, i) => { const s = score(MODE_ALIASES[m.id]); if (s) out.push({ s: s, i: i, html: modeRow(usePc, m) }); });
-    }
-    if (kind !== "mode") {
-      QUALS.forEach((q, i) => {
+    } else {
+      (scope === "arps" ? ARP_QUALITIES : QUALS).forEach((q, i) => {
         if (kind === "triad" && isSeventh(q)) return;
         if (kind === "seventh" && !isSeventh(q)) return;
-        const s = score(QUAL_ALIASES[q.id]); if (s) out.push({ s: s, i: 10 + i, html: chordRow(usePc, q) });
+        const s = score(QUAL_ALIASES[q.id]); if (s) out.push({ s: s, i: i, html: scope === "arps" ? arpRow(usePc, q) : chordRow(usePc, q) });
       });
     }
     out.sort((a, b) => b.s - a.s || a.i - b.i);
@@ -533,52 +540,75 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     return labels.map((label, pc) =>
       '<button class="key' + (label.length > 2 ? " two" : "") + '" type="button" role="radio" data-pc="' + pc + '" aria-checked="' + (pc === current) + '">' + esc(label) + "</button>").join("");
   }
-  function listsHTML(query) {
+  const SHELF = {
+    modes: { title: "Modes", ph: "Search modes", pref: "#/mode/" },
+    chords: { title: "Chords", ph: "Search chords", pref: "#/chord/" },
+    arps: { title: "Arpeggios", ph: "Search arpeggios", pref: "#/arp/" }
+  };
+  const queries = { modes: "", chords: "", arps: "" };
+  const listsClass = (kind, query) => "lists" + (query.trim() ? "" : kind === "modes" ? " one" : " two");
+  function listsHTML(kind, query) {
     const pc = prefs.pc;
     if (query.trim()) {
-      const r = search(query);
-      if (!r.rows.length) return '<p class="empty">Nothing matches “' + esc(query.trim()) + '”. Try a root and a name, like E♭ lydian or Gm7.</p>';
+      const r = search(query, kind);
+      if (!r.rows.length) return '<p class="empty">Nothing matches “' + esc(query.trim()) + '”.</p>';
       return '<section class="sec"><h2>' + r.rows.length + (r.rows.length === 1 ? " match" : " matches") + " in " + esc(SHORT_KEYS[r.pc]) + "</h2>" +
-        (r.rootTyped ? "" : '<p class="hint">Showing the key you have picked. Type a root, like F♯, to search another.</p>') +
         '<ul class="rows">' + r.rows.map((x) => x.html).join("") + "</ul></section>";
     }
-    return '<section class="sec"><h2>Modes</h2><p class="hint">A bold degree is the note that gives the mode its color.</p><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>" +
-      '<section class="sec"><h2>Triads</h2><ul class="rows">' + TRIADS.map((q) => chordRow(pc, q)).join("") + "</ul></section>" +
+    if (kind === "modes") return '<section class="sec"><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>";
+    if (kind === "arps") {
+      return '<section class="sec"><h2>Triads</h2><ul class="rows">' + ARP_QUALITIES.filter((q) => !isSeventh(q)).map((q) => arpRow(pc, q)).join("") + "</ul></section>" +
+        '<section class="sec"><h2>7th chords</h2><ul class="rows">' + ARP_QUALITIES.filter(isSeventh).map((q) => arpRow(pc, q)).join("") + "</ul></section>";
+    }
+    return '<section class="sec"><h2>Triads</h2><ul class="rows">' + TRIADS.map((q) => chordRow(pc, q)).join("") + "</ul></section>" +
       '<section class="sec"><h2>7th chords</h2><ul class="rows">' + SEVENTHS.map((q) => chordRow(pc, q)).join("") +
-      '<li><a class="row plain" href="#/voicings"><span>How inversions and voicings are named</span>' + ICON.go + "</a></li></ul></section>";
+      '<li><a class="row plain" href="#/voicings"><span>Inversions and voicings</span>' + ICON.go + "</a></li></ul></section>";
   }
-  /* ---------- the front page: Library's shelves ----------
-     Modes and chords is this page's own lookup (#/theory). The rest came over from School and
+  /* ---------- the front page: Library's shelves, as tiles ----------
+     Modes, Chords and Arpeggios are this page's own lookups. The rest came over from School and
      open as their own pages (../school/library.html), built from the same notes as School and
      sharing its saved progress, so a drill's tempo log or a song's status is the same everywhere. */
   function renderShelves() {
-    const shelf = (href, title, about) => '<li><a class="row shelf" href="' + href + '"><span class="shelf-in"><span class="row-t">' + title + '</span><span class="shelf-s">' + about + "</span></span>" + ICON.go + "</a></li>";
-    const rec = recents();
-    view.innerHTML =
-      '<section class="sec"><h2 class="first">Shelves</h2><ul class="rows">' +
-        shelf("#/theory", "Modes and chords", "Every mode, chord, arpeggio and voicing in any key") +
-        shelf("../school/library.html#songs", "Songs", "Every song with its chart, notes and what to practice") +
-        shelf("../school/library.html#drills", "Drills", "Technique drills with a tempo log, and ear training") +
-        shelf("../school/library.html#originals", "Originals", "Your own song ideas") +
-        shelf("../school/library.html#files", "My files", "Books, charts and album art from your account") +
-      "</ul></section>" +
-      (rec.length ? '<span class="label">Recently looked up</span><div class="recent" style="margin-top:0">' + rec.map((x) => '<a class="pill" href="' + esc(x.h) + '">' + esc(x.t) + "</a>").join("") + "</div>" : "");
+    const tile = (href, name) => '<li><a class="tile" href="' + href + '">' + name + "</a></li>";
+    view.innerHTML = '<ul class="tiles">' +
+      tile("#/modes", "Modes") + tile("#/chords", "Chords") + tile("#/arps", "Arpeggios") +
+      tile("../school/library.html#songs", "Covers") + tile("../school/library.html#drills", "Drills") +
+      tile("../school/library.html#originals", "Originals") + tile("../school/library.html#files", "My files") + "</ul>";
     current = { play: {} };
   }
-  let lastQuery = "";
-  function renderIndex() {
-    const rec = recents();
+  /* ---------- a shelf: modes, chords or arpeggios ---------- */
+  function renderShelf(kind) {
+    const S = SHELF[kind], rec = recents().filter((x) => x.h.indexOf(S.pref) === 0), q = queries[kind];
     view.innerHTML =
-      '<label class="search">' + ICON.search + '<input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Search: D dorian, F♯m7, sus4" aria-label="Search modes and chords"></label>' +
+      '<div class="head"><div class="head-t"><h2 class="title">' + S.title + "</h2></div></div>" +
+      '<label class="search">' + ICON.search + '<input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="' + S.ph + '" aria-label="' + S.ph + '"></label>' +
       (rec.length ? '<div class="recent" aria-label="Recently looked up">' + rec.map((x) => '<a class="pill" href="' + esc(x.h) + '">' + esc(x.t) + "</a>").join("") + "</div>" : "") +
       '<span class="label" id="key-label">Key</span><div class="keys" id="keys" role="radiogroup" aria-labelledby="key-label">' + keysHTML(SHORT_KEYS, prefs.pc) + "</div>" +
-      '<div class="lists' + (lastQuery.trim() ? "" : " cols") + '" id="lists">' + listsHTML(lastQuery) + "</div>";
-    $("q").value = lastQuery;
+      '<div class="' + listsClass(kind, q) + '" id="lists">' + listsHTML(kind, q) + "</div>";
+    $("q").value = q;
     $("q").addEventListener("input", (e) => {
-      lastQuery = e.target.value;
-      $("lists").className = "lists" + (lastQuery.trim() ? "" : " cols");
-      $("lists").innerHTML = listsHTML(lastQuery);
+      queries[kind] = e.target.value;
+      $("lists").className = listsClass(kind, queries[kind]);
+      $("lists").innerHTML = listsHTML(kind, queries[kind]);
     });
+    current = { play: {} };
+  }
+
+  /* ---------- related: compact links between modes, chords and arpeggios ---------- */
+  const modesFor = (pc, q) => MODES.filter((m) => q.tones.every((t) => m.semis.includes(t[1] % 12))).map((m) => ({ href: "#/mode/" + pc + "/" + m.id, text: modeCard(pc, m.id).title }));
+  // The seven seventh chords a mode stacks: for each degree, that degree and every second one above it.
+  function diatonicSevenths(pc, m) {
+    return m.semis.map((s, j) => {
+      const semis = [0, 2, 4, 6].map((k) => (((m.semis[(j + k) % 7] - s) % 12) + 12) % 12);
+      const q = SEVENTHS.find((x) => x.tones.every((t, i) => t[1] % 12 === semis[i]));
+      return q ? { pc: (pc + s) % 12, q: q } : null;
+    }).filter(Boolean);
+  }
+  function relatedHTML(groups) {
+    const g = groups.filter((x) => x.items.length);
+    if (!g.length) return "";
+    return '<section class="wide related">' + g.map((x) => '<span class="label">' + esc(x.label) + '</span><div class="pills">' +
+      x.items.map((i) => '<a class="pill" href="' + i.href + '">' + esc(i.text) + "</a>").join("") + "</div>").join("") + "</section>";
   }
 
   /* ---------- a mode ---------- */
@@ -586,7 +616,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     const c = modeCard(pc, m.id), mi = MODES.indexOf(m);
     const parentPc = (((pc - MAJOR[mi]) % 12) + 12) % 12;
     const family = MODES.map((x, j) => modeCard((parentPc + MAJOR[j]) % 12, x.id));
-    const steps = c.gaps.join(" ");
+    const steps = c.gaps.join(" "), sevenths = diatonicSevenths(pc, m);
     view.innerHTML =
       '<div class="head"><div class="head-t"><h2 class="title">' + esc(c.title) + '</h2><p class="sub">' + esc(c.parent) + "</p></div>" + playBtn("mode") + "</div>" +
       '<div class="keystrip" role="radiogroup" aria-label="Key">' + keysHTML(Array.from({ length: 12 }, (_, k) => modeCard(k, m.id).notes[0].name), pc) + "</div>" +
@@ -594,11 +624,15 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
         '<section class="card wide">' + voicesHTML(c, true) +
           '<dl class="facts"><div><dt>Steps</dt><dd>' + esc(steps) + "</dd></div>" +
           "<div><dt>Parent scale</dt><dd>" + esc(c.parent) + "</dd></div>" +
-          "<div><dt>Color tone</dt><dd>" + (c.colorTone ? badge(c.colorTone) + esc(c.colorTone.name) : "None. This is the major scale.") + "</dd></div></dl></section>" +
+          "<div><dt>Color tone</dt><dd>" + (c.colorTone ? badge(c.colorTone) + esc(c.colorTone.name) : "None") + "</dd></div></dl></section>" +
         '<section class="card"><h3>Piano</h3>' + pianoLine(c) + "</section>" +
         '<section class="card"><h3>Guitar neck</h3>' + neckMap(c) + "</section>" +
-        '<section class="wide"><div class="sec"><h2>' + esc(family[0].notes[0].name) + ' major and its modes</h2><p class="hint">All seven use the same notes, each starting from a different one.</p><ul class="rows">' +
+        '<section class="wide"><div class="sec"><h2>' + esc(family[0].notes[0].name) + ' major and its modes</h2><ul class="rows">' +
           family.map((f, j) => rowHTML("#/mode/" + ((parentPc + MAJOR[j]) % 12) + "/" + MODES[j].id, f.title, j === mi ? "You are here" : "", f)).join("") + "</ul></div></section>" +
+        relatedHTML([
+          { label: "Chords", items: sevenths.map((x) => ({ href: "#/chord/" + x.pc + "/" + x.q.id, text: chordCard(x.pc, x.q).title })) },
+          { label: "Arpeggios", items: sevenths.map((x) => ({ href: "#/arp/" + x.pc + "/" + x.q.id, text: chordCard(x.pc, x.q).title })) }
+        ]) +
       "</div>";
     current = { play: { mode: () => play(c, true) } };
   }
@@ -621,27 +655,31 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     const starts = startsOf(q);
     if (!starts.length) {
       const c = chordCard(pc, q);
-      return '<section class="card" id="arp"><div class="card-head"><h3>On the neck</h3></div><p class="say">Every ' + esc(c.title) + " note on frets 0 to 12.</p>" + neckMap(c) + "</section>";
+      return '<section class="card" id="arp"><div class="card-head"><h3>On the neck</h3></div>' + neckMap(c) + "</section>";
     }
     if (!starts.some((s) => s.id === sel.start)) sel.start = "s1";
     const c = arpCard(pc, q, sel.start);
-    return '<section class="card" id="arp"><div class="card-head"><h3>Arpeggio</h3>' + playBtn("arp", true) + "</div>" +
+    return '<section class="card" id="arp">' +
       '<div class="picker"><span class="picker-l" id="start-l">Start on</span><div class="seg" role="group" aria-labelledby="start-l">' +
         starts.map((s) => '<button class="chip" type="button" data-start="' + s.id + '" aria-pressed="' + (s.id === sel.start) + '">' + esc(s.chip) + "</button>").join("") + "</div></div>" +
       voicesHTML(c, true) + neckMap(c) + "</section>";
+  }
+  // The arpeggio page's two cards: the arpeggio, and the same notes on a piano.
+  function arpSlotHTML(pc, q) {
+    const card = arpHTML(pc, q);
+    return card + '<section class="card"><h3>Piano</h3>' + pianoLine(arpCard(pc, q, sel.start)) + "</section>";
   }
   function voicingHTML(pc, q) {
     const invs = invsOf(q), vs = voicingsOf(q);
     if (!invs.some((i) => i.id === sel.inv)) sel.inv = "root";
     if (!vs.some((v) => v.id === sel.v)) sel.v = "close";
     const inv = invs.find((i) => i.id === sel.inv), v = vs.find((x) => x.id === sel.v);
-    const c = chordCard(pc, q, inv.id, v.id), bass = c.notes[0];
+    const c = chordCard(pc, q, inv.id, v.id);
     return '<section class="card wide" id="voi"><div class="card-head"><h3>Inversions and voicings</h3>' + playBtn("voicing", true) + "</div>" +
       '<div class="picker"><span class="picker-l" id="inv-l">Inversion</span><div class="seg" role="group" aria-labelledby="inv-l">' +
         invs.map((i) => '<button class="chip" type="button" data-inv="' + i.id + '" aria-pressed="' + (i.id === inv.id) + '">' + esc(i.label) + "</button>").join("") + "</div></div>" +
       '<div class="picker"><span class="picker-l" id="v-l">Voicing</span><div class="seg" role="group" aria-labelledby="v-l">' +
         vs.map((x) => '<button class="chip" type="button" data-v="' + x.id + '" aria-pressed="' + (x.id === v.id) + '">' + esc(x.label) + "</button>").join("") + "</div></div>" +
-      '<p class="say"><b>' + esc(inv.label) + ":</b> " + esc(bass.name) + ", the " + esc(bass.deg === "R" ? "root" : bass.deg) + ", is the lowest note. <b>" + esc(v.label) + ":</b> " + esc(voicingSays(v)) + "</p>" +
       voicesHTML(c, false) + pianoChord(c) + shapesHTML(c) + "</section>";
   }
   function renderChord(pc, q) {
@@ -653,17 +691,36 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
         '<section class="card">' + voicesHTML(c, false) +
           '<dl class="facts"><div><dt>Formula</dt><dd>' + esc(c.notes.map((nt) => nt.deg).join("  ")) + "</dd></div>" +
           "<div><dt>Stacked in</dt><dd>" + esc(c.gaps.join(" + ")) + "</dd></div></dl></section>" +
-        '<div id="arp-slot">' + arpHTML(pc, q) + "</div>" +
+        (startsOf(q).length ? "" : '<div id="arp-slot">' + arpHTML(pc, q) + "</div>") +
         '<div class="wide" id="voi-slot">' + voicingHTML(pc, q) + "</div>" +
+        relatedHTML([
+          { label: "Arpeggio", items: startsOf(q).length ? [{ href: "#/arp/" + pc + "/" + q.id, text: c.title }] : [] },
+          { label: "Modes", items: modesFor(pc, q) }
+        ]) +
       "</div>";
     current = {
-      pc: pc, q: q,
+      view: "chord", pc: pc, q: q,
       play: {
         chord: () => play(c, false),
-        arp: () => play(arpCard(pc, q, sel.start), true),
         voicing: () => play(chordCard(pc, q, sel.inv, sel.v), false)
       }
     };
+  }
+
+  /* ---------- an arpeggio ---------- */
+  function renderArp(pc, q) {
+    const c = chordCard(pc, q);
+    view.innerHTML =
+      '<div class="head"><div class="head-t"><h2 class="title">' + esc(c.title) + " arpeggio</h2></div>" + playBtn("arp") + "</div>" +
+      '<div class="keystrip" role="radiogroup" aria-label="Key">' + keysHTML(Array.from({ length: 12 }, (_, k) => chordCard(k, q).notes[0].name), pc) + "</div>" +
+      '<div class="entry two">' +
+        '<div class="slot" id="arp-slot">' + arpSlotHTML(pc, q) + "</div>" +
+        relatedHTML([
+          { label: "Chord", items: [{ href: "#/chord/" + pc + "/" + q.id, text: c.title }] },
+          { label: "Modes", items: modesFor(pc, q) }
+        ]) +
+      "</div>";
+    current = { view: "arp", pc: pc, q: q, play: { arp: () => play(arpCard(pc, q, sel.start), true) } };
   }
 
   /* ---------- how inversions and voicings are named ---------- */
@@ -671,7 +728,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     const pc = prefs.pc, q = QUAL.maj7, name = chordCard(pc, q).title;
     const spell = (c) => c.notes.map((nt) => nt.name).join("  ");
     view.innerHTML =
-      '<div class="head"><div class="head-t"><h2 class="title">Inversions and voicings</h2><p class="sub">Examples use ' + esc(name) + ", low to high. Pick another key on the first page to change them.</p></div></div>" +
+      '<div class="head"><div class="head-t"><h2 class="title">Inversions and voicings</h2><p class="sub">' + esc(name) + ", low to high</p></div></div>" +
       '<div class="entry two">' +
         '<section class="card"><h3>Inversions</h3><p class="say">An inversion is named by the note in the bass, so root position always has the root on the bottom.</p><ul class="guide">' +
           INVERSIONS.map((inv) => { const c = chordCard(pc, q, inv.id, "close"); return "<li><b>" + esc(inv.label) + "</b><span>The " + esc(c.notes[0].deg === "R" ? "root" : c.notes[0].deg) + " is the lowest note." + (inv.bass === 3 ? " Only 7th chords have one." : "") + "</span><em>" + esc(spell(c)) + "</em></li>"; }).join("") + "</ul></section>" +
@@ -683,38 +740,49 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 
   /* ---------- getting around ---------- */
   let current = { play: {} };
-  let indexScroll = 0, onIndex = false;
+  const shelfScroll = { modes: 0, chords: 0, arps: 0 };
+  let curShelf = null, prevView = null;
+  const ARPQ = Object.fromEntries(ARP_QUALITIES.map((q) => [q.id, q]));
+  const SHELF_KIND = { modes: "modes", theory: "modes", chords: "chords", arps: "arps" };
   function parse() {
     const p = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     const pc = parseInt(p[1], 10);
     const okPc = pc >= 0 && pc < 12 && String(pc) === p[1];
     if (p[0] === "mode" && okPc && MODE[p[2]]) return { view: "mode", pc: pc, id: p[2] };
     if (p[0] === "chord" && okPc && QUAL[p[2]]) return { view: "chord", pc: pc, id: p[2] };
+    if (p[0] === "arp" && okPc && ARPQ[p[2]]) return { view: "arp", pc: pc, id: p[2] };
     if (p[0] === "voicings") return { view: "guide" };
-    if (p[0] === "theory") return { view: "index" };
+    if (SHELF_KIND[p[0]]) return { view: "shelf", kind: SHELF_KIND[p[0]] };
     return { view: "shelves" };
   }
+  function setNav(href, icon, label) {
+    const nav = $("nav");
+    nav.href = href; nav.innerHTML = icon; nav.setAttribute("aria-label", label);
+  }
   function route() {
-    const r = parse(), nav = $("nav");
-    if (onIndex) indexScroll = window.scrollY;
-    onIndex = r.view === "index";
+    const r = parse(), from = prevView;
+    if (curShelf) shelfScroll[curShelf] = window.scrollY;
+    curShelf = r.view === "shelf" ? r.kind : null;
+    prevView = r.view;
     if (r.view === "shelves") {
-      nav.href = "../"; nav.innerHTML = ICON.home; nav.setAttribute("aria-label", "Music home, all apps");
+      setNav("../", ICON.home, "Music home, all apps");
       document.title = "Library";
       renderShelves();
       window.scrollTo(0, 0);
       return;
     }
-    if (onIndex) {
-      nav.href = "#/"; nav.innerHTML = ICON.back; nav.setAttribute("aria-label", "Back to Library");
-      document.title = "Modes and chords – Library";
-      renderIndex();
-      window.scrollTo(0, indexScroll);
+    if (r.view === "shelf") {
+      setNav("#/", ICON.back, "Back to Library");
+      document.title = SHELF[r.kind].title + " – Library";
+      renderShelf(r.kind);
+      window.scrollTo(0, ["mode", "chord", "arp", "guide"].includes(from) ? shelfScroll[r.kind] : 0);
       return;
     }
-    nav.href = "#/theory"; nav.innerHTML = ICON.back; nav.setAttribute("aria-label", "Back to modes and chords");
+    const back = r.view === "mode" ? ["modes", "Back to modes"] : r.view === "arp" ? ["arps", "Back to arpeggios"] : ["chords", "Back to chords"];
+    setNav("#/" + back[0], ICON.back, back[1]);
     if (r.view === "mode") renderMode(r.pc, MODE[r.id]);
     else if (r.view === "chord") renderChord(r.pc, QUAL[r.id]);
+    else if (r.view === "arp") renderArp(r.pc, ARPQ[r.id]);
     else renderGuide();
     const title = view.querySelector(".title").textContent;
     document.title = title + " – Library";
@@ -730,12 +798,12 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     if (t.dataset.pc !== undefined) {
       const pc = +t.dataset.pc, r = parse();
       prefs.pc = pc; savePrefs();
-      if (r.view === "index") {
+      if (r.view === "shelf") {
         $("keys").innerHTML = keysHTML(SHORT_KEYS, pc);
-        $("lists").innerHTML = listsHTML(lastQuery);
+        $("lists").innerHTML = listsHTML(r.kind, queries[r.kind]);
         const again = $("keys").querySelector('[data-pc="' + pc + '"]'); if (again) again.focus({ preventScroll: true });
       } else {
-        // Same entry in the new key; replace so Back still returns to the index.
+        // Same entry in the new key; replace so Back still returns to the shelf.
         const x = t.parentNode.scrollLeft;
         location.replace("#/" + r.view + "/" + pc + "/" + r.id);
         requestAnimationFrame(() => { const strip = view.querySelector(".keystrip"); if (strip) strip.scrollLeft = x; });
@@ -743,7 +811,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       return;
     }
     if (!current.q) return;
-    if (t.dataset.start) { sel.start = t.dataset.start; $("arp-slot").innerHTML = arpHTML(current.pc, current.q); refocus("start", sel.start); }
+    if (t.dataset.start) { sel.start = t.dataset.start; $("arp-slot").innerHTML = arpSlotHTML(current.pc, current.q); refocus("start", sel.start); }
     else { if (t.dataset.inv) sel.inv = t.dataset.inv; if (t.dataset.v) sel.v = t.dataset.v; $("voi-slot").innerHTML = voicingHTML(current.pc, current.q); refocus(t.dataset.inv ? "inv" : "v", t.dataset.inv || t.dataset.v); }
   });
   function refocus(attr, value) { const b = view.querySelector("[data-" + attr + '="' + value + '"]'); if (b) b.focus({ preventScroll: true }); }

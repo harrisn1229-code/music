@@ -23,6 +23,9 @@ const LOCAL = !!window.MS_APP;
    own menu keeps only what depends on what you are enrolled in, plus Classes. */
 const LIBMODE = LOCAL && window.MS_APP.mode === 'library';
 const ROUTE_KEY = LIBMODE ? 'hms.route.lib' : 'hms.route';
+/* In the Music app pages say less: `lite(full, short)` is the artifact page's sentence there and the
+   short form (often nothing) here. */
+function lite(full, short) { return LOCAL ? short : full; }
 const LIB_ROUTES = ['songs', 'drills', 'originals', 'tools', 'files'];
 const FILES = LOCAL ? (window.MSFiles || null) : null;
 const LS_KEY = 'school:progress', LS_AT = 'school:savedAt';
@@ -2121,12 +2124,14 @@ function rail() {
   if (LIBMODE) return `<aside class="rail${open ? '' : ' shut'}">
     ${bar('Library', '../library/icon-192.png', '../library/', 'Back to Library', ICO.back)}
     <nav>
-      ${Object.keys(SONGS).length ? item('songs','Songs') : ''}
+      ${Object.keys(SONGS).length ? item('songs','Covers') : ''}
       ${item('drills','Drills')}
       ${item('originals','Originals')}
       ${TOOLS.length ? item('tools','Tools') : ''}
       ${item('files','My files')}
-      <a class="navlink" href="../library/#/theory">Modes and chords</a>
+      <a class="navlink" href="../library/#/modes">Modes</a>
+      <a class="navlink" href="../library/#/chords">Chords</a>
+      <a class="navlink" href="../library/#/arps">Arpeggios</a>
     </nav>${foot}</aside>`;
   /* School inside Music: only what is yours as a student, plus the catalogue of classes. The
      shelves moved to the Library tool; the links at the bottom are the way to them. */
@@ -2145,7 +2150,7 @@ function rail() {
       ${SLICES.length ? item('slices','Soundslice') : ''}
       ${item('sync','Activity & backup')}
       <div class="navgrp navgrp-2">In Library</div>
-      <a class="navlink" href="library.html#songs">Songs</a>
+      <a class="navlink" href="library.html#songs">Covers</a>
       <a class="navlink" href="library.html#drills">Drills</a>
       <a class="navlink" href="library.html#files">My files</a>
     </nav>${foot}</aside>`;
@@ -3199,8 +3204,8 @@ function overview() {
           over real, dated work. Anything landing on the timeline at all keeps it open. */''}
     ${ovsec('term', 'Schedule', (plan.weeks || plannedLessons().length || courseStarts().length) ? timelineBlock()
       : `<div class="card" style="color:var(--muted);font-size:14px">
-      <b style="color:var(--ink)">Nothing scheduled.</b> Start a course and the term fills
-      in here \u2014 ${paceLine()} a week, each on the day you take it.</div>`)}
+      <b style="color:var(--ink)">Nothing scheduled.</b>${lite(` Start a course and the term fills
+      in here \u2014 ${paceLine()} a week, each on the day you take it.`, '')}</div>`)}
   </div>`;
 }
 
@@ -3222,10 +3227,10 @@ function myClassesView() {
           Overview section removed a patch ago, and a second way to draw a class was the thing
           making these two pages disagree. */''}
     ${mine.length ? `<div class="tiles">${mine.map(classTile).join('')}</div>`
-      : `<div class="card" style="color:var(--muted);font-size:14px">Nothing enrolled yet.
+      : `<div class="card" style="color:var(--muted);font-size:14px">Nothing enrolled yet.${lite(`
          Classes and courses are opt-in \u2014 enroll a class from the
          <button class="xlink xlink-read" data-nav="classes">class library</button>, and start its
-         courses one at a time.</div>`}
+         courses one at a time.`, '')}</div>`}
   </div>`;
 }
 
@@ -3634,8 +3639,8 @@ function extView() {
         <button class="btn btn-go" data-ext-save="1">Save lesson</button>
         <button class="btn btn-quiet" data-ext-cancel="1">Cancel</button></div></div>` : ''}
     ${list.length ? list.map(card).join('')
-      : `<div class="card" style="color:var(--muted);font-size:14px">No lessons yet. Add one after your
-         next lesson — what was covered and what you were told to practise.</div>`}
+      : `<div class="card" style="color:var(--muted);font-size:14px">No lessons yet.${lite(` Add one after your
+         next lesson — what was covered and what you were told to practise.`, '')}</div>`}
   </div>`;
 }
 
@@ -3673,13 +3678,13 @@ function classesView() {
       <div class="tiles">${term.map(i => tile(CLASSES[i])).join('')}</div></div>
     <div class="alongside">
       <div class="dhead"><p class="eyebrow">Runs alongside</p><span class="rule"></span>
-        <span class="cnt">${along.length} standing · daily, no exam, no end</span></div>
+        <span class="cnt">${along.length} standing${lite(' · daily, no exam, no end', '')}</span></div>
       ${/* PATCH-111 — the pace token is wrapped so it cannot break at its own hyphens
             ("2+1+2-a-week" was splitting across two lines); the rest of the wrapping fix is
             in app.css, on .alongside. */''}
-      <p class="calnote" style="margin:-4px 0 12px">Not part of the term. These take no course slot,
+      ${lite(`<p class="calnote" style="margin:-4px 0 12px">Not part of the term. These take no course slot,
         sit outside the <span class="pace">${paceSum()}-a-week</span> pacing, and never set the end
-        date — the skills they build decay, so they just keep running.</p>
+        date — the skills they build decay, so they just keep running.</p>`, '')}
       <div class="tiles">${along.map(i => tile(CLASSES[i])).join('')}
         ${(() => { const n = extAll().length, open = extHomeworkDue();
           return `<div class="tile" data-domain="instrument">
@@ -3693,8 +3698,8 @@ function classesView() {
                 <span class="pill pill-instr">With a teacher</span></div>
               <h3>Outside lessons</h3>
               <div class="tile-meta">${n ? `${n} lesson${n>1?'s':''} logged` : 'Nothing logged yet'}${
-                open ? ` · ${open} homework open` : ''}<br>Not scheduled, not examined.</div>
-              <div class="tile-courses"><div class="tile-empty">Whatever your teacher actually set.</div></div></div>
+                open ? ` · ${open} homework open` : ''}${lite('<br>Not scheduled, not examined.', '')}</div>
+              <div class="tile-courses">${lite('<div class="tile-empty">Whatever your teacher actually set.</div>', '')}</div></div>
             <div class="tile-foot"><button class="btn btn-quiet" data-nav="ext">Open →</button>
               ${readonly ? '' : `<button class="btn btn-go" data-ext-add="1">Add a lesson</button>`}</div>
           </div>`; })()}</div></div></div>`;
@@ -3773,7 +3778,7 @@ function readFold(rid) {
   const src = r.kind === 'section' ? `from ${esc(r.note)}` : r.kind === 'opening' ? 'the opening'
             : 'the full note';
   const meta = `${src} · ${r.words} word${r.words === 1 ? '' : 's'} · ${readMins(r.words)} min`;
-  const foot = r.kind === 'section'
+  const foot = LOCAL ? '' : r.kind === 'section'
     ? `One section of <b>${esc(r.note)}</b> — the full note lives in the vault.`
     : r.kind === 'opening'
     ? `The opening of <b>${esc(r.note)}</b> — the rest of the note lives in the vault.`
@@ -3782,7 +3787,7 @@ function readFold(rid) {
   return `<details class="rd" data-read="${esc(rid)}"${readOpen.has(rid) ? ' open' : ''}>
     <summary><span class="rd-t">${esc(r.title)}</span><span class="rd-m">${meta}</span>${
       r.lede ? `<span class="rd-l">${esc(r.lede)}</span>` : ''}</summary>
-    <div class="rd-b"><div class="prose">${r.html}</div><p class="rd-f">${foot}</p></div></details>`;
+    <div class="rd-b"><div class="prose">${r.html}</div>${foot ? `<p class="rd-f">${foot}</p>` : ''}</div></details>`;
 }
 
 /* PATCH-053 → PATCH-144 — the note name on a Read line.
@@ -4799,8 +4804,8 @@ function quizzesLanding() {
       <h3 style="margin:0;font-size:17px">${dueAll
         ? `${dueAll} pop quiz${dueAll === 1 ? '' : 'zes'} due today` : 'No pop quizzes due today'}</h3>
       <div style="color:var(--muted);font-size:13px;margin-top:3px">${due.length || retakes.length
-        ? `The school recommends ${CFG.daily_drip} a day — pacing, not a gate. Blind question,
-           then reveal, then rate.${retakes.length
+        ? `${lite(`The school recommends ${CFG.daily_drip} a day — pacing, not a gate. Blind question,
+           then reveal, then rate.`, '')}${retakes.length
              ? ` ${retakes.length} ${retakes.length === 1 ? 'is a retake' : 'are retakes'} of
                 question${retakes.length === 1 ? '' : 's'} you missed on a test — ${
                 retakes.length === 1 ? 'it leads' : 'they lead'} the session.`
@@ -4811,8 +4816,8 @@ function quizzesLanding() {
         : blocked.length
           ? `${blocked.length === 1 ? 'It is' : 'All of them are'} waiting on homework — none can
              be taken until the lesson that sets it is finished.`
-        : ahead.length ? 'A due date is the pace, not a lock — take any assigned quiz early.'
-        : 'Quizzes are assigned the moment the lesson that teaches them opens.'}</div></div>
+        : ahead.length ? lite('A due date is the pace, not a lock — take any assigned quiz early.', '')
+        : lite('Quizzes are assigned the moment the lesson that teaches them opens.', '')}</div></div>
       <div class="row">
         ${(due.length || retakes.length)
           ? `<button class="btn btn-go" data-drill-start="${n}">Take ${
@@ -4835,7 +4840,7 @@ function quizzesLanding() {
     ${sec('Available', open, `${open.length} assigned, not due yet`,
        dueAll ? 'Nothing to work ahead on right now.'
        : ahead.length ? 'Every assigned quiz has been taken at least once.'
-                    : 'Nothing assigned yet — turn a lesson in and its quizzes appear here.')}
+                    : lite('Nothing assigned yet — turn a lesson in and its quizzes appear here.', 'Nothing assigned yet.'))}
     ${/* PATCH-058 — locked quizzes are LISTED, not hidden. A quiz that simply vanished
           because a homework box was unticked would read as a bug; this says what is holding
           it up, and the row's own control says the same on hover.
@@ -5135,7 +5140,7 @@ function homeworkLanding() {
           cannot be re-planned, because the deadline is a person. */''}
     ${sec('Due now', [...xDue.map(extHwRow), ...due.map(hwRow)], `${due.length + xDue.length} owed`,
       (hwPlan().length || xPlan.length) ? 'Nothing owed today — everything due so far is in.'
-        : 'Nothing scheduled. Start a course and its lessons turn up here with the day each is due by.')}
+        : lite('Nothing scheduled. Start a course and its lessons turn up here with the day each is due by.', 'Nothing scheduled.'))}
     ${/* Listed, never hidden — the same argument PATCH-058 made for locked quizzes. Work that
           quietly has no surface is work that reads as lost. */
       behind.length ? `<div>
@@ -5143,9 +5148,9 @@ function homeworkLanding() {
         <span class="cnt">${behind.length} lesson${behind.length === 1 ? '' : 's'} moved on without it</span></div>
       <div class="quizlist wide">${behind.map(hwRow).join('')}</div>
 
-      <p class="calnote" style="margin:8px 0 0">The <b>lesson</b> was completed and its
+      ${lite(`<p class="calnote" style="margin:8px 0 0">The <b>lesson</b> was completed and its
         <b>homework</b> never was — they are separate acts, and where the lesson sets a test it
-        is the hand-in that opens it. Hand these in whenever; nothing is re-scheduled by it.</p></div>` : ''}
+        is the hand-in that opens it. Hand these in whenever; nothing is re-scheduled by it.</p>`, '')}</div>` : ''}
     ${sec('Coming up', [...xSoon.map(extHwRow), ...soon.slice(0, 12).map(hwRow)],
       `${soon.length + xSoon.length} scheduled${soon.length > 12 ? ' · next 12' : ''}`,
       'Nothing further out on the plan.')}
@@ -5208,9 +5213,9 @@ function practiceLog(u) {
         <th>Date</th><th>Tempo</th><th>Time</th><th>Note</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>${
       log.length > 8 ? `<p class="calnote" style="margin:7px 0 0">${
         log.length - 8} earlier session${log.length - 8 === 1 ? '' : 's'} kept in your progress file.</p>` : ''}`
-      : `<p class="calnote" style="margin:0">Nothing logged against this exercise yet.
+      : `<p class="calnote" style="margin:0">${lite(`Nothing logged against this exercise yet.
          The tempo you save is <code class="cmd">tempo_current</code> — the same number the dashboard's
-         Technique track reads, not a copy of it.</p>`}</div>`;
+         Technique track reads, not a copy of it.`, 'Nothing logged yet.')}</p>`}</div>`;
 }
 
 function homeworkPage(cid, nRaw) {
@@ -5446,8 +5451,8 @@ function syncView() {
           <span class="alog-t">${esc(r.text)}</span>
           ${r.at.length > 10 ? `<span class="alog-at">${esc(r.at.slice(11, 16))}</span>` : ''}
         </div>`).join('')}</div></div>`).join('')}</div>`
-        : `<p class="calnote" style="margin:0">Nothing yet. Turn a lesson in, take a pop quiz or sit
-           a test and it lands here.</p>`}
+        : `<p class="calnote" style="margin:0">Nothing yet.${lite(` Turn a lesson in, take a pop quiz or sit
+           a test and it lands here.`, '')}</p>`}
     </div></div>`;
 }
 
@@ -5758,7 +5763,7 @@ function songsView() {
     <span class="stile-t">${esc(s.title)}</span>
     <span class="stile-a">${esc(s.artist || '—')}</span></button>`; };
   return `<div class="view songsview">
-    <div><p class="eyebrow">Library</p><h2 class="vh">${all.length} songs</h2>
+    <div><p class="eyebrow">Library</p><h2 class="vh">${LOCAL ? 'Covers' : `${all.length} songs`}</h2>
       <p class="calnote" style="margin:4px 0 14px;max-width:74ch">Every song note in the vault,
       with what is written on it — key, tempo, form, the chords and whatever has been learned about
       playing it. A reference shelf: nothing here is assigned or due. Click a sleeve for the note.</p></div>
@@ -5897,11 +5902,11 @@ function sourceView(sid) {
     <div class="card srccard"><div class="prose srcbody">${s.html}</div></div>
     ${used.length ? `<div><p class="eyebrow">Assigned in</p><p class="calnote" style="margin:0">${
       used.join(' · ')}</p></div>` : ''}
-    <p class="calnote" style="margin:0">${withheld.length
-      ? `Not shown here: ${withheld.join(' and ')} — the full note lives in the vault.`
-      : `This is the whole note.`}${s.ref ? ` Nothing in the school assigns this note — it has a
+    ${LOCAL && !withheld.length ? '' : `<p class="calnote" style="margin:0">${withheld.length
+      ? `Not shown here: ${withheld.join(' and ')}${lite(' — the full note lives in the vault.', '.')}`
+      : `This is the whole note.`}${s.ref && !LOCAL ? ` Nothing in the school assigns this note — it has a
       page because something on the page links to it, and a reference page is held to a shorter
-      length than assigned reading.` : ''}</p></div>`;
+      length than assigned reading.` : ''}</p>`}</div>`;
 }
 
 /* PATCH-159 — where a drill page came FROM. A **Technique** line on a lesson's homework now
@@ -6044,10 +6049,9 @@ function testsView() {
           <span class="qz-d" data-d="${late ? 'late' : 'later'}">due ${esc(shortDate(dayIso(x.due)))}</span>
           <button class="qz-b btn btn-quiet" data-course-lesson="${esc(x.c.id)}:${x.n}">Open</button></div>`;
       }).join('')}</div>
-      ${LOCAL ? `<p class="calnote" style="margin:8px 0 0">Open a lesson to take its test. You answer on the
-        page and Claude marks it.</p>` : `<p class="calnote" style="margin:8px 0 0">Tests are sat in chat, blind, one question at a
+      ${LOCAL ? '' : `<p class="calnote" style="margin:8px 0 0">Tests are sat in chat, blind, one question at a
         time — <code class="cmd">/school test ${esc(upcoming[0].c.id)} ${upcoming[0].n}</code>.</p>`}`
-      : '<p class="calnote" style="margin:0">Nothing scheduled. A lesson test appears here once its lesson is open.</p>'}</div>
+      : `<p class="calnote" style="margin:0">${lite('Nothing scheduled. A lesson test appears here once its lesson is open.', 'Nothing scheduled.')}</p>`}</div>
 
     ${/* App build — the papers that belong to no single lesson: course finals reach the reader
           from their course page, but the cross-course midterms and exams have no other door. */
@@ -6545,9 +6549,9 @@ function originalsView() {
       this page is the only copy, and nobody else can see ${un === 1 ? 'it' : 'them'}.</span></div>` : ''}
     ${bl.map(barlineCard).join('')}
     ${all.length ? all.map(origCard).join('')
-      : bl.length ? '' : `<div class="card origempty">Nothing on the board yet.
+      : bl.length ? '' : `<div class="card origempty">${lite('Nothing on the board yet.', 'Nothing here yet.')}
          ${readonly ? 'Ideas added here show up once the page is rebuilt.'
-                    : 'Start one — a chord loop, a title, a feeling, half a line. It does not have to be finished to be worth writing down.'}</div>`}
+                    : lite('Start one — a chord loop, a title, a feeling, half a line. It does not have to be finished to be worth writing down.', '')}</div>`}
     ${/* The log, folded, under the cards. Deliberately NOT a rail tab: a log is what you consult
           after something changed, never the reason you opened the board, and a tab would advertise
           it as the latter. Shut by default for the same reason — the ideas are the board. */
@@ -6812,7 +6816,7 @@ function chartBlockLocal(sid) {
       <span class="byo-m">A chart this song's note uses. It is not included with the app.</span>
       ${addBtn('file:' + n, '+ add your copy', CHART_ACCEPT)}</div>`).join('')}
     <p class="byo-act">${addBtn('chart:' + sid, '+ add a chart', CHART_ACCEPT, true)}
-      <span class="byo-m">A PDF, a photo or a text file. It stays on this device.</span></p></div>`;
+      ${lite('<span class="byo-m">A PDF, a photo or a text file. It stays on this device.</span>', '')}</p></div>`;
 }
 /** A slot whose file the account has: start fetching it and say so. '' when the account does not
     have it (or the download failed), which is the caller's cue to offer "add your copy". */
@@ -7068,7 +7072,7 @@ function filesView() {
     return `<details class="rd fgrp" data-fgrp="${kind}"${filesOpen.has(kind) ? ' open' : ''}>
       <summary><span class="rd-t">${title}</span><span class="rd-m">${got} of ${items.length} on this device${
         acct ? ` · ${acct} more in your account` : ''}</span>
-        <span class="rd-l">${blurb}</span></summary>
+        ${lite(`<span class="rd-l">${blurb}</span>`, '')}</summary>
       <div class="rd-b flist">${items.map(([k, e]) => row(k, e)).join('')}</div></details>`;
   };
   // Files attached by hand to one song (no named slot) — listed so they can be found and removed.
@@ -7087,20 +7091,20 @@ function filesView() {
       handouts. ${who() && cloudFiles.member ? 'Your account carries them, so they arrive on their own.'
         : 'Add your own copies here and they show up where they belong. They are kept in this browser, on this device.'}</p></div>
     <div class="card"><div class="spread fadd">
-      <div style="font-size:12.5px;color:var(--muted);max-width:60ch"><b>Add many at once.</b> Files
+      <div style="font-size:12.5px;color:var(--muted);max-width:60ch">${lite(`<b>Add many at once.</b> Files
         are matched by name, so you can pick a whole pile${dir ? ' or a whole folder' : ''} — the ones
-        the school has a place for are kept and the rest are left alone.</div>
+        the school has a place for are kept and the rest are left alone.`, '')}</div>
       <div class="row">${addBtn('any', '+ add files', '', true)}${dir
         ? `<label class="lnkedit upbtn">+ add a folder<input type="file" webkitdirectory multiple data-fadd="folder" hidden></label>` : ''}</div></div>
       <p class="calnote" style="margin:10px 0 0">${all.length ? `${all.length} file${all.length === 1 ? '' : 's'} on this
-        device, ${fsize(FILES.bytes())}` : 'Nothing added on this device yet'}${esc(storageNote)}. Backups and sync carry your progress only —
-        files stay on the device they were added on.</p>
-      ${who() && cloudFiles.member ? `<p class="calnote" style="margin:8px 0 0"><b>Your account has the school's files.</b>
-        Each one downloads the first time it is needed and is then kept on this device.${
+        device, ${fsize(FILES.bytes())}` : 'Nothing added on this device yet'}${esc(storageNote)}.${lite(` Backups and sync carry your progress only —
+        files stay on the device they were added on.`, '')}</p>
+      ${who() && cloudFiles.member ? `<p class="calnote" style="margin:8px 0 0">${lite(`<b>Your account has the school's files.</b>
+        Each one downloads the first time it is needed and is then kept on this device.`, '')}${
         cloudFiles.owner ? (pushing ? ` Sending to your account: ${pushing.done} of ${pushing.total}…`
           : cloudMissing().length ? ` ${cloudMissing().length} file${cloudMissing().length === 1 ? '' : 's'} here ${cloudMissing().length === 1 ? 'is' : 'are'} not in your account yet.
             <button type="button" class="lnkedit" data-fpush="1">Send to my account</button>`
-          : ' Files you add here are sent to your account for your other devices and anyone you have added.') : ''}</p>` : ''}</div>
+          : lite(' Files you add here are sent to your account for your other devices and anyone you have added.', '')) : ''}</p>` : ''}</div>
     <div class="fgrps">${[
       ['book', 'Books', 'A PDF of your own copy. Lessons show the pages they cite.'],
       ['chart', 'Chord charts', 'The charts the song notes were written from, by file name.'],
@@ -7347,15 +7351,15 @@ function localSyncTop() {
   const account = !CLOUD ? '' : me ? `<div class="card"><div class="spread fadd">
         <div style="font-size:12.5px;color:var(--muted);max-width:60ch"><b>Signed in</b> as ${esc(me.email)}.
           ${syncState.busy ? 'Syncing…' : +at ? `Last synced ${esc(when(new Date(+at).toISOString()))}.` : 'Not synced yet.'}
-          Your progress follows this account onto every device you sign in on.
+          ${lite('Your progress follows this account onto every device you sign in on.', '')}
           ${cloudFiles.loaded ? (cloudFiles.member
             ? ` This account includes the school's files${cloudFiles.owner ? ', and you can add to them' : ''}.`
             : ' This account is not on the list for the school’s files, so books, charts and album art are added by hand under My files.') : ''}</div>
         <div class="row"><button class="btn" data-sync-now="1"${syncState.busy ? ' disabled' : ''}>Sync now</button>
           <button class="btn btn-quiet" data-acct-out="1">Sign out</button></div></div>${note}</div>`
     : `<div class="card"><div style="font-size:12.5px;color:var(--muted);max-width:68ch;margin-bottom:10px">
-        <b>${syncState.form === 'up' ? 'Create your Music account' : 'Sign in to Music'}.</b> One account for the whole Music app: sign in here or on the home screen, it is the same thing.
-        Your progress is saved to it and follows you to every device${syncState.form === 'up' ? '' : ', and it brings the school’s files with it'}.</div>
+        <b>${syncState.form === 'up' ? 'Create your Music account' : 'Sign in to Music'}.</b> ${lite(` One account for the whole Music app: sign in here or on the home screen, it is the same thing.
+        Your progress is saved to it and follows you to every device${syncState.form === 'up' ? '' : ', and it brings the school’s files with it'}.`, '')}</div>
       <form class="row acct" data-acct-form="${syncState.form === 'up' ? 'up' : 'in'}">
         <input class="syncin" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"
           placeholder="Email" aria-label="Email" data-acct-email="1" value="${esc(syncState.email || '')}">
@@ -7368,8 +7372,8 @@ function localSyncTop() {
            <button type="button" class="lnkedit" data-acct-reset="1">Forgot password</button>`}</p>${note}</div>`;
   const claude = !AI ? '' : `<div class="card"><div class="spread fadd">
       <div style="font-size:12.5px;color:var(--muted);max-width:60ch"><b>Claude.</b> ${AI.has()
-        ? 'Your Anthropic API key is saved on this device. Tests are marked with it, and the rest of the Music app uses the same one.'
-        : 'Tests are marked by Claude, using your own Anthropic API key. ' + esc(AI.about)}</div>
+        ? 'API key saved on this device.'
+        : 'Add your Anthropic API key to have tests marked.'}</div>
       <div class="row">${AI.has() ? `<button class="btn btn-quiet" data-ai-forget="1">Remove key</button>`
         : `<input class="syncin" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…"
              aria-label="Anthropic API key" data-ai-key="1"><button class="btn" data-ai-save="1">Save key</button>`}</div></div></div>`;
@@ -7378,9 +7382,7 @@ function localSyncTop() {
       as you go${saved ? ` — last saved ${esc(when(saved))}` : ''}.${CLOUD ? ' Signed in, it is saved to your account too.' : ''}</p></div></div>
     ${account}
     <div class="card"><div class="spread fadd">
-      <div style="font-size:12.5px;color:var(--muted);max-width:60ch"><b>Backup.</b> Export puts your
-        whole progress in one file. Import replaces what is on this device with a file you exported
-        — what was here is kept, and can be put back.</div>
+      <div style="font-size:12.5px;color:var(--muted);max-width:60ch"><b>Backup.</b> Import replaces what is on this device.</div>
       <div class="row"><button class="btn" data-fexport="1">Export a backup</button>
         <label class="btn upbtn">Import a backup<input type="file" accept="application/json,.json" data-fimport="1" hidden></label></div></div>
       ${lsGet(LS_OTHER) ? `<p class="calnote" style="margin:10px 0 0">A previous copy of your progress is
@@ -7653,7 +7655,7 @@ function paperView(name) {
       <textarea class="pq-a" data-pq="${q.n}" data-pq-paper="${esc(name)}" rows="${q.type === 'free-text' ? 4 : 2}"
         placeholder="Your answer" aria-label="Your answer to question ${q.n}"${busy ? ' disabled' : ''}>${esc(d[q.n] || '')}</textarea></div>`).join('')}
     ${AI && !AI.has() ? `<div class="card"><div style="font-size:12.5px;color:var(--muted);max-width:68ch;margin-bottom:10px">
-        <b>Marking needs Claude.</b> Tests are marked by Claude, using your own Anthropic API key. ${esc(AI.about)}</div>
+        <b>Marking needs Claude.</b> Add your Anthropic API key.</div>
       <div class="row"><input class="syncin" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…"
         aria-label="Anthropic API key" data-ai-key="1"><button class="btn" data-ai-save="1">Save key</button></div></div>` : ''}
     <div class="row" style="gap:10px;align-items:center">
