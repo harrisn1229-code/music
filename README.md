@@ -13,6 +13,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | School | `school/` | Classes, lessons, quizzes, tests and a song library |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
+| Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click and presets |
 
 Everything runs in the browser and is saved on the device. Three optional
 things reach outside it, each only when you turn it on: a Music account (sync
@@ -41,6 +42,7 @@ note-cards/            Note Cards (reads shared/theory.js)
 library/               Library (reads shared/theory.js)
 ear/                   Ear Training (index.html, app.js, app.css; synthesizes all its sound)
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
+metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler)
 school/                School, built from the music-school repo. Do not edit by hand.
 ```
 

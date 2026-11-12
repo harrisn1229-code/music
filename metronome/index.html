@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Metronome</title>
+<meta name="description" content="A metronome with subdivisions, swing, speed trainer and gap click. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Metronome is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#3B4252"/><path d="M212 108h88l72 292H140z" fill="#ECEFF4"/><path d="M256 366 316 168" stroke="#3B4252" stroke-width="30" stroke-linecap="round"/><path d="M256 366 316 168" stroke="#F5A93B" stroke-width="16" stroke-linecap="round"/><rect x="290" y="206" width="52" height="30" rx="8" fill="#F5A93B" transform="rotate(17 316 221)"/><rect x="118" y="408" width="276" height="20" rx="10" fill="#ECEFF4" opacity=".55"/></svg>
+    <h1 class="brand">Metronome</h1>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+  </div>
+</header>
+
+<div class="flash" id="flash" aria-hidden="true"></div>
+
+<main class="wrap" id="main">
+
+  <section class="card hero" aria-label="Tempo">
+    <div class="tempo-row">
+      <button class="step" id="bpm-dec" type="button" aria-label="Slower"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+      <div class="tempo-mid">
+        <button class="bpm" id="bpm-num" type="button" aria-label="Tempo in BPM, tap to type">92</button>
+        <input class="bpm-in" id="bpm-in" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" aria-label="Tempo in BPM" hidden>
+        <div class="tempo-name"><span id="bpm-name">Andante</span> <span class="unit">BPM</span></div>
+      </div>
+      <button class="step" id="bpm-inc" type="button" aria-label="Faster"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M10 4v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+    </div>
+    <input class="range" id="bpm-range" type="range" min="20" max="300" step="1" value="92" aria-label="Tempo">
+    <div class="row3">
+      <button class="btn" id="bpm-half" type="button" aria-label="Half tempo">&divide;2</button>
+      <button class="btn tap" id="tap" type="button">Tap</button>
+      <button class="btn" id="bpm-dbl" type="button" aria-label="Double tempo">&times;2</button>
+    </div>
+  </section>
+
+  <section class="card beats-card" aria-label="Beats">
+    <div class="beats" id="beats" role="group" aria-label="Beats"></div>
+    <div class="status" id="status" aria-live="off">&nbsp;</div>
+  </section>
+
+  <div class="dock">
+    <button class="go" id="go" type="button" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path id="go-ic" d="M6 3.500v13l11-6.500z" fill="currentColor"/></svg><span id="go-t">Start</span></button>
+  </div>
+
+  <section class="card" aria-label="Time signature">
+    <div class="card-head"><h2>Metre</h2><span class="readout" id="sig-out">4/4</span></div>
+    <div class="seg" id="sig-chips" role="group" aria-label="Quick time signatures"></div>
+    <div class="pair">
+      <div class="picker"><span class="picker-l" id="l-beats">Beats</span>
+        <div class="stepper" role="group" aria-labelledby="l-beats">
+          <button class="mini" id="num-dec" type="button" aria-label="Fewer beats">&minus;</button>
+          <output id="num-out">4</output>
+          <button class="mini" id="num-inc" type="button" aria-label="More beats">+</button>
+        </div>
+      </div>
+      <div class="picker"><span class="picker-l" id="l-unit">Unit</span>
+        <div class="seg" id="den-seg" role="radiogroup" aria-labelledby="l-unit"></div>
+      </div>
+    </div>
+    <div class="picker" id="dotted-pick" hidden><span class="picker-l" id="l-beat">Beat</span>
+      <div class="seg" id="dotted-seg" role="radiogroup" aria-labelledby="l-beat">
+        <button class="chip" type="button" role="radio" data-dotted="0">Eighth</button>
+        <button class="chip" type="button" role="radio" data-dotted="1">Dotted quarter</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Subdivision">
+    <div class="card-head"><h2>Subdivision</h2></div>
+    <div class="seg" id="sub-seg" role="radiogroup" aria-label="Subdivision">
+      <button class="chip" type="button" role="radio" data-sub="none">None</button>
+      <button class="chip" type="button" role="radio" data-sub="eighth">Eighths</button>
+      <button class="chip" type="button" role="radio" data-sub="triplet" id="sub-triplet">Triplets</button>
+      <button class="chip" type="button" role="radio" data-sub="sixteenth">Sixteenths</button>
+    </div>
+    <div class="picker" id="swing-pick" hidden>
+      <div class="picker-row"><label class="picker-l" for="swing">Swing</label><output id="swing-out">50%</output></div>
+      <input class="range" id="swing" type="range" min="50" max="75" step="1" value="50">
+    </div>
+  </section>
+
+  <section class="card" aria-label="Sound">
+    <div class="card-head"><h2>Sound</h2></div>
+    <div class="seg" id="sound-seg" role="radiogroup" aria-label="Sound">
+      <button class="chip" type="button" role="radio" data-sound="click">Click</button>
+      <button class="chip" type="button" role="radio" data-sound="wood">Wood</button>
+      <button class="chip" type="button" role="radio" data-sound="beep">Beep</button>
+      <button class="chip" type="button" role="radio" data-sound="rim">Rim</button>
+    </div>
+    <div class="picker">
+      <div class="picker-row"><label class="picker-l" for="vol">Volume</label><output id="vol-out">80%</output></div>
+      <input class="range" id="vol" type="range" min="0" max="100" step="1" value="80">
+    </div>
+    <div class="switches">
+      <div class="sw-row"><span id="l-flash">Flash</span><button class="sw" id="sw-flash" type="button" role="switch" aria-checked="false" aria-labelledby="l-flash"></button></div>
+      <div class="sw-row" id="vib-row"><span id="l-vib">Vibrate</span><button class="sw" id="sw-vib" type="button" role="switch" aria-checked="false" aria-labelledby="l-vib"></button></div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Practice">
+    <button class="card-toggle" id="prac-toggle" type="button" aria-expanded="false" aria-controls="prac-body"><h2>Practice</h2><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></button>
+    <div class="prac" id="prac-body" hidden>
+      <div class="tool">
+        <div class="sw-row"><h3 id="l-trainer">Speed trainer</h3><button class="sw" id="sw-trainer" type="button" role="switch" aria-checked="false" aria-labelledby="l-trainer"></button></div>
+        <div class="fields" id="f-trainer" hidden>
+          <label class="field"><span>Start</span><input id="tr-start" type="number" inputmode="numeric" min="20" max="300"></label>
+          <label class="field"><span>Target</span><input id="tr-target" type="number" inputmode="numeric" min="20" max="300"></label>
+          <label class="field"><span>+ BPM</span><input id="tr-step" type="number" inputmode="numeric" min="1" max="100"></label>
+          <label class="field"><span>Every bars</span><input id="tr-bars" type="number" inputmode="numeric" min="1" max="99"></label>
+        </div>
+      </div>
+      <div class="tool">
+        <div class="sw-row"><h3 id="l-gap">Gap click</h3><button class="sw" id="sw-gap" type="button" role="switch" aria-checked="false" aria-labelledby="l-gap"></button></div>
+        <div class="fields" id="f-gap" hidden>
+          <label class="field"><span>Play bars</span><input id="gap-play" type="number" inputmode="numeric" min="1" max="99"></label>
+          <label class="field"><span>Mute bars</span><input id="gap-mute" type="number" inputmode="numeric" min="1" max="99"></label>
+        </div>
+      </div>
+      <div class="tool">
+        <div class="sw-row"><h3 id="l-timer">Timer</h3><button class="sw" id="sw-timer" type="button" role="switch" aria-checked="false" aria-labelledby="l-timer"></button></div>
+        <div class="fields" id="f-timer" hidden>
+          <div class="seg" id="tm-mode" role="radiogroup" aria-label="Timer unit">
+            <button class="chip" type="button" role="radio" data-mode="min">Minutes</button>
+            <button class="chip" type="button" role="radio" data-mode="bars">Bars</button>
+          </div>
+          <label class="field"><span id="tm-label">Minutes</span><input id="tm-value" type="number" inputmode="numeric" min="1" max="999"></label>
+        </div>
+      </div>
+      <div class="tool">
+        <div class="sw-row"><h3 id="l-cin">Count-in</h3></div>
+        <div class="seg" id="cin-seg" role="radiogroup" aria-labelledby="l-cin">
+          <button class="chip" type="button" role="radio" data-cin="0">Off</button>
+          <button class="chip" type="button" role="radio" data-cin="1">1 bar</button>
+          <button class="chip" type="button" role="radio" data-cin="2">2 bars</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Presets">
+    <div class="card-head"><h2>Presets</h2></div>
+    <form class="save-row" id="preset-form">
+      <input id="preset-name" type="text" maxlength="24" placeholder="Name" aria-label="Preset name" autocomplete="off">
+      <button class="btn solid" id="preset-save" type="submit">Save</button>
+    </form>
+    <ul class="presets" id="preset-list"></ul>
+  </section>
+
+</main>
+
+<noscript><p class="wrap">Metronome needs JavaScript turned on.</p></noscript>
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
+<script src="app.js"></script>
+<script>
+  /* offline: Music's shared service worker, one folder up */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", () => { navigator.serviceWorker.register("../sw.js").catch(() => {}); });
+  }
+</script>
+</body>
+</html>
