@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ear Training</title>
+<meta name="description" content="Scale degrees over a drone: degrees, melodies, singing and hands-free listening. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Ear Training is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"></a>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#C2570C"/><rect x="96" y="352" width="320" height="22" rx="11" fill="#fff" opacity=".55"/><circle cx="154" cy="300" r="34" fill="#fff"/><circle cx="256" cy="226" r="34" fill="#FFD27A"/><circle cx="358" cy="152" r="34" fill="#fff"/></svg>
+    <h1 class="brand">Ear Training</h1>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+<noscript><p class="wrap">Ear Training needs JavaScript turned on.</p></noscript>
+
+<script src="../shared/cloud-config.js"></script>
+<script src="../shared/cloud.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

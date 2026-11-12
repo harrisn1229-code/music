@@ -1604,7 +1604,7 @@ function audio() {
       try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
       actx = new AC();
     }
-    if (actx.state === 'suspended') actx.resume();
+    if (actx.state !== 'running') { try { const p = actx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
     return actx;
   } catch (e) { return null; }
 }

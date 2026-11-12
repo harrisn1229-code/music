@@ -1882,9 +1882,13 @@ window.__ear = {ctx:false, plays:0, last:null};
 function audioCtx() {
   if (!AUDIO_OK) return null;
   try {
-    if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)();
-               window.__ear.ctx = true; }
-    if (AC.state === 'suspended') AC.resume();
+    if (!AC) {
+      /* Lets sound play with an iPhone's silent switch on. */
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      window.__ear.ctx = true;
+    }
+    if (AC.state !== 'running') { try { const p = AC.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
     return AC;
   } catch { return null; }
 }
@@ -6684,8 +6688,9 @@ function drillsView(shelf) {
   const vids = shown.filter(i => i.kind === 'video' && i.pic);
   const plain = shown.filter(i => !(i.kind === 'video' && i.pic));
   const reads = plain.filter(i => i.kind === 'read');
-  const earTile = shelf === 'ear' && earSet && drillKind === 'all' ? `<button class="dtile" data-nav="ear">
-      <span class="dtile-t">Ear training set</span><span class="dtile-b">${EAR.length} clips</span></button>` : '';
+  const earTile = shelf === 'ear' && earSet && drillKind === 'all' ? (LOCAL ? `<a class="dtile" href="../ear/">
+      <span class="dtile-t">Ear Training app</span></a>` : `<button class="dtile" data-nav="ear">
+      <span class="dtile-t">Ear training set</span><span class="dtile-b">${EAR.length} clips</span></button>`) : '';
   return `<div class="view drillsview">
     <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="drills">&larr; Drills</button></div>
     <h2 class="vh">${esc(label)}</h2>

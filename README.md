@@ -11,6 +11,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
 | Library | `library/` | Songs, drills and your own ideas, plus every mode, chord, arpeggio and voicing in any key |
 | School | `school/` | Classes, lessons, quizzes, tests and a song library |
+| Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 
 Everything runs in the browser and is saved on the device. Three optional
 things reach outside it, each only when you turn it on: a Music account (sync
@@ -36,6 +37,7 @@ cloud/setup.sql        One-time database setup for accounts
 barline/               Barline, self-contained
 note-cards/            Note Cards (reads shared/theory.js)
 library/               Library (reads shared/theory.js)
+ear/                   Ear Training (index.html, app.js, app.css; synthesizes all its sound)
 school/                School, built from the music-school repo. Do not edit by hand.
 ```
 
