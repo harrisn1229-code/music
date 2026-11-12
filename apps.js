@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.16.0",
+  version: "1.17.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js"],
   apps: [

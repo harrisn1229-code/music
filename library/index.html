@@ -131,10 +131,10 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .row-go{flex:none;align-self:center;width:.9rem;height:.9rem;color:var(--muted);margin-left:auto}
 /* Each note sits over its degree; columns line up from row to row. */
 .cells{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0, 2.9rem);margin-top:.45rem}
-.cell{display:grid;gap:.05rem}
+.cell{display:grid;gap:.05rem;justify-items:start;align-content:start}
 .cell b{font-size:1.0625rem;font-weight:600}
-.cell small{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.cell.ct small{color:var(--text);font-weight:800}
+.cell .deg{min-width:1.5rem;height:1.25rem;padding:0 .25rem;font-size:.75rem}
+.cell .deg.ct{width:1.6rem;height:1.6rem;min-width:0;padding:0}
 .row.plain{display:flex;align-items:center;gap:.5rem;font-weight:700}
 /* front page: one tile per shelf, name only */
 .tiles{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:.75rem;margin-top:.75rem}
@@ -239,6 +239,42 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .fnum,.sn{text-anchor:middle;dominant-baseline:central}
 .fr{text-anchor:end;dominant-baseline:central}
 
+/* key picker as one octave of piano */
+.piano{position:relative;width:100%;max-width:28rem;height:7.5rem;user-select:none;-webkit-user-select:none}
+.pk{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-weight:700;line-height:1.1}
+.pk.w{top:0;bottom:0;left:calc(var(--i) * 100% / 7);width:calc(100% / 7);padding-bottom:.55rem;font-size:.9375rem;color:#14171F;background:var(--key-w);box-shadow:inset 0 0 0 1px var(--key-edge);border-radius:0 0 .55rem .55rem}
+.pk.b{top:0;height:62%;left:calc(var(--i) * 100% / 7);width:calc(100% / 7 * .62);transform:translateX(-50%);z-index:2;padding-bottom:.4rem;font-size:.6875rem;color:#fff;background:var(--key-b);box-shadow:0 0 0 1px var(--key-edge);border-radius:0 0 .4rem .4rem}
+.pk.b::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:max(40px, 100%);transform:translateX(-50%)}
+.pk[aria-checked="true"]{background:var(--d-r);color:var(--d-r-text)}
+.pk.w:active,.pk.b:active{filter:brightness(.92)}
+.pk:focus-visible{outline:3px solid var(--focus);outline-offset:-3px;z-index:3}
+.pk span{display:block}
+
+/* filter chips: one row that scrolls sideways */
+.filters{display:flex;align-items:center;gap:.375rem;margin:.9rem calc(-1 * var(--gut-r)) 0 calc(-1 * var(--gut-l));padding:2px var(--gut-r) 2px var(--gut-l);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.filters::-webkit-scrollbar{display:none}
+.filters .chip{flex:none;height:2.5rem;padding:0 .95rem}
+.fsep{flex:none;width:1px;height:1.5rem;margin:0 .25rem;background:var(--line)}
+
+/* archived guitar shapes */
+.shape{position:relative}
+.shape figcaption{position:relative;width:100%}
+.arch-btn{position:absolute;right:0;top:-.1rem;width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;color:var(--muted);background:var(--surface-2)}
+.arch-btn::after{content:"";position:absolute;inset:-.5rem}
+.arch-btn svg{width:1rem;height:1rem}
+.arch-btn:active{transform:scale(.92)}
+.arch-box{display:grid;gap:.6rem;justify-items:start}
+.arch-toggle{height:2.25rem;padding:0 .9rem;border-radius:999px;background:var(--surface-2);font-size:.875rem;font-weight:700;color:var(--muted)}
+.arch-toggle[aria-expanded="true"]{color:var(--text)}
+.shapes.dim{margin-left:-1rem;margin-right:-1rem;max-width:calc(100% + 2rem);align-self:stretch}
+.shapes.dim .shape > svg,.shapes.dim .shape figcaption span{opacity:.5}
+.btn{flex:none;height:2.25rem;padding:0 .9rem;border-radius:999px;background:var(--surface-3);font-size:.875rem;font-weight:700}
+.btn:active{transform:scale(.96)}
+.toast{display:flex;align-items:center;gap:.5rem;width:max-content;max-width:100%;padding:.2rem .3rem .2rem .9rem;border-radius:999px;background:var(--sel);color:var(--on-sel);font-size:.875rem;font-weight:700}
+.toast .btn{height:2rem;background:var(--on-sel);color:var(--sel)}
+.arch-list li{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.arch-list li > div{min-width:0}
+
 /* guide */
 .guide{display:grid;gap:.6rem}
 .guide li{padding:.8rem .9rem;border-radius:var(--r-md);background:var(--surface-2)}
@@ -326,10 +362,10 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       (i ? '<span class="gap"><i>' + esc(c.gaps[i - 1]) + "</i></span>" : "") +
       '<span class="v' + (nt.octave ? " oct" : "") + '"><b>' + esc(nt.name) + "</b>" + badge(nt) + "</span>").join("") + "</div>";
   }
-  // The compact form used in lists: note over degree, no color.
+  // The compact form used in lists: note over its degree badge, in the same colors as the entry pages.
   function cellsHTML(c) {
     return '<span class="cells">' + c.notes.filter((nt) => !nt.octave).map((nt) =>
-      '<span class="cell' + (nt.tone ? " ct" : "") + '"><b>' + esc(nt.name) + "</b><small>" + esc(nt.deg) + "</small></span>").join("") + "</span>";
+      '<span class="cell ' + degClass(nt.deg) + (nt.tone ? " ct" : "") + '"><b>' + esc(nt.name) + "</b>" + badge(nt) + "</span>").join("") + "</span>";
   }
   function rowHTML(href, title, sub, c) {
     return '<li><a class="row" href="' + href + '"><span class="row-head"><span class="row-t">' + esc(title) + "</span>" +
@@ -429,12 +465,36 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     const desc = sh.strings.map((s, i) => "string " + (6 - s) + " " + (sh.frets[i] ? "fret " + sh.frets[i] : "open")).join(", ");
     return '<svg class="gbox" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Guitar chord diagram: ' + desc + '">' + g + "</svg>";
   }
+  /* A shape is archived by an id that does not depend on the key:
+     quality | inversion | voicing | strings | fret pattern @ position.
+     The pattern is the frets less the lowest one, and the position is that lowest fret less the
+     key, so the same hand shape keeps its id when the key changes (it moves up the neck with it),
+     while the same shape an octave higher, or a different shape on the same strings, does not. */
+  const shapeId = (c, sh) => {
+    const lo = Math.min.apply(null, sh.frets);
+    return [c.tags.q, c.tags.inv, c.tags.v, sh.strings.map((s) => 6 - s).join(""),
+            sh.frets.map((f) => f - lo).join(".") + "@" + (lo - Number(c.tags.key))].join("|");
+  };
+  const stringsOf = (sh) => sh.strings.map((s) => 6 - s).join(" ");
+  const ICON_ARCH = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.500" y="3.500" width="15" height="4" rx="1"/><path d="M4 7.500v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-8M8 11h4"/></svg>';
+  let lastArch = null, archTimer = 0;
   function shapesHTML(c) {
     const found = guitarFor(c.notes.map((nt) => nt.midi));
     if (!found.shapes.length) return '<p class="say">No guitar shape fits this spacing.</p>';
-    return '<div class="shapes">' + found.shapes.map((sh, i) =>
-      '<figure class="shape">' + chordBox(c, sh) + "<figcaption><b>Shape " + (i + 1) + "</b>Strings " + sh.strings.map((s) => 6 - s).join(" ") +
-      (found.stretch ? ", wide stretch" : "") + "</figcaption></figure>").join("") + "</div>";
+    const gone = new Set(prefs.archivedShapes);
+    const items = found.shapes.map((sh) => ({ sh: sh, id: shapeId(c, sh) }));
+    const vis = items.filter((x) => !gone.has(x.id)), hid = items.filter((x) => gone.has(x.id));
+    const wide = found.stretch ? ", wide stretch" : "";
+    let html = vis.length ? '<div class="shapes">' + vis.map((x, i) =>
+      '<figure class="shape">' + chordBox(c, x.sh) + "<figcaption><b>Shape " + (i + 1) + "</b><span>Strings " + stringsOf(x.sh) + wide + "</span>" +
+      '<button class="arch-btn" type="button" data-arch="' + esc(x.id) + '" aria-label="Archive shape ' + (i + 1) + '" title="Archive">' + ICON_ARCH + "</button></figcaption></figure>").join("") + "</div>" : "";
+    html += '<div class="toast-slot" role="status">' + (lastArch ? '<div class="toast"><span>Archived ·</span><button class="btn" type="button" data-undo="' + esc(lastArch) + '">Undo</button></div>' : "") + "</div>";
+    if (hid.length) {
+      html += '<div class="arch-box"><button class="arch-toggle" type="button" data-archtoggle aria-expanded="' + sel.showArch + '">Archived (' + hid.length + ")</button>" +
+        (sel.showArch ? '<div class="shapes dim">' + hid.map((x) =>
+          '<figure class="shape">' + chordBox(c, x.sh) + "<figcaption><span>Strings " + stringsOf(x.sh) + wide + '</span><br><button class="btn" type="button" data-unarch="' + esc(x.id) + '" aria-label="Restore shape on strings ' + stringsOf(x.sh) + '">Restore</button></figcaption></figure>').join("") + "</div>" : "") + "</div>";
+    }
+    return html;
   }
 
   /* ---------- sound ---------- */
@@ -539,21 +599,53 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     };
     const out = [];
     if (scope === "modes") {
-      MODES.forEach((m, i) => { const s = score(MODE_ALIASES[m.id]); if (s) out.push({ s: s, i: i, html: modeRow(usePc, m) }); });
+      MODES.forEach((m, i) => { const s = score(MODE_ALIASES[m.id]); if (s) out.push({ s: s, i: i, id: m.id, html: modeRow(usePc, m) }); });
     } else {
       (scope === "arps" ? ARP_QUALITIES : QUALS).forEach((q, i) => {
         if (kind === "triad" && isSeventh(q)) return;
         if (kind === "seventh" && !isSeventh(q)) return;
-        const s = score(QUAL_ALIASES[q.id]); if (s) out.push({ s: s, i: i, html: scope === "arps" ? arpRow(usePc, q) : chordRow(usePc, q) });
+        const s = score(QUAL_ALIASES[q.id]); if (s) out.push({ s: s, i: i, id: q.id, html: scope === "arps" ? arpRow(usePc, q) : chordRow(usePc, q) });
       });
     }
     out.sort((a, b) => b.s - a.s || a.i - b.i);
     // A very short name that matches exactly ("m", "7", "o") means just that; skip the loose matches.
     const exact = out.filter((x) => x.s >= 100);
-    return { rows: phrase.length <= 2 && exact.length ? exact : out, pc: usePc, rootTyped: pc !== null };
+    const found = phrase.length <= 2 && exact.length ? exact : out, keep = prefs.filters[scope];
+    return { rows: keep && keep.length ? found.filter((x) => keep.includes(x.id)) : found, pc: usePc, rootTyped: pc !== null };
   }
 
   /* ---------- index ---------- */
+  /* What the shelves remember beyond the key: filters per shelf, and archived guitar shapes. */
+  const FILTER_IDS = { modes: MODES.map((m) => m.id), chords: QUALS.map((q) => q.id), arps: ARP_QUALITIES.map((q) => q.id) };
+  (function cleanPrefs() {
+    const f = prefs.filters && typeof prefs.filters === "object" ? prefs.filters : {};
+    prefs.filters = {};
+    Object.keys(FILTER_IDS).forEach((k) => { prefs.filters[k] = FILTER_IDS[k].filter((id) => Array.isArray(f[k]) && f[k].includes(id)); });
+    prefs.archivedShapes = Array.isArray(prefs.archivedShapes) ? prefs.archivedShapes.filter((x, i, a) => typeof x === "string" && a.indexOf(x) === i) : [];
+  })();
+  const QSHORT = { maj: "maj", min: "m", aug: "aug", dim: "dim" };
+  const qShort = (q) => QSHORT[q.id] || q.sym || q.label;
+  function filterHTML(kind) {
+    const on = prefs.filters[kind], chip = (id, text, aria) => '<button class="chip" type="button" data-f="' + id + '" aria-pressed="' + on.includes(id) + '"' + (aria ? ' aria-label="' + esc(aria) + '"' : "") + ">" + esc(text) + "</button>";
+    let h = '<div class="filters" id="filters" role="group" aria-label="Filter"><button class="chip" type="button" data-fall aria-pressed="' + (!on.length) + '">All</button>';
+    if (kind === "modes") h += MODES.map((m) => chip(m.id, m.name)).join("");
+    else {
+      const qs = kind === "arps" ? ARP_QUALITIES : QUALS;
+      h += qs.filter((q) => !isSeventh(q)).map((q) => chip(q.id, qShort(q), q.word || q.label)).join("") + '<span class="fsep" aria-hidden="true"></span>' +
+        qs.filter(isSeventh).map((q) => chip(q.id, qShort(q), q.word || q.label)).join("");
+    }
+    return h + "</div>";
+  }
+  /* The key as one octave of piano: white keys C D E F G A B, black keys between them. */
+  const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11], BLACK_AT = { 1: 1, 3: 2, 6: 4, 8: 5, 10: 6 };
+  function pianoKeysHTML(current) {
+    return SHORT_KEYS.map((label, pc) => {
+      const white = WHITE_PCS.includes(pc), i = white ? WHITE_PCS.indexOf(pc) : BLACK_AT[pc];
+      const inner = white ? esc(label) : label.split("/").map((x) => "<span>" + esc(x) + "</span>").join("");
+      return '<button class="pk ' + (white ? "w" : "b") + '" type="button" role="radio" data-pc="' + pc + '" aria-checked="' + (pc === current) + '" tabindex="' + (pc === current ? 0 : -1) +
+        '" aria-label="' + esc(label) + '" style="--i:' + i + '">' + inner + "</button>";
+    }).join("");
+  }
   function keysHTML(labels, current) {
     return labels.map((label, pc) =>
       '<button class="key' + (label.length > 2 ? " two" : "") + '" type="button" role="radio" data-pc="' + pc + '" aria-checked="' + (pc === current) + '">' + esc(label) + "</button>").join("");
@@ -573,14 +665,16 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       return '<section class="sec"><h2>' + r.rows.length + (r.rows.length === 1 ? " match" : " matches") + " in " + esc(SHORT_KEYS[r.pc]) + "</h2>" +
         '<ul class="rows">' + r.rows.map((x) => x.html).join("") + "</ul></section>";
     }
-    if (kind === "modes") return '<section class="sec"><ul class="rows">' + MODES.map((m) => modeRow(pc, m)).join("") + "</ul></section>";
+    const keep = prefs.filters[kind], shown = (id) => !keep.length || keep.includes(id);
+    if (kind === "modes") return '<section class="sec"><ul class="rows">' + MODES.filter((m) => shown(m.id)).map((m) => modeRow(pc, m)).join("") + "</ul></section>";
+    const section = (title, rows, extra) => rows.length || extra ? '<section class="sec"><h2>' + title + '</h2><ul class="rows">' + rows.join("") + (extra || "") + "</ul></section>" : "";
     if (kind === "arps") {
-      return '<section class="sec"><h2>Triads</h2><ul class="rows">' + ARP_QUALITIES.filter((q) => !isSeventh(q)).map((q) => arpRow(pc, q)).join("") + "</ul></section>" +
-        '<section class="sec"><h2>7th chords</h2><ul class="rows">' + ARP_QUALITIES.filter(isSeventh).map((q) => arpRow(pc, q)).join("") + "</ul></section>";
+      const qs = ARP_QUALITIES.filter((q) => shown(q.id));
+      return section("Triads", qs.filter((q) => !isSeventh(q)).map((q) => arpRow(pc, q))) + section("7th chords", qs.filter(isSeventh).map((q) => arpRow(pc, q)));
     }
-    return '<section class="sec"><h2>Triads</h2><ul class="rows">' + TRIADS.map((q) => chordRow(pc, q)).join("") + "</ul></section>" +
-      '<section class="sec"><h2>7th chords</h2><ul class="rows">' + SEVENTHS.map((q) => chordRow(pc, q)).join("") +
-      '<li><a class="row plain" href="#/voicings"><span>Inversions and voicings</span>' + ICON.go + "</a></li></ul></section>";
+    const link = '<li><a class="row plain" href="#/voicings"><span>Inversions and voicings</span>' + ICON.go + "</a></li>";
+    const sevs = SEVENTHS.filter((q) => shown(q.id)).map((q) => chordRow(pc, q));
+    return section("Triads", TRIADS.filter((q) => shown(q.id)).map((q) => chordRow(pc, q))) + (sevs.length ? section("7th chords", sevs, link) : '<section class="sec"><ul class="rows">' + link + "</ul></section>");
   }
   /* ---------- the front page: Library's shelves, as tiles ----------
      Modes, Chords and Arpeggios are this page's own lookups. The rest came over from School and
@@ -601,7 +695,8 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       '<div class="head"><div class="head-t"><h2 class="title">' + S.title + "</h2></div></div>" +
       '<label class="search">' + ICON.search + '<input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="' + S.ph + '" aria-label="' + S.ph + '"></label>' +
       (rec.length ? '<div class="recent" aria-label="Recently looked up">' + rec.map((x) => '<a class="pill" href="' + esc(x.h) + '">' + esc(x.t) + "</a>").join("") + "</div>" : "") +
-      '<span class="label" id="key-label">Key</span><div class="keys" id="keys" role="radiogroup" aria-labelledby="key-label">' + keysHTML(SHORT_KEYS, prefs.pc) + "</div>" +
+      '<span class="label" id="key-label">Key</span><div class="piano" id="keys" role="radiogroup" aria-labelledby="key-label">' + pianoKeysHTML(prefs.pc) + "</div>" +
+      filterHTML(kind) +
       '<div class="' + listsClass(kind, q) + '" id="lists">' + listsHTML(kind, q) + "</div>";
     $("q").value = q;
     $("q").addEventListener("input", (e) => {
@@ -656,7 +751,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   }
 
   /* ---------- a chord ---------- */
-  const sel = { start: "s1", inv: "root", v: "close" };
+  const sel = { start: "s1", inv: "root", v: "close", showArch: false };
   const ORD = ["", "1st", "2nd", "3rd", "4th"];
   function voicingSays(v) {
     if (!v.drops.length) return "The notes sit as close together as they go.";
@@ -752,8 +847,18 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
           INVERSIONS.map((inv) => { const c = chordCard(pc, q, inv.id, "close"); return "<li><b>" + esc(inv.label) + "</b><span>The " + esc(c.notes[0].deg === "R" ? "root" : c.notes[0].deg) + " is the lowest note." + (inv.bass === 3 ? " Only 7th chords have one." : "") + "</span><em>" + esc(spell(c)) + "</em></li>"; }).join("") + "</ul></section>" +
         '<section class="card"><h3>Voicings</h3><p class="say">A voicing is how the notes are spread out. Drops are counted from the top note of the close voicing.</p><ul class="guide">' +
           VOICINGS.map((v) => { const c = chordCard(pc, q, "root", v.id); return "<li><b>" + esc(v.label) + "</b><span>" + esc(voicingSays(v)) + (v.minVoices > 3 ? " It needs four notes, so triads skip it." : "") + "</span><em>" + esc(spell(c)) + "</em></li>"; }).join("") + "</ul></section>" +
+      archivedGuideHTML() +
       "</div>";
-    current = { play: {} };
+    current = { view: "guide", play: {} };
+  }
+  // Every archived guitar shape, whatever the key, so they can be managed in one place.
+  function archivedGuideHTML() {
+    if (!prefs.archivedShapes.length) return "";
+    return '<section class="card wide" id="arch-guide"><h3>Archived shapes</h3><ul class="guide arch-list">' + prefs.archivedShapes.map((id) => {
+      const p = id.split("|"), q = QUAL[p[0]], inv = INVERSIONS.find((x) => x.id === p[1]), v = VOICINGS.find((x) => x.id === p[2]), st = (p[3] || "").split("").join(" ");
+      return "<li><div><b>" + esc(q ? q.label : p[0]) + "</b><span>" + esc((inv ? inv.label : p[1]) + " · " + (v ? v.label : p[2]) + " · Strings " + st) + '</span></div><button class="btn" type="button" data-unarch="' + esc(id) +
+        '" aria-label="Restore ' + esc((q ? q.label : p[0]) + ", " + (inv ? inv.label : p[1]) + ", " + (v ? v.label : p[2]) + ", strings " + st) + '">Restore</button></li>';
+    }).join("") + "</ul></section>";
   }
 
   /* ---------- getting around ---------- */
@@ -779,6 +884,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   }
   function route() {
     const r = parse(), from = prevView;
+    lastArch = null; clearTimeout(archTimer);
     if (curShelf) shelfScroll[curShelf] = window.scrollY;
     curShelf = r.view === "shelf" ? r.kind : null;
     prevView = r.view;
@@ -810,16 +916,28 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   window.addEventListener("hashchange", route);
 
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-pc],[data-start],[data-inv],[data-v],[data-play]");
+    const t = e.target.closest("[data-pc],[data-start],[data-inv],[data-v],[data-play],[data-f],[data-fall],[data-arch],[data-undo],[data-unarch],[data-archtoggle]");
     if (!t) return;
     if (t.dataset.play) { const fn = current.play[t.dataset.play]; if (fn) fn(); return; }
+    if (t.hasAttribute("data-f") || t.hasAttribute("data-fall")) {
+      const r = parse(); if (r.view !== "shelf") return;
+      const list = prefs.filters[r.kind], id = t.dataset.f;
+      if (id === undefined) list.length = 0;
+      else if (list.includes(id)) list.splice(list.indexOf(id), 1);
+      else list.push(id);
+      list.sort((a, b) => FILTER_IDS[r.kind].indexOf(a) - FILTER_IDS[r.kind].indexOf(b));
+      savePrefs();
+      $("filters").querySelectorAll("[data-f]").forEach((b) => b.setAttribute("aria-pressed", String(list.includes(b.dataset.f))));
+      $("filters").querySelector("[data-fall]").setAttribute("aria-pressed", String(!list.length));
+      $("lists").innerHTML = listsHTML(r.kind, queries[r.kind]);
+      return;
+    }
+    if (t.hasAttribute("data-arch") || t.hasAttribute("data-undo") || t.hasAttribute("data-unarch") || t.hasAttribute("data-archtoggle")) { archiveAction(t); return; }
     if (t.dataset.pc !== undefined) {
       const pc = +t.dataset.pc, r = parse();
       prefs.pc = pc; savePrefs();
       if (r.view === "shelf") {
-        $("keys").innerHTML = keysHTML(SHORT_KEYS, pc);
-        $("lists").innerHTML = listsHTML(r.kind, queries[r.kind]);
-        const again = $("keys").querySelector('[data-pc="' + pc + '"]'); if (again) again.focus({ preventScroll: true });
+        setShelfKey(r.kind, pc);
       } else {
         // Same entry in the new key; replace so Back still returns to the shelf.
         const x = t.parentNode.scrollLeft;
@@ -830,8 +948,45 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     }
     if (!current.q) return;
     if (t.dataset.start) { sel.start = t.dataset.start; $("arp-slot").innerHTML = arpSlotHTML(current.pc, current.q); refocus("start", sel.start); }
-    else { if (t.dataset.inv) sel.inv = t.dataset.inv; if (t.dataset.v) sel.v = t.dataset.v; $("voi-slot").innerHTML = voicingHTML(current.pc, current.q); refocus(t.dataset.inv ? "inv" : "v", t.dataset.inv || t.dataset.v); }
+    else { lastArch = null; if (t.dataset.inv) sel.inv = t.dataset.inv; if (t.dataset.v) sel.v = t.dataset.v; $("voi-slot").innerHTML = voicingHTML(current.pc, current.q); refocus(t.dataset.inv ? "inv" : "v", t.dataset.inv || t.dataset.v); }
   });
+  // Pick a key on a shelf: redraw the piano and the rows, and keep focus on the chosen key.
+  function setShelfKey(kind, pc) {
+    prefs.pc = pc; savePrefs();
+    $("keys").innerHTML = pianoKeysHTML(pc);
+    $("lists").innerHTML = listsHTML(kind, queries[kind]);
+    const again = $("keys").querySelector('[data-pc="' + pc + '"]'); if (again) again.focus({ preventScroll: true });
+  }
+  document.addEventListener("keydown", (e) => {
+    const k = e.target.closest && e.target.closest("#keys");
+    const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+    if (!k || !d || e.altKey || e.ctrlKey || e.metaKey) return;
+    const r = parse(); if (r.view !== "shelf") return;
+    e.preventDefault();
+    setShelfKey(r.kind, (prefs.pc + d + 12) % 12);
+  });
+  /* Archive, undo, restore and the Archived (n) toggle. */
+  function archiveAction(t) {
+    const d = t.dataset, list = prefs.archivedShapes, r = parse();
+    const redraw = () => { if (r.view === "guide") renderGuide(); else if (current.q) $("voi-slot").innerHTML = voicingHTML(current.pc, current.q); };
+    if (t.hasAttribute("data-arch")) {
+      if (!list.includes(d.arch)) list.push(d.arch);
+      lastArch = d.arch; clearTimeout(archTimer);
+      archTimer = setTimeout(() => { lastArch = null; const el = view.querySelector(".toast-slot"); if (el) el.innerHTML = ""; }, 6000);
+      savePrefs(); redraw();
+      const u = view.querySelector("[data-undo]"); if (u) u.focus({ preventScroll: true });
+    } else if (t.hasAttribute("data-undo")) {
+      const i = list.indexOf(d.undo); if (i >= 0) list.splice(i, 1);
+      lastArch = null; clearTimeout(archTimer); savePrefs(); redraw();
+    } else if (t.hasAttribute("data-unarch")) {
+      const i = list.indexOf(d.unarch); if (i >= 0) list.splice(i, 1);
+      savePrefs(); redraw();
+      const next = view.querySelector("[data-unarch],[data-archtoggle]") || view.querySelector(".title"); if (next) { if (!next.matches("button")) next.tabIndex = -1; next.focus({ preventScroll: true }); }
+    } else {
+      sel.showArch = !sel.showArch; redraw();
+      const b = view.querySelector("[data-archtoggle]"); if (b) b.focus({ preventScroll: true });
+    }
+  }
   function refocus(attr, value) { const b = view.querySelector("[data-" + attr + '="' + value + '"]'); if (b) b.focus({ preventScroll: true }); }
 
   route();
