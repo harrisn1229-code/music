@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Library</title>
 <meta name="description" content="Classes, lessons, quizzes, drills and a song library. Works offline; your progress stays on this device.">
-<meta name="school-build" content="2026-11-12 06:49">
+<meta name="school-build" content="2026-11-12 17:18">
 <meta name="school-books" content="full">
 <meta name="theme-color" content="#e9ebf0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0e13" media="(prefers-color-scheme: dark)">
@@ -18,6 +18,8 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<!-- Music's theme choice (Settings on the home screen), applied before anything is drawn. -->
+<script src="../shared/settings.js"></script>
 <link rel="stylesheet" href="app.css">
 <!-- The Music app's look, laid over the school's own: one style across every tool. -->
 <link rel="stylesheet" href="music-skin.css">
@@ -35,7 +37,7 @@
 </head>
 <body>
 <div id="app"><div class="boot"><h1>Library</h1><p id="bootmsg">Opening…</p></div></div>
-<script>window.MS_APP = {build: "2026-11-12 06:49", mode: "library"};</script>
+<script>window.MS_APP = {build: "2026-11-12 17:18", mode: "library"};</script>
 <!-- Shared by every tool in Music: the Claude connection, and the email account. -->
 <script src="../shared/ai.js"></script>
 <script src="../shared/cloud-config.js"></script>

@@ -16,13 +16,16 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
 <script>
   /* Look and feel from Settings: applied before first paint so there's no flash.
      data-scheme = light|dark (resolved), data-accent = accent palette, data-font = title font. */
   window.barlineLook = function(p){
     p = p || {};
     var r = document.documentElement;
-    var dark = p.theme === "dark" || (p.theme !== "light" && !!window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    // The theme is Music's, set on the home screen (shared/settings.js); accent and title font are Barline's own.
+    var theme = window.MusicSettings ? window.MusicSettings.get().theme : (p.theme || "system");
+    var dark = theme === "dark" || (theme !== "light" && !!window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
     r.setAttribute("data-scheme", dark ? "dark" : "light");
     if (p.accent && p.accent !== "teal") r.setAttribute("data-accent", p.accent); else r.removeAttribute("data-accent");
     // Sans is the default title font; lookV marks prefs saved after the redesign.
@@ -578,7 +581,6 @@
         </span>
         <span class="appname">Barline</span>
         <button class="iconbtn" id="libAi" aria-label="AI assistant"></button>
-        <button class="iconbtn" id="libSettings" aria-label="Settings"></button>
         <button class="iconbtn" id="libMenu" aria-label="Backup and import"></button>
       </div>
       <label class="search">
@@ -753,7 +755,6 @@
   };
   $("libMenu").innerHTML = ICON.more;
   $("chartMenu").innerHTML = ICON.more;
-  $("libSettings").innerHTML = ICON.gear;
   $("libAi").innerHTML = ICON.sparkle;
   $("chartAi").innerHTML = ICON.sparkle;
   $("folderMenu").innerHTML = ICON.more;
@@ -1070,17 +1071,15 @@
   /* ============================ prefs + state ============================ */
   const prefs = Object.assign(
     { met: true, countIn: true, vol: 0.55, zoom: "bar", view: "edit", chartSize: "fit", chartCols: "auto", fence: false, installDismissed: false,
-      theme: "system", accent: "teal", titleFont: "sans", piano: true, pianoVol: 0.8, folder: "" },
+      accent: "teal", titleFont: "sans", piano: true, pianoVol: 0.8, folder: "" },
     (function(){ try { return JSON.parse(store.get("barline:prefs", "{}")) || {}; } catch(e){ return {}; } })()
   );
   const savePrefs = () => store.set("barline:prefs", JSON.stringify(prefs));
 
   /* ============================ look and feel ============================ */
-  const THEMES = [["system", "System"], ["light", "Light"], ["dark", "Dark"]];
   const ACCENTS = [["teal", "Teal"], ["blue", "Blue"], ["violet", "Violet"], ["graphite", "Graphite"]];
   const TITLE_FONTS = [["sans", "Sans"], ["serif", "Serif"]];
   const known = (list, v, d) => list.some((o) => o[0] === v) ? v : d;
-  prefs.theme = known(THEMES, prefs.theme, "system");
   prefs.accent = known(ACCENTS, prefs.accent, "teal");
   // The redesign made Sans the default title font: move everyone over once.
   if (!(prefs.lookV >= 2)){ prefs.titleFont = "sans"; prefs.lookV = 2; savePrefs(); }
@@ -1089,9 +1088,21 @@
   applyLook();
   if (window.matchMedia){
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onScheme = () => { if (prefs.theme === "system") applyLook(); };
+    const onScheme = () => { if (!window.MusicSettings || window.MusicSettings.get().theme === "system") applyLook(); };
     if (mq.addEventListener) mq.addEventListener("change", onScheme); else if (mq.addListener) mq.addListener(onScheme);
   }
+  // Theme changes made on the Music home screen (any tab), and accent and title font chosen there.
+  if (window.MusicSettings) window.MusicSettings.onChange(() => { applyLook(); });
+  function reloadLook(){
+    let p = {};
+    try { p = JSON.parse(store.get("barline:prefs", "{}")) || {}; } catch(e){}
+    prefs.accent = known(ACCENTS, p.accent, "teal");
+    prefs.titleFont = known(TITLE_FONTS, p.titleFont, "sans");
+    if (p.lookV >= 2) prefs.lookV = p.lookV;
+    applyLook();
+  }
+  window.addEventListener("storage", (e) => { if (e.key === "barline:prefs" || e.key === null) reloadLook(); });
+  window.addEventListener("pageshow", (e) => { if (e.persisted) reloadLook(); });
 
   const state = { screen: "lib", chartId: null, playing: false, pos: null, query: "", loopSection: false, loopIdx: undefined, flat: [], navFromLib: false, libScroll: 0 };
   const cur = () => state.chartId ? charts[state.chartId] : null;
@@ -1160,121 +1171,6 @@
     });
   }
   $("scrim").addEventListener("click", closeSheet);
-
-  /* ---------- settings sheet ---------- */
-  function setRow(label){
-    const row = h("div", "set-row");
-    row.appendChild(h("div", "lbl", label));
-    return row;
-  }
-  function pressGroup(btns, picked){ btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === picked))); }
-  function segChoice(label, list, key){
-    const row = setRow(label);
-    const seg = h("div", "seg");
-    seg.setAttribute("role", "group"); seg.setAttribute("aria-label", label);
-    const btns = list.map((o) => {
-      const b = h("button", "", o[1]);
-      b.dataset.v = o[0];
-      b.addEventListener("click", () => { prefs[key] = o[0]; savePrefs(); applyLook(); pressGroup(btns, o[0]); });
-      seg.appendChild(b);
-      return b;
-    });
-    pressGroup(btns, prefs[key]);
-    row.appendChild(seg);
-    return row;
-  }
-  function openSettings(){
-    openSheet((body) => {
-      const card = h("div", "bsheet-card");
-      const head = h("div", "bsheet-head");
-      head.appendChild(h("div", "bsheet-title", "Settings"));
-      head.appendChild(h("div", "bsheet-msg", "Appearance. Changes apply right away and stay on this device."));
-      card.appendChild(head);
-
-      card.appendChild(segChoice("Theme", THEMES, "theme"));
-
-      const accRow = setRow("Accent color");
-      const sw = h("div", "swatches");
-      sw.setAttribute("role", "group"); sw.setAttribute("aria-label", "Accent color");
-      const swBtns = ACCENTS.map((o) => {
-        const b = h("button", "swatch");
-        b.dataset.v = o[0];
-        b.setAttribute("data-accent", o[0]);
-        const dot = h("span", "dot"); dot.innerHTML = ICON.check;
-        b.appendChild(dot);
-        b.appendChild(h("span", "", o[1]));
-        b.addEventListener("click", () => { prefs.accent = o[0]; savePrefs(); applyLook(); pressGroup(swBtns, o[0]); });
-        sw.appendChild(b);
-        return b;
-      });
-      pressGroup(swBtns, prefs.accent);
-      accRow.appendChild(sw);
-      card.appendChild(accRow);
-
-      const fontRow = segChoice("Title font", TITLE_FONTS, "titleFont");
-      const prev = h("div", "set-preview");
-      prev.setAttribute("aria-hidden", "true");
-      prev.appendChild(h("span", "", "Autumn Leaves"));
-      prev.appendChild(h("span", "c", "Cm7 F7 Bbmaj7"));
-      fontRow.appendChild(prev);
-      card.appendChild(fontRow);
-
-      const syRow = setRow("Sync between devices");
-      const sySet = h("div", "ai-set");
-      const syOn = syncOn(), who = store.get(GH_USER, ""), acct = cloud();
-      sySet.appendChild(h("span", "", acct ? "On with your Music account (" + acct.user().email + "). " + syncLine() + "."
-        : syOn ? "On with GitHub" + (who ? " (" + who + ")" : "") + ". " + syncLine() + "."
-        : cloudReady() ? "Sign in to your Music account to keep your charts on every device." : "Keep your charts the same on your phone, tablet and computer."));
-      const syBtns = h("div", "sync-btns");
-      if (acct){
-        // Signing out is done once for all of Music, on the home screen.
-        const now = h("button", "btn", "Sync now");
-        now.addEventListener("click", () => { closeSheet(); syncNow().then(() => toast(sync.status === "ok" ? "Synced." : (sync.msg || "Sync didn't finish."))); });
-        const home = h("button", "btn", "Account");
-        home.addEventListener("click", () => { location.href = "../#account"; });
-        syBtns.appendChild(now); syBtns.appendChild(home);
-      } else if (!syOn && cloudReady()){
-        const b = h("button", "btn", "Sign in");
-        b.addEventListener("click", () => { location.href = "../#account"; });
-        syBtns.appendChild(b);
-      } else if (syOn){
-        const now = h("button", "btn", "Sync now");
-        now.addEventListener("click", () => { closeSheet(); syncNow().then(() => toast(sync.status === "ok" ? "Synced." : (sync.msg || "Sync didn't finish."))); });
-        const off = h("button", "btn", "Turn off");
-        off.addEventListener("click", () => { closeSheet(); disconnectSync(); });
-        syBtns.appendChild(now); syBtns.appendChild(off);
-      } else {
-        const b = h("button", "btn", "Set up");
-        b.addEventListener("click", () => { closeSheet(); setTimeout(setupSync, 280); });
-        syBtns.appendChild(b);
-      }
-      sySet.appendChild(syBtns);
-      syRow.appendChild(sySet);
-      card.appendChild(syRow);
-
-      const aiRow = setRow("AI assistant");
-      const aiSet = h("div", "ai-set");
-      const hasKey = !!aiKey();
-      aiSet.appendChild(h("span", "", hasKey ? "Your Anthropic API key is saved on this device." : "Add your Anthropic API key to fill in charts by talking or typing."));
-      const keyBtn = h("button", "btn", hasKey ? "Remove key" : "Add key");
-      keyBtn.addEventListener("click", () => {
-        if (hasKey){
-          try { localStorage.removeItem(AI_KEY); } catch(e){}
-          if (self.MusicAI) self.MusicAI.clearKey();   // the key is Music-wide: forget it everywhere
-          closeSheet(); toast("API key removed from this device.");
-        } else { closeSheet(); setTimeout(openAi, 280); }
-      });
-      aiSet.appendChild(keyBtn);
-      aiRow.appendChild(aiSet);
-      card.appendChild(aiRow);
-
-      body.appendChild(card);
-      const done = h("button", "bsheet-cancel", "Done");
-      done.addEventListener("click", closeSheet);
-      body.appendChild(done);
-    });
-  }
-  $("libSettings").addEventListener("click", openSettings);
 
   /* ============================ export ============================ */
   const slug = (s) => String(s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "chart";
@@ -1417,7 +1313,6 @@
       { label: "Move to folder", icon: ICON.folder, run: () => setTimeout(() => moveSheet(id), 280) },
       { label: "Delete chart", icon: ICON.trash, danger: true, run: () => deleteChart(id) }
     );
-    if (!fromLibrary) items.splice(items.length - 1, 0, { label: "Settings", icon: ICON.gear, run: () => setTimeout(openSettings, 280) });
     actionSheet({ title: c.title.trim() || "Untitled chart", items: items });
   }
 
@@ -1657,7 +1552,7 @@
     const data = await res.json().catch(() => null);
     if (!res.ok){
       const msg = data && data.error && data.error.message ? data.error.message : "";
-      if (res.status === 401) throw new AiError("That API key wasn't accepted. Check it in Settings.");
+      if (res.status === 401) throw new AiError("That API key wasn't accepted. Check it in Music Settings.");
       if (res.status === 403) throw new AiError("This API key isn't allowed to do that. " + msg);
       if (res.status === 429) throw new AiError("Too many requests for now. Wait a moment and try again.");
       if (res.status === 529 || res.status >= 500) throw new AiError("Claude is busy right now. Try again in a moment.");
@@ -2026,7 +1921,7 @@
     try {
       res = await fetch("https://api.github.com" + path, { method: opts.method || "GET", headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: "no-store" });
     } catch(e){ throw new SyncError("You're offline. Changes will sync when you're back online.", "offline"); }
-    if (res.status === 401) throw new SyncError("GitHub didn't accept the sync token. Set up sync again in Settings.", "auth");
+    if (res.status === 401) throw new SyncError("GitHub didn't accept the sync token. Set up sync again from the menu on the chart list.", "auth");
     if (res.status === 404) throw new SyncError("Not found on GitHub.", "notfound");
     if (res.status === 403 || res.status === 429){
       const left = res.headers.get("x-ratelimit-remaining");
@@ -2460,7 +2355,7 @@
         { label: "Back up all charts", icon: ICON.backup, run: backupAll },
         { label: "Import from backup", icon: ICON.import, run: () => $("importInput").click() },
         { label: syncOn() ? "Sync now" : "Sync between devices", icon: ICON.sync, run: () => { if (syncOn()) syncNow(); else if (cloudReady()) location.href = "../#account"; else setTimeout(setupSync, 280); } }
-      ]
+      ].concat(syncOn() && !cloud() ? [{ label: "Turn off sync", icon: ICON.sync, run: disconnectSync }] : [])
     });
   });
 
