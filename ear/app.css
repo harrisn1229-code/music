@@ -105,6 +105,9 @@ input[type=range]::-moz-range-track{height:.375rem;border-radius:999px;backgroun
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1.625rem;height:1.625rem;border-radius:50%;background:var(--accent);margin-top:-.625rem;box-shadow:0 0 0 4px rgb(226 106 30 / .22)}
 input[type=range]::-moz-range-thumb{width:1.625rem;height:1.625rem;border:0;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgb(226 106 30 / .22)}
 
+.vsel{width:100%;min-width:0;max-width:100%;min-height:2.75rem;padding:0 2.5rem 0 1rem;border:0;border-radius:999px;background-color:var(--well);color:var(--text);box-shadow:var(--hair);font:inherit;font-size:1rem;font-weight:600;color-scheme:dark;-webkit-appearance:none;appearance:none;text-overflow:ellipsis;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23A3A8BD' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;background-size:1.25rem}
+.vsel option{background:#1B1E2B;color:#F1F2F8}
+
 /* status */
 .status{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;flex-wrap:wrap}
 .status .grow{flex:1}

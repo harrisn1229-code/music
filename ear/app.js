@@ -57,7 +57,7 @@ function detectPitch(buf, sampleRate) {
   var pick = function (a) { return a[rnd(a.length)]; };
 
   /* ---------- test hook (written only) ---------- */
-  var T = window.__earTest = { key: null, keyName: "", drone: false, notes: [], last: [], expected: [], cadences: 0, played: 0, spoken: [], screen: "", phase: "", sing: null, wake: false, vis: [], events: [], sched: [] };
+  var T = window.__earTest = { key: null, keyName: "", drone: false, notes: [], last: [], expected: [], cadences: 0, played: 0, spoken: [], speaking: false, voiceUsed: "", droneGain: 0, duck: 1, screen: "", phase: "", sing: null, wake: false, vis: [], events: [], sched: [] };
 
   /* ---------- the material ---------- */
   var DEG = [["1", "do", "one"], ["♭2", "ra", "flat two"], ["2", "re", "two"], ["♭3", "me", "flat three"], ["3", "mi", "three"], ["4", "fa", "four"],
@@ -91,7 +91,8 @@ function detectPitch(buf, sampleRate) {
   var lsSet = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var PREFS_KEY = "ear:prefs:v1", PROG_KEY = "ear:progress:v1";
   var DEFAULTS = { droneVol: 60, noteVol: 80, instrument: "piano", cadence: true, keyEvery: 5, count: 20, labels: "num", unlockAll: false,
-    tempo: 45, pause: 2, hfRepeat: 2, hfWait: 3, hfReplay: 1, hfGap: 3 };
+    tempo: 45, pause: 2, hfRepeat: 2, hfWait: 3, hfReplay: 1, hfGap: 3,
+    voice: "", voiceName: "", vSpeed: 0.8, vPitch: 0.9, vVol: 55, vStyle: "gentle" };
   var num = function (v, lo, hi, d) { v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   function cleanPrefs(p) {
     p = p && typeof p === "object" ? p : {};
@@ -102,7 +103,10 @@ function detectPitch(buf, sampleRate) {
       labels: p.labels === "sol" ? "sol" : "num", unlockAll: p.unlockAll === true,
       tempo: Math.round(num(p.tempo, 20, 120, DEFAULTS.tempo) / 5) * 5, pause: Math.round(num(p.pause, 0.5, 6, DEFAULTS.pause) * 2) / 2,
       hfRepeat: Math.round(num(p.hfRepeat, 1, 5, DEFAULTS.hfRepeat)), hfWait: Math.round(num(p.hfWait, 0, 10, DEFAULTS.hfWait) * 2) / 2,
-      hfReplay: Math.round(num(p.hfReplay, 0, 4, DEFAULTS.hfReplay)), hfGap: Math.round(num(p.hfGap, 1, 10, DEFAULTS.hfGap) * 2) / 2
+      hfReplay: Math.round(num(p.hfReplay, 0, 4, DEFAULTS.hfReplay)), hfGap: Math.round(num(p.hfGap, 1, 10, DEFAULTS.hfGap) * 2) / 2,
+      voice: typeof p.voice === "string" ? p.voice.slice(0, 300) : "", voiceName: typeof p.voiceName === "string" ? p.voiceName.slice(0, 200) : "",
+      vSpeed: Math.round(num(p.vSpeed == null ? NaN : p.vSpeed, 0.5, 1.2, DEFAULTS.vSpeed) * 20) / 20, vPitch: Math.round(num(p.vPitch == null ? NaN : p.vPitch, 0.6, 1.4, DEFAULTS.vPitch) * 20) / 20,
+      vVol: Math.round(num(p.vVol == null ? NaN : p.vVol, 0, 100, DEFAULTS.vVol)), vStyle: p.vStyle === "plain" ? "plain" : "gentle"
     };
   }
   function cleanProg(p) {
@@ -150,7 +154,7 @@ function detectPitch(buf, sampleRate) {
 
   /* ---------- sound ---------- */
   var Snd = (function () {
-    var ctx = null, master, droneBus, noteBus, comp, drone = null, want = null, gen = 0, armed = false;
+    var ctx = null, master, droneBus, duckG, noteBus, comp, drone = null, want = null, gen = 0, armed = false;
     var hz = function (m) { return 440 * Math.pow(2, (m - 69) / 12); };
     var curve = function (v) { return Math.pow(v / 100, 1.7); };
     function ensure() {
@@ -163,7 +167,7 @@ function detectPitch(buf, sampleRate) {
         comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
         master = ctx.createGain(); master.gain.value = 0.9;
         droneBus = ctx.createGain(); noteBus = ctx.createGain();
-        droneBus.connect(master); noteBus.connect(master); master.connect(comp); comp.connect(ctx.destination);
+        duckG = ctx.createGain(); droneBus.connect(duckG); duckG.connect(master); noteBus.connect(master); master.connect(comp); comp.connect(ctx.destination);
         applyVol();
         // A silent sound started inside the tap is what makes iOS hand the page its audio.
         try { var s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, ctx.sampleRate); s.connect(ctx.destination); s.start(0); } catch (e) {}
@@ -172,9 +176,21 @@ function detectPitch(buf, sampleRate) {
       if (want !== null && !drone) startDrone(want);
       return ctx;
     }
+    /* Speech ducking: the drone steps back while a word is spoken (down in ~250 ms, back in ~600 ms). */
+    var duckTo = 1;
+    function duck(on) {
+      duckTo = on ? 0.35 : 1; T.duck = duckTo;
+      if (!ctx || !duckG) return;
+      T.droneGain = droneBus.gain.value * duckTo;
+      try {
+        var t = ctx.currentTime, g = duckG.gain;
+        g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
+        g.linearRampToValueAtTime(duckTo, t + (on ? 0.25 : 0.6));
+      } catch (e) { try { duckG.gain.value = duckTo; } catch (e2) {} }
+    }
     function applyVol() {
       if (!ctx) return;
-      droneBus.gain.value = curve(prefs.droneVol) * 0.38;
+      droneBus.gain.value = curve(prefs.droneVol) * 0.38; T.droneGain = droneBus.gain.value * duckTo;
       noteBus.gain.value = curve(prefs.noteVol) * 1.0;
       if (want !== null && !drone && prefs.droneVol > 0) startDrone(want);
       if (drone && prefs.droneVol <= 0) killDrone(0.2);
@@ -287,7 +303,7 @@ function detectPitch(buf, sampleRate) {
       await sleep(60000 / prefs.tempo); if (gen !== mine) return;
     }
     return {
-      ensure: ensure, applyVol: applyVol, startDrone: startDrone, stopAll: stopAll, hush: hush, note: note, keyChange: keyChange, stopNotes: stopNotes,
+      ensure: ensure, applyVol: applyVol, duck: duck, startDrone: startDrone, stopAll: stopAll, hush: hush, note: note, keyChange: keyChange, stopNotes: stopNotes,
       arm: function () { armed = true; }, armedNow: function () { return armed; },
       setWant: function (pc) { want = pc; },
       now: function () { return ctx ? ctx.currentTime : 0; },
@@ -310,21 +326,100 @@ function detectPitch(buf, sampleRate) {
     Snd.note(m, at, len, 0.5, inst);
     if (vis) show(vis.kind === "question" ? [] : [vis.deg], at, vis.kind, len * 1000);
   }
-  function say(text) {
-    T.spoken.push(text);
-    return new Promise(function (res) {
-      try {
-        var s = window.speechSynthesis;
-        if (!s || typeof SpeechSynthesisUtterance === "undefined") return res(false);
-        var u = new SpeechSynthesisUtterance(text), done = false;
-        var fin = function () { if (!done) { done = true; res(true); } };
-        u.rate = 0.85; u.onend = fin; u.onerror = fin;
-        setTimeout(fin, 2500 * TS);
-        s.speak(u);
-      } catch (e) { res(false); }
-    });
-  }
+  /* ---------- the voice that names the degree ---------- */
+  var Voice = (function () {
+    var list = [], curU = null, curEnd = null, watching = false;
+    var synth = function () { try { return window.speechSynthesis || null; } catch (e) { return null; } };
+    function load() { var s = synth(); try { list = s ? (s.getVoices() || []).slice() : []; } catch (e) { list = []; } return list; }
+    var isEn = function (v) { return /^en([-_]|$)/i.test(v.lang || ""); };
+    var fine = function (v) { return /enhanced|premium/i.test(v.name || ""); };
+    var uriOf = function (v) { return v.voiceURI || v.name; };
+    function region(v) {
+      var m = /[-_]([A-Za-z]{2,3})$/.exec(v.lang || ""), r = m ? m[1].toUpperCase() : (v.lang || "");
+      return r === "GB" ? "UK" : r;
+    }
+    function auto() {
+      var all = load(), en = all.filter(isEn), v = null, i;
+      var has = function (w) { return en.filter(function (x) { return (x.name || "").toLowerCase().indexOf(w) >= 0; })[0]; };
+      v = has("premium") || has("enhanced");
+      var CALM = ["Ava", "Zoe", "Allison", "Susan", "Samantha", "Evan", "Nathan", "Karen", "Moira", "Serena", "Tessa", "Fiona", "Daniel"];
+      for (i = 0; !v && i < CALM.length; i++) v = en.filter(function (x) { return (x.name || "").split(/[\s(]/)[0].toLowerCase() === CALM[i].toLowerCase(); })[0];
+      return v || en.filter(function (x) { return /^en[-_]us$/i.test(x.lang || ""); })[0] || en[0] || all.filter(function (x) { return x.default; })[0] || all[0] || null;
+    }
+    function resolve() {
+      var all = load(), v = null;
+      if (prefs.voice) v = all.filter(function (x) { return uriOf(x) === prefs.voice; })[0] || (prefs.voiceName && all.filter(function (x) { return x.name === prefs.voiceName; })[0]) || null;
+      return v || auto();
+    }
+    function options() {
+      var all = load(), sel = null, i;
+      if (prefs.voice) sel = all.filter(function (x) { return uriOf(x) === prefs.voice; })[0] || (prefs.voiceName && all.filter(function (x) { return x.name === prefs.voiceName; })[0]) || null;
+      var rank = function (v) { return (isEn(v) ? 0 : 2) + (fine(v) ? 0 : 1); };
+      var sorted = all.slice().sort(function (a, b) { return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name)) || String(a.lang).localeCompare(String(b.lang)); });
+      var out = '<option value=""' + (sel ? "" : " selected") + ">Auto</option>";
+      for (i = 0; i < sorted.length; i++) {
+        var v = sorted[i], r = region(v);
+        out += '<option value="' + esc(uriOf(v)) + '" data-name="' + esc(v.name) + '"' + (sel === v ? " selected" : "") + ">" + esc(v.name) + (r ? " · " + esc(r) : "") + (fine(v) ? " ★" : "") + "</option>";
+      }
+      return out;
+    }
+    function refresh() { var el = $("vsel"); if (el) el.innerHTML = options(); }
+    /* Voices can arrive late (or, on some phones, without any event): listen, and also look again for a few seconds. */
+    function watch() {
+      if (watching) return; watching = true;
+      var n = 0, last = load().length;
+      var t = setInterval(function () {
+        n++; var now = load().length;
+        if (now !== last) { last = now; refresh(); }
+        if (n >= 20 || !$("vsel")) { clearInterval(t); watching = false; }
+      }, 400);
+    }
+    var s0 = synth();
+    if (s0) { try { if (s0.addEventListener) s0.addEventListener("voiceschanged", function () { load(); refresh(); }); else s0.onvoiceschanged = function () { load(); refresh(); }; } catch (e) {} }
+    load();
 
+    function endCurrent() { var f = curEnd; if (f) f(true); }
+    /* Speaks one phrase; resolves when it has ended (or errored, or the safety timeout ran out). */
+    function say(text, o) {
+      o = o || {};
+      return new Promise(function (res) {
+        try {
+          var s = synth();
+          if (!s || typeof SpeechSynthesisUtterance === "undefined" || prefs.vVol <= 0) return res(false);
+          if (curU) endCurrent();
+          var go = function () {
+            var v = resolve(), u = new SpeechSynthesisUtterance(text), done = false, tm = null;
+            if (v) u.voice = v;
+            u.lang = (v && v.lang) || "en-US";
+            u.rate = prefs.vSpeed; u.pitch = prefs.vPitch; u.volume = Math.max(0, Math.min(1, prefs.vVol / 100));
+            var fin = function (silent) {
+              if (done) return; done = true; clearTimeout(tm);
+              if (curU === u) { curU = null; curEnd = null; T.speaking = false; Snd.duck(false); }
+              res(!silent);
+            };
+            u.onstart = function () { if (!done && curU === u) { T.speaking = true; Snd.duck(true); } };
+            u.onend = function () { fin(false); }; u.onerror = function () { fin(false); };
+            var ms = Math.min(15000, (1500 + text.length * 150) / Math.max(0.3, prefs.vSpeed));
+            tm = setTimeout(function () { fin(false); }, ms * TS);
+            curU = u; curEnd = fin; T.voiceUsed = v ? v.name : "";
+            T.spoken.push(text);
+            s.speak(u);
+          };
+          // A previous utterance still marked as speaking is stuck (or being restarted): clear it first.
+          var stuck = false; try { stuck = !!(s.speaking || s.pending); } catch (e) {}
+          if (stuck) { try { s.cancel(); } catch (e) {} setTimeout(go, 80); } else go();
+        } catch (e) { res(false); }
+      });
+    }
+    function cancel() {                               // leaving the page: stop at once
+      var s = synth(); endCurrent();
+      try { if (s) s.cancel(); } catch (e) {}
+    }
+    function prime() {
+      try { var s = synth(); if (s && typeof SpeechSynthesisUtterance !== "undefined" && prefs.vVol > 0) { var u = new SpeechSynthesisUtterance(" "); u.volume = 0; s.speak(u); } } catch (e) {}
+    }
+    return { say: say, cancel: cancel, prime: prime, options: options, refresh: refresh, watch: watch };
+  })();
   /* ---------- the degree clock ----------
      Twelve degrees round a circle in circle-of-fifths order. clockHTML() is the markup; Clk drives it.
      show() is the one door for animation: it is called with the audio time of the note it belongs to,
@@ -462,11 +557,34 @@ function detectPitch(buf, sampleRate) {
       return '<button type="button" class="dtog' + (DRING[d] ? " ring" : "") + '" style="--dc:' + DCOL[d] + '" data-sel="deg" data-v="' + d + '" aria-pressed="' + on + '" aria-label="' + DEG[d][2] + '">' + esc(lab(d)) + "</button>";
     }).join("") + "</div>";
   };
-  var fmt = function (v) { return String(Math.round(v * 10) / 10); };
+  var fmt = function (v) { return String(Math.round(v * 100) / 100); };
   var slider = function (id, label, v, lo, hi, step, unit) {
     return '<div class="field"><label class="lbl" for="' + id + '">' + label + ' <b id="' + id + '-v">' + fmt(v) + (unit ? " " + unit : "") + '</b></label>' +
       '<input type="range" id="' + id + '" data-k="' + id + '" data-u="' + (unit || "") + '" min="' + lo + '" max="' + hi + '" step="' + step + '" value="' + v + '"></div>';
   };
+  /* The Voice group: Settings shows it, and the Hands-free setup page can open it. */
+  var VOICE_SAMPLE = "five … flat three";
+  function voiceHTML() {
+    Voice.watch();
+    return '<h3 class="sec">Voice</h3><div class="card">' +
+      '<div class="field"><label class="lbl" for="vsel">Voice</label><select class="vsel" id="vsel">' + Voice.options() + "</select></div>" +
+      slider("p-vSpeed", "Speed", prefs.vSpeed, 0.5, 1.2, 0.05, "") + slider("p-vPitch", "Pitch", prefs.vPitch, 0.6, 1.4, 0.05, "") +
+      slider("p-vVol", "Voice volume", prefs.vVol, 0, 100, 1, "") +
+      '<div class="field"><span class="lbl">Style</span>' + seg([["plain", "Plain"], ["gentle", "Gentle"]], 'data-sel="vstyle"', prefs.vStyle, "Style") + "</div>" +
+      '<div class="btns"><button type="button" class="btn quiet" data-a="vtest">Test</button></div></div>';
+  }
+  function voiceInput(el, done) {                       // true if it was a voice slider
+    var k = el.dataset.k.replace(/^p-/, "");
+    if (k !== "vSpeed" && k !== "vPitch" && k !== "vVol") return false;
+    prefs[k] = +el.value; $(el.id + "-v").textContent = fmt(+el.value);
+    if (done) { prefs = cleanPrefs(prefs); persist(); }
+    return true;
+  }
+  function voiceClick(b, rerender) {
+    if (b.dataset.a === "vtest") { Voice.say(VOICE_SAMPLE); return true; }
+    if (b.dataset.sel === "vstyle") { prefs.vStyle = b.dataset.v === "plain" ? "plain" : "gentle"; persist(); rerender(); return true; }
+    return false;
+  }
   var isMinorSet = function (set) { return set.indexOf(3) >= 0 && set.indexOf(4) < 0; };
   var setOfName = function (name) {
     if (name === "level") { var pa = prog.lastPath, lv = PATHS[pa][unlockedCount(pa) - 1]; return { set: lv.set, oct: lv.oct || 1, minor: pa === "minor" }; }
@@ -547,7 +665,13 @@ function detectPitch(buf, sampleRate) {
     if (cur.click) cur.click(b, e);
   });
   view.addEventListener("input", function (e) { if (cur.input && e.target.matches("input[type=range]")) cur.input(e.target, false); });
-  view.addEventListener("change", function (e) { if (cur.input && e.target.matches("input[type=range]")) cur.input(e.target, true); });
+  view.addEventListener("change", function (e) {
+    if (e.target.id === "vsel") {
+      var uri = e.target.value, name = "";
+      Array.prototype.forEach.call(e.target.options, function (o) { if (o.value === uri && uri) name = o.getAttribute("data-name") || ""; });
+      prefs.voice = uri; prefs.voiceName = name; persist(); return;
+    }
+ if (cur.input && e.target.matches("input[type=range]")) cur.input(e.target, true); });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { if (cur.hidden) cur.hidden(); Snd.hush(); }
   });
@@ -929,13 +1053,15 @@ function detectPitch(buf, sampleRate) {
   function handsFree() {
     var s = prog.sel, setName = ["major", "minor", "chromatic", "custom"].indexOf(s.hfSet) >= 0 ? s.hfSet : "major", mins = [2, 5, 10].indexOf(s.hfMin) >= 0 ? s.hfMin : 5;
     var custom = Array.isArray(s.hfCustom) && s.hfCustom.length > 1 ? s.hfCustom.slice() : MAJ.slice();
-    var wake = null, running = false;
+    var wake = null, running = false, vOpen = false;
     var setOf = function () { return setName === "custom" ? custom : SETS[setName]; };
     function setup() {
       view.innerHTML = '<h2 class="title">Hands-free</h2><div class="card">' +
         seg([["major", "Major"], ["minor", "Minor"], ["chromatic", "Chromatic"], ["custom", "Custom"]], 'data-sel="set"', setName, "Degrees") +
         (setName === "custom" ? dtogs(custom) : "") +
-        '<div class="field"><span class="lbl">Key every</span>' + seg([["2", "2 min"], ["5", "5 min"], ["10", "10 min"]], 'data-sel="min"', String(mins), "Key change") + "</div></div>" +
+        '<div class="field"><span class="lbl">Key every</span>' + seg([["2", "2 min"], ["5", "5 min"], ["10", "10 min"]], 'data-sel="min"', String(mins), "Key change") + "</div>" +
+        '<div class="row"><button type="button" class="chip" data-a="voice" aria-pressed="' + vOpen + '">Voice</button></div></div>' +
+        (vOpen ? voiceHTML() : "") +
         clockHTML({ on: setOf(), tap: false, centre: centreBtn("start", ICON.play, "Start", setName === "custom" && custom.length < 2 ? "off" : "") });
       var c = view.querySelector(".cl-centre"); if (c && setName === "custom" && custom.length < 2) c.disabled = true;
     }
@@ -945,7 +1071,7 @@ function detectPitch(buf, sampleRate) {
       var set = setOf().slice(), minor = setName === "minor" || (setName === "custom" && isMinorSet(set));
       var pc = null, keyAt = 0, count = 0, last = -1;
       running = true; Snd.ensure(); Snd.arm();
-      try { var sp = window.speechSynthesis; if (sp && typeof SpeechSynthesisUtterance !== "undefined") { var u = new SpeechSynthesisUtterance(" "); u.volume = 0; sp.speak(u); } } catch (e) {}
+      Voice.prime();
       try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (w) { wake = w; T.wake = true; if (!running) { try { w.release(); } catch (e) {} } }, function () {}); } catch (e) {}
       view.innerHTML = statusRow(["h-k", "h-d", "-", "h-n"]) +
         clockHTML({ on: set, tap: false, centre: centreBtn("stop", ICON.stop, "Stop") });
@@ -969,7 +1095,8 @@ function detectPitch(buf, sampleRate) {
         T.phase = "answer";
         if ($("h-d")) $("h-d").innerHTML = dm(d);
         T.events.push("speak"); show([d], Snd.now(), "reveal", 1400);
-        await say(DEG[d][2]); if (!live()) return;
+        if (prefs.vStyle === "gentle") { await sleep(300); if (!live()) return; }   // a breath after the note, before the word
+        await Voice.say(DEG[d][2]); if (!live()) return;
         for (var q = 0; q < prefs.hfReplay; q++) {                    // then the note again, now with its name
           await sleep(q === 0 ? 0.5 * beat() : 2 * beat()); if (!live()) return;
           playMidi(m, prefs.instrument, noteDur(), { deg: d, kind: "reveal" }); T.events.push("replay");
@@ -980,17 +1107,20 @@ function detectPitch(buf, sampleRate) {
         await sleep(prefs.hfGap * 1000);
       }
     }
-    function stopRun() {
+    function stopRun(soft) {
       running = false; runId++; Snd.stopAll(); T.phase = "stopped";
-      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+      if (!(soft && prefs.vStyle === "gentle")) Voice.cancel();            // Gentle: the word being said is allowed to finish
       if (wake) { try { wake.release(); } catch (e) {} wake = null; } T.wake = false;
     }
-    cur.stop = function () { if (running) stopRun(); };
+    cur.stop = function () { if (running) stopRun(); else Voice.cancel(); };
     cur.hidden = function () { if (running) { stopRun(); setup(); } };
+    cur.input = function (el, done) { voiceInput(el, done); };
     cur.click = function (b) {
       var sel = b.dataset.sel, v = b.dataset.v, a = b.dataset.a;
       if (a === "start") { run(); return; }
-      if (a === "stop") { stopRun(); setup(); return; }
+      if (a === "stop") { stopRun(true); setup(); return; }
+      if (a === "voice") { vOpen = !vOpen; setup(); return; }
+      if (voiceClick(b, setup)) return;
       if (sel === "set") setName = v;
       else if (sel === "min") mins = +v;
       else if (sel === "deg") { var i = +v, at = custom.indexOf(i); if (at >= 0) custom.splice(at, 1); else custom = sorted(custom.concat([i])); }
@@ -1163,10 +1293,11 @@ function detectPitch(buf, sampleRate) {
         field("Labels", seg([["num", "1 ♭2 2"], ["sol", "do ra re"]], 'data-sel="labels"', prefs.labels, "Labels")) + field("Unlock all levels", onoff("unlockAll", prefs.unlockAll)) + "</div>" +
         '<h3 class="sec">Hands-free</h3><div class="card">' +
         slider("p-hfRepeat", "Repeat", prefs.hfRepeat, 1, 5, 1, "") + slider("p-hfWait", "Wait", prefs.hfWait, 0, 10, 0.5, "s") +
-        slider("p-hfReplay", "Replay", prefs.hfReplay, 0, 4, 1, "") + slider("p-hfGap", "Gap", prefs.hfGap, 1, 10, 0.5, "s") + "</div>";
+        slider("p-hfReplay", "Replay", prefs.hfReplay, 0, 4, 1, "") + slider("p-hfGap", "Gap", prefs.hfGap, 1, 10, 0.5, "s") + "</div>" + voiceHTML();
     }
     render();
     cur.input = function (el, done) {
+      if (voiceInput(el, done)) return;
       var k = el.dataset.k.replace(/^p-/, ""), v = +el.value;
       prefs[k] = v;
       $(el.id + "-v").textContent = fmt(v) + (el.dataset.u ? " " + el.dataset.u : "");
@@ -1175,6 +1306,7 @@ function detectPitch(buf, sampleRate) {
     };
     cur.click = function (b) {
       var s = b.dataset.sel, v = b.dataset.v;
+      if (voiceClick(b, render)) return;
       if (s === "inst") { prefs.instrument = v; Snd.ensure(); playMidi(midiOf(0, 7, 1), v, 0.8); }
       else if (s === "cadence") prefs.cadence = v === "1";
       else if (s === "unlockAll") prefs.unlockAll = v === "1";
@@ -1182,7 +1314,7 @@ function detectPitch(buf, sampleRate) {
       else return;
       persist(); render();
     };
-    cur.stop = function () { Snd.stopAll(); };
+    cur.stop = function () { Snd.stopAll(); Voice.cancel(); };
   }
 
   /* ---------- account sync (whole document, newest save wins) ---------- */
