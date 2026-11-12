@@ -5721,6 +5721,12 @@ if (LOCAL) {
     el.classList.remove('has-art'); el.classList.add('no-art');
     el.innerHTML = `<span>${esc(el.dataset.init || '')}</span>`;
   }, true);
+  // The Originals shelf lists Barline's charts: redraw when Barline changes them in another tab,
+  // or when the reader comes back from Barline with the Back button.
+  window.addEventListener('storage', e => {
+    if ((e.key === 'barline:charts:v1' || e.key === 'barline:folders:v1') && route === 'originals') render();
+  });
+  window.addEventListener('pageshow', e => { if (e.persisted && route === 'originals') render(); });
   window.addEventListener('online', () => { coverStop = 0; if (route === 'songs' || route.startsWith('song:')) render(); });
 }
 
@@ -6459,8 +6465,44 @@ function origCard(o) {
     ${origLede(o) ? `<p class="origlede">${origLede(o)}</p>` : ''}</button>`;
 }
 
+/* Originals made in Barline. Nate, 2026-11-11: "if I make a song via Barline that's added to the
+   originals folder, I want that put in the library as my original, and that's just one way to
+   make an original."
+
+   Barline is the next tool over in the same app, so its charts are in this browser's storage
+   too. Any chart in a Barline folder called "Originals" is listed here, read live — nothing is
+   copied, so there is one copy to edit and it is Barline's. The card opens the chart in Barline. */
+function barlineOriginals() {
+  if (!LOCAL) return [];
+  try {
+    const folders = JSON.parse(localStorage.getItem('barline:folders:v1') || '[]') || [];
+    const ids = new Set(folders.filter(f => f && /^(my )?originals?$/i.test(String(f.name || '').trim())).map(f => f.id));
+    if (!ids.size) return [];
+    const charts = JSON.parse(localStorage.getItem('barline:charts:v1') || '{}') || {};
+    return Object.values(charts).filter(c => c && c.id && ids.has(c.folderId))
+      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  } catch (e) { return []; }
+}
+function barlineCard(c) {
+  const secs = (c.sections || []).map(x => x && x.name).filter(Boolean);
+  const names = secs.filter((n, i) => secs.indexOf(n) === i);
+  const chords = [];
+  (c.sections || []).some(x => (x.bars || []).some(b => { (b.chords || []).forEach(ch => {
+    const t = typeof ch === 'string' ? ch : (ch && (ch.name || ch.text || ch.chord)) || '';
+    if (t && chords.length < 8) chords.push(String(t)); }); return chords.length >= 8; }));
+  const sig = c.top && c.bot && !(+c.top === 4 && +c.bot === 4) ? `${c.top}/${c.bot}` : '';
+  return `<a class="card origcard blcard" href="../barline/#c-${esc(c.id)}">
+    <div class="spread"><h3 class="origt">${esc(String(c.title || '').trim() || 'Untitled chart')}</h3>
+      <span class="origcount">Barline &rarr;</span></div>
+    <div class="origmeta"><span class="pill">Chart</span>
+      ${c.key ? `<span class="pill">${esc(c.key)}</span>` : ''}
+      ${c.bpm ? `<span class="pill">&#9833;=${esc(String(c.bpm))}</span>` : ''}
+      ${sig ? `<span class="pill">${esc(sig)}</span>` : ''}</div>
+    ${chords.length ? `<p class="origlede blchords">${chords.map(esc).join('&ensp;')}</p>`
+      : names.length ? `<p class="origlede">${names.map(esc).join(' · ')}</p>` : ''}</a>`;
+}
 function originalsView() {
-  const all = origAll(), un = origUnsynced();
+  const all = origAll(), un = origUnsynced(), bl = barlineOriginals();
   return `<div class="view">
     <div><p class="eyebrow">Library</p><h2 class="vh">Originals</h2>
       ${LOCAL ? `<p class="calnote" style="margin:4px 0 14px;max-width:74ch">Your idea board — song
@@ -6474,8 +6516,10 @@ function originalsView() {
       so expect a lag, and say the whole thought rather than half of it.
       Your own song projects are not here and are not shared.</p></div>`}
     <div class="spread" style="margin-bottom:14px">
-      <span class="pill">${all.length} idea${all.length === 1 ? '' : 's'}</span>
-      ${readonly ? '' : '<button class="btn btn-go" data-orig-add="1">+ New idea</button>'}</div>
+      <span class="pill">${LOCAL ? `${all.length + bl.length} original${all.length + bl.length === 1 ? '' : 's'}`
+        : `${all.length} idea${all.length === 1 ? '' : 's'}`}</span>
+      <span class="row" style="gap:8px">${LOCAL ? '<a class="btn btn-quiet" href="../barline/#new-original">+ New chart</a>' : ''}
+      ${readonly ? '' : '<button class="btn btn-go" data-orig-add="1">+ New idea</button>'}</span></div>
     ${addingIdea && !readonly ? `<div class="card extform origform">
       <div class="eyebrow">New idea</div>
       <div class="ef-grid">
@@ -6499,8 +6543,9 @@ function originalsView() {
       on this page ${un === 1 ? 'is' : 'are'} not in the vault yet. Run
       <code class="cmd">/school sync</code> to write ${un === 1 ? 'it' : 'them'} out — until then
       this page is the only copy, and nobody else can see ${un === 1 ? 'it' : 'them'}.</span></div>` : ''}
+    ${bl.map(barlineCard).join('')}
     ${all.length ? all.map(origCard).join('')
-      : `<div class="card origempty">Nothing on the board yet.
+      : bl.length ? '' : `<div class="card origempty">Nothing on the board yet.
          ${readonly ? 'Ideas added here show up once the page is rebuilt.'
                     : 'Start one — a chord loop, a title, a feeling, half a line. It does not have to be finished to be worth writing down.'}</div>`}
     ${/* The log, folded, under the cards. Deliberately NOT a rail tab: a log is what you consult
@@ -6629,7 +6674,7 @@ function drillsView(shelf) {
      thumbnails, then the reading — one flow, no headings; the chips still narrow it. The picture
      comes straight from YouTube; if it cannot load (offline) the tile falls back to its name. */
   const vtile = i => `<button class="vtile" data-goto="${esc(i.go)}">
-      <span class="vthumb"><img data-ytt="1" loading="lazy" alt="" src="${esc(i.pic)}"><span class="vplay" aria-hidden="true">&#9654;</span>${
+      <span class="vthumb"><img data-ytt="1" alt="" width="320" height="180" decoding="async" src="${esc(i.pic)}"><span class="vplay" aria-hidden="true">&#9654;</span>${
         i.meta ? `<span class="vdur">${i.meta}</span>` : ''}</span>
       <span class="vtile-t">${esc(i.title)}</span></button>`;
   const vids = shown.filter(i => i.kind === 'video' && i.pic);
@@ -7394,7 +7439,7 @@ if (LOCAL) {
   app.addEventListener('error', e => {
     const t = e.target;
     if (t && t.tagName === 'IMG' && t.dataset.yt) { const a = t.closest('.wthumb'); if (a) a.remove(); }
-    if (t && t.tagName === 'IMG' && t.dataset.ytt) { const a = t.closest('.vthumb'); if (a) a.classList.add('nopic'); t.remove(); }
+    if (t && t.tagName === 'IMG' && t.dataset.ytt) { const a = t.closest('.vthumb'); if (a) a.classList.add('nopic'); }
   }, true);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncSoon(800); });
   window.addEventListener('popstate', e => {

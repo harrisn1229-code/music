@@ -2308,7 +2308,23 @@
     if (state.navFromLib && state.screen === "chart"){ state.navFromLib = false; history.back(); }
     else { history.replaceState(null, "", location.pathname + location.search); route(); }
   }
+  // Library's Originals shelf lists the charts in the folder called "Originals", and its
+  // "New chart" button arrives here as #new-original: make the folder if there isn't one, start
+  // a chart in it, and open that chart (replacing this address, so Back does not make another).
+  const isOriginalsFolder = (f) => /^(my )?originals?$/i.test(String(f.name || "").trim());
+  function newOriginal(){
+    let f = folders.find(isOriginalsFolder);
+    if (!f){ f = cleanFolder({ id: uid(), name: "Originals" }); folders.push(f); saveFolders(); }
+    const c = blankChart();
+    c.folderId = f.id;
+    charts[c.id] = c;
+    saveNow();
+    prefs.view = "edit"; prefs.folder = f.id; savePrefs();
+    openChart(c.id, true);
+    setTimeout(() => { const t = $("fTitle"); if (t) t.focus(); }, 80);
+  }
   function route(){
+    if (location.hash === "#new-original"){ newOriginal(); return; }
     const m = /^#c-([A-Za-z0-9]+)$/.exec(location.hash);
     closeSheet();
     if (m && charts[m[1]]){
