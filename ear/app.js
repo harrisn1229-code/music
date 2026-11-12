@@ -5,6 +5,7 @@
      #/degrees                  levels      #/degrees/play/<path>/<n>    #/degrees/practice/<path>/<n>
      #/melodies                 setup       #/melodies/play/<difficulty>/<set>
      #/sing  #/hands-free  #/free
+     #/feelings                 the feeling of each degree      #/feelings/<degree>  (1 b2 2 b3 3 4 s4 5 b6 6 b7 7)
      #/custom                   builder     #/custom/play
      #/stats  #/settings
    Every exercise answers on the degree clock (12 degrees in circle-of-fifths order). The clock's
@@ -85,13 +86,31 @@ function detectPitch(buf, sampleRate) {
     master: { min: 4, max: 6, step: [0.4, 0.2, 0.4] }
   };
   var MEL_N = 10, SING_N = 10;
+  /* The feel of each degree, after Max Konyi's scale-degree ear training: [feeling, confused with (degrees), family].
+     These are only a starting vocabulary: each can be rewritten (kept in the progress document as `feelings`). */
+  var FEEL = {
+    0: ["Perfect, complete, whole, resolved, stable \u2014 the minimum-energy state", [], ""],
+    7: ["Pure, stable, consonant, smooth, but active \u2014 open, expansive, outward", [0, 5], "5 world"],
+    5: ["Neutral and pure like 5, but contractive, inward-curling, \"square\"", [0, 10], "5 world"],
+    4: ["Sweetness, warmth, glow, vitality \u2014 a whole extra dimension 5 doesn't have", [9, 11], "3 world"],
+    2: ["Clean, crystalline, placid, \"5 multiplied\" \u2014 sharper and more amped than 5", [7, 9], "5 world"],
+    9: ["3's warmth mixed with 4's neutrality \u2014 softer, more pastel and muted than 3", [2, 4], "3 world"],
+    11: ["Melancholy, bittersweet \u2014 the 5 feeling and the 3 feeling together, sharpened by the half step against the tonic", [4, 6], "3 world"],
+    6: ["One of the strongest, most energized states \u2014 bright, strange, \"alien\", spiky; the opposite of 1", [11, 1], ""],
+    10: ["Lightest of the minor-leaning degrees \u2014 powerful, playful, \"fun minor\", not dark", [5, 3], ""],
+    3: ["Defines minorness itself \u2014 dark, serious, gloomy; a bit of sorrow", [10, 8], ""],
+    8: ["More intense than \u266d3, less than \u266d2 \u2014 desperate, hopeless, no joy", [3, 1], ""],
+    1: ["The most extreme and dissonant \u2014 in-your-face, bitter, strongest tension", [8, 6], ""]
+  };
+  var FEEL_ORDER = [0, 7, 5, 4, 2, 9, 11, 6, 10, 3, 8, 1];
+  var SLUG = ["1", "b2", "2", "b3", "3", "4", "s4", "5", "b6", "6", "b7", "7"];
 
   /* ---------- storage ---------- */
   var lsGet = function (k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
   var lsSet = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var PREFS_KEY = "ear:prefs:v1", PROG_KEY = "ear:progress:v1";
   var DEFAULTS = { droneVol: 60, noteVol: 80, instrument: "piano", cadence: true, keyEvery: 5, count: 20, labels: "num", unlockAll: false,
-    tempo: 45, pause: 2, hfRepeat: 2, hfWait: 3, hfReplay: 1, hfGap: 3,
+    tempo: 45, pause: 2, hfRepeat: 2, hfWait: 3, hfReplay: 1, hfGap: 3, showFeel: true,
     voice: "", voiceName: "", vSpeed: 0.8, vPitch: 0.9, vVol: 55, vStyle: "gentle" };
   var num = function (v, lo, hi, d) { v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   function cleanPrefs(p) {
@@ -100,7 +119,7 @@ function detectPitch(buf, sampleRate) {
       droneVol: num(p.droneVol, 0, 100, DEFAULTS.droneVol), noteVol: num(p.noteVol, 0, 100, DEFAULTS.noteVol),
       instrument: ["piano", "flute", "pluck"].indexOf(p.instrument) >= 0 ? p.instrument : "piano",
       cadence: p.cadence !== false, keyEvery: Math.round(num(p.keyEvery, 1, 50, 5)), count: Math.round(num(p.count, 5, 100, 20)),
-      labels: p.labels === "sol" ? "sol" : "num", unlockAll: p.unlockAll === true,
+      labels: p.labels === "sol" ? "sol" : "num", unlockAll: p.unlockAll === true, showFeel: p.showFeel !== false,
       tempo: Math.round(num(p.tempo, 20, 120, DEFAULTS.tempo) / 5) * 5, pause: Math.round(num(p.pause, 0.5, 6, DEFAULTS.pause) * 2) / 2,
       hfRepeat: Math.round(num(p.hfRepeat, 1, 5, DEFAULTS.hfRepeat)), hfWait: Math.round(num(p.hfWait, 0, 10, DEFAULTS.hfWait) * 2) / 2,
       hfReplay: Math.round(num(p.hfReplay, 0, 4, DEFAULTS.hfReplay)), hfGap: Math.round(num(p.hfGap, 1, 10, DEFAULTS.hfGap) * 2) / 2,
@@ -111,7 +130,7 @@ function detectPitch(buf, sampleRate) {
   }
   function cleanProg(p) {
     p = p && typeof p === "object" ? p : {};
-    var out = { savedAt: Number(p.savedAt) || 0, unlocked: { major: 1, minor: 1, chromatic: 1 }, best: {}, tot: {}, conf: {}, log: [], rounds: 0, days: [], presets: [], lastPath: "major", sel: {} };
+    var out = { savedAt: Number(p.savedAt) || 0, unlocked: { major: 1, minor: 1, chromatic: 1 }, best: {}, tot: {}, conf: {}, log: [], rounds: 0, days: [], presets: [], lastPath: "major", sel: {}, feelings: {} };
     Object.keys(PATHS).forEach(function (k) { out.unlocked[k] = Math.round(num(p.unlocked && p.unlocked[k], 1, PATHS[k].length, 1)); });
     if (p.best && typeof p.best === "object") Object.keys(p.best).forEach(function (k) { out.best[k] = num(p.best[k], 0, 100, 0); });
     if (p.tot && typeof p.tot === "object") Object.keys(p.tot).forEach(function (k) { var v = p.tot[k]; if (Array.isArray(v) && DEG[k]) out.tot[k] = [Math.max(0, v[0] | 0), Math.max(0, v[1] | 0)]; });
@@ -122,6 +141,10 @@ function detectPitch(buf, sampleRate) {
     if (Array.isArray(p.presets)) out.presets = p.presets.filter(function (x) { return x && x.id && x.name && x.cfg; }).slice(0, 50);
     out.lastPath = PATHS[p.lastPath] ? p.lastPath : "major";
     out.sel = p.sel && typeof p.sel === "object" ? p.sel : {};
+    if (p.feelings && typeof p.feelings === "object") Object.keys(p.feelings).forEach(function (k) {
+      var v = p.feelings[k];
+      if (/^(\d|1[01])$/.test(k) && typeof v === "string" && v.trim()) out.feelings[k] = v.replace(/\s+/g, " ").trim().slice(0, 200);
+    });
     return out;
   }
   var prefs = cleanPrefs(lsGet(PREFS_KEY));
@@ -150,6 +173,7 @@ function detectPitch(buf, sampleRate) {
     return n;
   }
   var lab = function (i) { return prefs.labels === "sol" ? DEG[i][1] : DEG[i][0]; };
+  var feelOf = function (d) { return prog.feelings[d] || FEEL[d][0]; };
   var unlockedCount = function (path) { return prefs.unlockAll ? PATHS[path].length : prog.unlocked[path]; };
 
   /* ---------- sound ---------- */
@@ -620,7 +644,7 @@ function detectPitch(buf, sampleRate) {
     if (page === "custom" && p[1]) parent = "#/custom";
     if (!page) setNav("../", ICON.home, "Music home, all apps"); else setNav(parent, ICON.back, "Back");
     ["stats", "settings"].forEach(function (k) { var a = $("b-" + k); if (a) { if (page === k) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); } });
-    document.title = (page ? ({ degrees: "Degrees", melodies: "Melodies", sing: "Sing", "hands-free": "Hands-free", free: "Free play", custom: "Custom", stats: "Stats", settings: "Settings" }[page] || "") + " – " : "") + "Ear Training";
+    document.title = (page ? ({ degrees: "Degrees", melodies: "Melodies", sing: "Sing", "hands-free": "Hands-free", free: "Free play", feelings: "Feelings", custom: "Custom", stats: "Stats", settings: "Settings" }[page] || "") + " – " : "") + "Ear Training";
     if (page === "degrees" && p[1] === "play" && PATHS[p[2]] && PATHS[p[2]][+p[3]]) return degreesPlay(p[2], +p[3], false);
     if (page === "degrees" && p[1] === "practice" && PATHS[p[2]] && PATHS[p[2]][+p[3]]) return degreesPlay(p[2], +p[3], true);
     if (page === "degrees") return levelsView();
@@ -629,6 +653,7 @@ function detectPitch(buf, sampleRate) {
     if (page === "sing") return singView();
     if (page === "hands-free") return handsFree();
     if (page === "free") return freePlay();
+    if (page === "feelings") return feelingsView(p[1]);
     if (page === "custom" && p[1] === "play") return customPlay();
     if (page === "custom") return customView();
     if (page === "stats") return statsView();
@@ -643,9 +668,10 @@ function detectPitch(buf, sampleRate) {
     sing: G('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.500 11.500a6.500 6.500 0 0 0 13 0M12 18v3"/>'),
     "hands-free": G('<path d="M4 16v-3.500a8 8 0 0 1 16 0V16"/><rect x="3" y="14" width="4" height="6" rx="1.800"/><rect x="17" y="14" width="4" height="6" rx="1.800"/>'),
     free: G('<path d="M6 17.500v-6M12 17.500v-12M18 17.500v-8"/>'),
+    feelings: G('<path d="M5 4.500h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.500 3.500V16.500H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><path d="M7.500 10.500c1.300-2.200 2.700-2.200 4 0s2.700 2.200 4 0"/>'),
     custom: G('<rect x="4" y="4" width="16" height="16" rx="4.500"/><path d="M12 8.500v7M8.500 12h7"/>')
   };
-  var TILES = [["degrees", "Degrees", 0], ["melodies", "Melodies", 4], ["sing", "Sing", 7], ["hands-free", "Hands-free", 11], ["free", "Free play", 5], ["custom", "Custom", 9]];
+  var TILES = [["degrees", "Degrees", 0], ["melodies", "Melodies", 4], ["sing", "Sing", 7], ["hands-free", "Hands-free", 11], ["free", "Free play", 5], ["feelings", "Feelings", 2], ["custom", "Custom", 9]];
   function frontView() {
     var hint = {
       degrees: '<span class="figs">' + [["major", 4, false], ["minor", 3, true], ["chromatic", 6, true]].map(function (x) {
@@ -676,6 +702,10 @@ function detectPitch(buf, sampleRate) {
     if (document.hidden) { if (cur.hidden) cur.hidden(); Snd.hush(); }
   });
   window.addEventListener("pagehide", function () { Snd.hush(); });
+
+  /* The quiet line under the clock that says how a revealed degree feels (Settings: Show feelings). */
+  var feelLineHTML = function () { return prefs.showFeel ? '<p class="feel-line" id="feel-line"></p>' : ""; };
+  function feelLine(d) { var el = $("feel-line"); if (el) el.textContent = d === null ? "" : feelOf(d); }
 
   var startStage = function () { return '<div class="stage">' + clockHTML({ on: [], tap: false, centre: centreBtn("begin", ICON.play, "Start") }) + "</div>"; };
   var statusRow = function (ids) { return '<div class="status">' + ids.map(function (x) { return x === "-" ? '<span class="grow"></span>' : '<span class="pill" id="' + x + '"></span>'; }).join("") + "</div>"; };
@@ -735,7 +765,7 @@ function detectPitch(buf, sampleRate) {
       view.innerHTML =
         statusRow(cfg.practice ? ["s-k"] : ["s-n", "s-k", "-", "s-sc"]) +
         (cfg.practice ? "" : '<div class="prog"><i id="s-bar"></i></div>') +
-        clockHTML({ on: cfg.set, centre: centreBtn("centre", ICON.play, "Play") }) +
+        clockHTML({ on: cfg.set, centre: centreBtn("centre", ICON.play, "Play") }) + (cfg.practice ? feelLineHTML() : "") +
         pillRow(qbtn("note", "Note", ICON.snd) + qbtn("cad", "Key") + (cfg.practice ? qbtn("one", "One") : ""));
       status();
     }
@@ -756,7 +786,7 @@ function detectPitch(buf, sampleRate) {
     // Before the answer the clock is never told which degree it is; after, the same note is revealed.
     function sound() { playMidi(midi, cfg.instrument, noteDur(), answered ? { deg: asked, kind: "reveal" } : { kind: "question" }); }
     function newQuestion() {
-      Clk.clear(); Clk.centre(ICON.play); answered = false; asked = pickDeg();
+      Clk.clear(); Clk.centre(ICON.play); feelLine(null); answered = false; asked = pickDeg();
       midi = midiOf(pc, asked, cfg.oct === 2 ? rnd(2) : 1);
       T.expected = [asked]; T.phase = "ask";
     }
@@ -779,9 +809,9 @@ function detectPitch(buf, sampleRate) {
       var right = d === asked;
       T.vis.push({ kind: right ? "ok" : "bad", d: [d], at: Snd.now() });
       if (right) { Clk.ok(d); score++; } else { Clk.bad(d); }
-      Clk.centre(bigDeg(asked)); status(); T.phase = right ? "right" : "wrong";
+      Clk.centre(bigDeg(asked)); if (cfg.practice) feelLine(asked); status(); T.phase = right ? "right" : "wrong";
       if (!right) setTimeout(function () { if (live()) { Clk.hint(asked); sound(); } }, 450 * TS);
-      if (cfg.practice) { setTimeout(function () { if (live()) { mode = "explore"; Clk.clear(); Clk.centre(ICON.play); T.phase = "practice"; } }, ((right ? 0 : 0.45 + noteDur()) + prefs.pause) * 1000 * TS); return; }
+      if (cfg.practice) { setTimeout(function () { if (live()) { mode = "explore"; Clk.clear(); Clk.centre(ICON.play); feelLine(null); T.phase = "practice"; } }, ((right ? 0 : 0.45 + noteDur()) + prefs.pause) * 1000 * TS); return; }
       results.push([asked, d]);
       setTimeout(next, ((right ? 0 : 0.45 + noteDur()) + prefs.pause) * 1000 * TS);
     }
@@ -816,7 +846,7 @@ function detectPitch(buf, sampleRate) {
       if (!started) return;
       if (b.dataset.d !== undefined) {
         var d = +b.dataset.d;
-        if (cfg.practice && mode === "explore") { playMidi(midiOf(pc, d, cfg.oct === 2 ? rnd(2) : 1), cfg.instrument, noteDur(), { deg: d, kind: "reveal" }); T.expected = [d]; Clk.centre(bigDeg(d)); return; }
+        if (cfg.practice && mode === "explore") { playMidi(midiOf(pc, d, cfg.oct === 2 ? rnd(2) : 1), cfg.instrument, noteDur(), { deg: d, kind: "reveal" }); T.expected = [d]; Clk.centre(bigDeg(d)); feelLine(d); return; }
         return answer(d);
       }
       if (a === "centre") { if (cfg.practice && mode === "explore") return askOne(); a = "note"; }
@@ -1049,6 +1079,113 @@ function detectPitch(buf, sampleRate) {
     cur.stop = function () { Snd.stopAll(); };
   }
 
+  /* ---------- Feelings: how each degree feels, in words you can rewrite ---------- */
+  function feelingsView(arg) {
+    var slug = "";
+    try { slug = decodeURIComponent(arg || ""); } catch (e) {}
+    slug = slug.toLowerCase().replace(/♭/g, "b").replace(/♯/g, "s");
+    var sel = Math.max(0, SLUG.indexOf(slug));
+    var pc = prog.sel.freeKey >= 0 && prog.sel.freeKey < 12 ? prog.sel.freeKey : 0, droneOn = true, keysOpen = false, editing = false;
+    var nm = function (d) { return DEG[d][2]; };
+    var keyLabel = function () { return "Key " + KEYNAMES[pc]; };
+    function cardHTML() {
+      var d = sel, f = FEEL[d], edited = !!prog.feelings[d], cf = f[1];
+      var h = '<div class="fl-head">' + dm(d, "lg") + '<span class="fl-name">' + nm(d) + "</span>" + (f[2] ? '<span class="fl-fam">' + f[2] + "</span>" : "") + "</div>";
+      if (editing) {
+        return h + '<textarea class="fl-ta" id="fl-ta" rows="4" maxlength="200" aria-label="Feeling words for ' + nm(d) + '">' + esc(feelOf(d)) + "</textarea>" +
+          '<div class="btns"><button type="button" class="btn" data-a="save">Save</button><button type="button" class="btn quiet" data-a="cancel">Cancel</button><button type="button" class="btn quiet" data-a="reset">Reset</button></div>';
+      }
+      h += '<p class="fl-text" id="fl-text">' + esc(feelOf(d)) + "</p>";
+      h += '<div class="fl-cf"><span class="lbl">Confused with</span>' + (cf.length ? cf.map(function (x) {
+        return '<button type="button" class="chip fl-chip" data-a="play" data-id="' + x + '" aria-label="' + nm(x) + '">' + dm(x) + "</button>";
+      }).join("") : '<span class="fl-none" aria-label="nothing">—</span>') + "</div>";
+      h += '<div class="btns"><button type="button" class="btn" data-a="hear">' + ICON.snd + "Hear</button>" +
+        (cf.length ? '<button type="button" class="btn quiet" data-a="compare">Compare</button>' : "") +
+        '<button type="button" class="btn quiet" data-a="edit">Edit</button>' + (edited ? '<button type="button" class="btn quiet" data-a="reset">Reset</button>' : "") + "</div>";
+      return h;
+    }
+    function listHTML() {
+      return FEEL_ORDER.map(function (d) {
+        return '<li><button type="button" class="fl-row" data-a="pick" data-id="' + d + '" aria-label="' + nm(d) + ": " + esc(feelOf(d)) + '"' + (d === sel ? ' aria-current="true"' : "") + ">" +
+          dm(d) + '<span class="fl-rt">' + esc(feelOf(d)) + "</span></button></li>";
+      }).join("");
+    }
+    view.innerHTML = clockHTML({ centre: centreBtn("hear", bigDeg(sel), "Hear " + nm(sel)) }) +
+      pillRow('<button type="button" class="chip" data-a="keys" id="fl-keybtn" aria-expanded="false" aria-controls="fl-keys">' + keyLabel() + '</button><button type="button" class="chip" data-a="drone" id="fl-dr" aria-pressed="true">Drone</button>') +
+      '<div class="card" id="fl-keys" hidden>' + keyChips(pc, "data-key") + "</div>" +
+      '<section class="card fl-card" id="fl-card" aria-label="Selected degree"></section><ul class="fl-list" id="fl-list"></ul>' +
+      '<p class="fl-credit">Feeling words after Max Konyi</p>';
+    var drawCard = function () { $("fl-card").innerHTML = cardHTML(); };
+    var drawList = function () { $("fl-list").innerHTML = listHTML(); };
+    drawCard(); drawList(); Clk.target(sel); T.feel = sel; T.expected = [sel];
+
+    function startDrone() { if (!droneOn) return; Snd.ensure(); Snd.startDrone(pc); T.key = pc; T.keyName = KEYNAMES[pc]; }
+    function ready() { Snd.ensure(); if (droneOn && !Snd.droneOn()) startDrone(); }
+    function hearDeg(d) {
+      ready(); Snd.stopNotes(); T.expected = [d];
+      playMidi(midiOf(pc, d, 1), prefs.instrument, noteDur() + 0.4, { deg: d, kind: "reveal" });
+    }
+    function compare() {
+      var ids = [sel].concat(FEEL[sel][1]), beat = beatSec();
+      ready(); Snd.stopNotes();
+      var base = Snd.now() + 0.1, mids = ids.map(function (d) { return midiOf(pc, d, 1); });
+      mids.forEach(function (m, k) {
+        T.notes.push(m); Snd.note(m, base + k * beat, Math.min(3, beat * 0.95), 0.5, prefs.instrument);
+        show([ids[k]], base + k * beat, "reveal", beat * 1000);
+      });
+      if (T.notes.length > 40) T.notes.splice(0, T.notes.length - 40);
+      T.last = mids; T.played++; T.expected = ids;
+    }
+    function select(d, scroll) {
+      editing = false; sel = d; T.feel = d; T.expected = [d];
+      drawCard(); Clk.target(d); Clk.centre(bigDeg(d));
+      var c = view.querySelector(".cl-centre"); if (c) c.setAttribute("aria-label", "Hear " + nm(d));
+      view.querySelectorAll(".fl-row").forEach(function (r) { if (+r.dataset.id === d) r.setAttribute("aria-current", "true"); else r.removeAttribute("aria-current"); });
+      try { history.replaceState(null, "", "#/feelings/" + SLUG[d]); } catch (e) {}
+      if (scroll) { try { $("fl-card").scrollIntoView({ block: "start", behavior: reduced() ? "auto" : "smooth" }); } catch (e) {} }
+    }
+    function setFeel(d, txt) {
+      txt = String(txt || "").replace(/\s+/g, " ").trim().slice(0, 200);
+      if (!txt || txt === FEEL[d][0]) delete prog.feelings[d]; else prog.feelings[d] = txt;
+      persist();
+    }
+    function edit() {
+      editing = true; drawCard();
+      var ta = $("fl-ta");
+      if (ta) {
+        ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+        ta.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); editing = false; drawCard(); var b = view.querySelector('[data-a="edit"]'); if (b) b.focus(); } });
+      }
+    }
+    cur.stop = function () { Snd.stopAll(); };
+    cur.click = function (b) {
+      var a = b.dataset.a;
+      if (b.dataset.key !== undefined) {
+        pc = +b.dataset.key; prog.sel.freeKey = pc; persist();
+        view.querySelectorAll("[data-key]").forEach(function (k) { k.setAttribute("aria-checked", String(+k.dataset.key === pc)); });
+        $("fl-keybtn").textContent = keyLabel(); T.key = pc; T.keyName = KEYNAMES[pc];
+        if (droneOn && Snd.droneOn()) startDrone();
+        return;
+      }
+      if (b.dataset.d !== undefined) { select(+b.dataset.d, false); hearDeg(sel); return; }
+      if (a === "keys") { keysOpen = !keysOpen; $("fl-keys").hidden = !keysOpen; b.setAttribute("aria-expanded", String(keysOpen)); return; }
+      if (a === "drone") {
+        droneOn = !droneOn; b.setAttribute("aria-pressed", String(droneOn));
+        if (droneOn) { Snd.ensure(); startDrone(); } else { Snd.stopAll(); T.drone = false; }
+        return;
+      }
+      if (a === "pick") return select(+b.dataset.id, true);
+      if (a === "hear") return hearDeg(sel);
+      if (a === "play") return hearDeg(+b.dataset.id);
+      if (a === "compare") return compare();
+      if (a === "edit") return edit();
+      if (a === "cancel") { editing = false; drawCard(); var eb = view.querySelector('[data-a="edit"]'); if (eb) eb.focus(); return; }
+      if (a === "save") { setFeel(sel, $("fl-ta").value); editing = false; drawCard(); drawList(); return; }
+      if (a === "reset") { setFeel(sel, ""); editing = false; drawCard(); drawList(); return; }
+    };
+    window.scrollTo(0, 0);
+  }
+
   /* ---------- Hands-free ---------- */
   function handsFree() {
     var s = prog.sel, setName = ["major", "minor", "chromatic", "custom"].indexOf(s.hfSet) >= 0 ? s.hfSet : "major", mins = [2, 5, 10].indexOf(s.hfMin) >= 0 ? s.hfMin : 5;
@@ -1074,7 +1211,7 @@ function detectPitch(buf, sampleRate) {
       Voice.prime();
       try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (w) { wake = w; T.wake = true; if (!running) { try { w.release(); } catch (e) {} } }, function () {}); } catch (e) {}
       view.innerHTML = statusRow(["h-k", "h-d", "-", "h-n"]) +
-        clockHTML({ on: set, tap: false, centre: centreBtn("stop", ICON.stop, "Stop") });
+        clockHTML({ on: set, tap: false, centre: centreBtn("stop", ICON.stop, "Stop") }) + feelLineHTML();
       $("h-d").textContent = "?"; $("h-n").textContent = "0"; $("h-k").textContent = "Key";
       var beat = function () { return beatSec() * 1000; };
       T.events = [];
@@ -1085,7 +1222,7 @@ function detectPitch(buf, sampleRate) {
           await Snd.keyChange(pc, prefs.cadence, minor); if (!live()) return; keyAt = Date.now();
         }
         var d; do { d = pick(set); } while (set.length > 1 && d === last); last = d;
-        var m = midiOf(pc, d, rnd(2)); T.expected = [d]; T.phase = "listen"; Clk.clear();
+        var m = midiOf(pc, d, rnd(2)); T.expected = [d]; T.phase = "listen"; Clk.clear(); feelLine(null);
         if ($("h-d")) $("h-d").textContent = "?";
         for (var r = 0; r < prefs.hfRepeat; r++) {                    // the question, as many times as asked
           playMidi(m, prefs.instrument, noteDur(), { kind: "question" }); T.events.push("ask");
@@ -1094,7 +1231,7 @@ function detectPitch(buf, sampleRate) {
         await sleep(beat() + prefs.hfWait * 1000); if (!live()) return;   // the last note's beat, then time to answer
         T.phase = "answer";
         if ($("h-d")) $("h-d").innerHTML = dm(d);
-        T.events.push("speak"); show([d], Snd.now(), "reveal", 1400);
+        T.events.push("speak"); show([d], Snd.now(), "reveal", 1400); feelLine(d);
         if (prefs.vStyle === "gentle") { await sleep(300); if (!live()) return; }   // a breath after the note, before the word
         await Voice.say(DEG[d][2]); if (!live()) return;
         for (var q = 0; q < prefs.hfReplay; q++) {                    // then the note again, now with its name
@@ -1290,7 +1427,7 @@ function detectPitch(buf, sampleRate) {
         slider("p-tempo", "Tempo", prefs.tempo, 20, 120, 5, "") + slider("p-pause", "Pause", prefs.pause, 0.5, 6, 0.5, "s") + "</div>" +
         '<h3 class="sec">Round</h3><div class="card">' +
         slider("p-keyEvery", "Key changes every", prefs.keyEvery, 1, 50, 1, "") + slider("p-count", "Questions", prefs.count, 5, 100, 5, "") +
-        field("Labels", seg([["num", "1 ♭2 2"], ["sol", "do ra re"]], 'data-sel="labels"', prefs.labels, "Labels")) + field("Unlock all levels", onoff("unlockAll", prefs.unlockAll)) + "</div>" +
+        field("Labels", seg([["num", "1 ♭2 2"], ["sol", "do ra re"]], 'data-sel="labels"', prefs.labels, "Labels")) + field("Show feelings", onoff("showFeel", prefs.showFeel)) + field("Unlock all levels", onoff("unlockAll", prefs.unlockAll)) + "</div>" +
         '<h3 class="sec">Hands-free</h3><div class="card">' +
         slider("p-hfRepeat", "Repeat", prefs.hfRepeat, 1, 5, 1, "") + slider("p-hfWait", "Wait", prefs.hfWait, 0, 10, 0.5, "s") +
         slider("p-hfReplay", "Replay", prefs.hfReplay, 0, 4, 1, "") + slider("p-hfGap", "Gap", prefs.hfGap, 1, 10, 0.5, "s") + "</div>" + voiceHTML();
@@ -1310,6 +1447,7 @@ function detectPitch(buf, sampleRate) {
       if (s === "inst") { prefs.instrument = v; Snd.ensure(); playMidi(midiOf(0, 7, 1), v, 0.8); }
       else if (s === "cadence") prefs.cadence = v === "1";
       else if (s === "unlockAll") prefs.unlockAll = v === "1";
+      else if (s === "showFeel") prefs.showFeel = v === "1";
       else if (s === "labels") prefs.labels = v;
       else return;
       persist(); render();
@@ -1338,7 +1476,7 @@ function detectPitch(buf, sampleRate) {
         prefs = cleanPrefs(remote.prefs); prog = cleanProg(remote.progress); prog.savedAt = rAt;
         lsSet(PREFS_KEY, prefs); lsSet(PROG_KEY, prog);
         var scr = T.screen.split("/")[0];
-        if (["front", "stats", "settings", "degrees", "custom", "melodies"].indexOf(scr) >= 0 && T.screen.indexOf("play") < 0) route();
+        if (["front", "stats", "settings", "degrees", "custom", "melodies", "feelings"].indexOf(scr) >= 0 && T.screen.indexOf("play") < 0 && !$("fl-ta")) route();
       } else if (!remote || lAt > rAt) {
         await c.save("ear", { app: "ear", version: 1, savedAt: lAt, prefs: prefs, progress: prog });
       }
