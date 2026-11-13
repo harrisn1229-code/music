@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Circle of Fifths</title>
+<meta name="description" content="The circle of fifths: keys, signatures, scales, chords and progressions. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Circle of Fifths is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
+    <svg class="logo" aria-hidden="true" viewBox="0 0 512 512"><rect width="512" height="512" rx="114" fill="#5B3FA8"/><circle cx="256" cy="256" r="150" fill="none" stroke="#fff" stroke-width="10" opacity=".25"/><circle cx="256.0" cy="106.0" r="38" fill="#F5A93B"/><circle cx="331.0" cy="126.1" r="25" fill="#fff"/><circle cx="385.9" cy="181.0" r="25" fill="#fff" opacity=".7"/><circle cx="406.0" cy="256.0" r="25" fill="#fff" opacity=".7"/><circle cx="385.9" cy="331.0" r="25" fill="#fff" opacity=".7"/><circle cx="331.0" cy="385.9" r="25" fill="#fff" opacity=".7"/><circle cx="256.0" cy="406.0" r="25" fill="#fff" opacity=".7"/><circle cx="181.0" cy="385.9" r="25" fill="#fff" opacity=".7"/><circle cx="126.1" cy="331.0" r="25" fill="#fff" opacity=".7"/><circle cx="106.0" cy="256.0" r="25" fill="#fff" opacity=".7"/><circle cx="126.1" cy="181.0" r="25" fill="#fff" opacity=".7"/><circle cx="181.0" cy="126.1" r="25" fill="#fff"/></svg>
+    <h1 class="brand"><span class="b-long">Circle of Fifths</span><span class="b-short">Circle</span></h1>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="layout">
+    <section class="circle-col" aria-label="Circle of fifths">
+      <div class="circle-box"><svg id="circle" class="circle" viewBox="0 0 360 360" role="group" aria-label="Circle of fifths"></svg></div>
+      <div class="opts">
+        <button class="chip" id="rot" type="button" aria-pressed="false">Rotate</button>
+      </div>
+    </section>
+    <div class="cards" id="cards"></div>
+  </div>
+</main>
+<noscript><p class="wrap">Circle of Fifths needs JavaScript turned on.</p></noscript>
+
+<script src="../shared/theory.js"></script>
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  /* ---------- assistant ---------- */
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "circle", button: document.getElementById("ai-btn"),
+    context: function () { return window.__circleContext ? window.__circleContext() : "In Circle of Fifths."; }
+  });
+
+  /* ---------- offline: Music's shared service worker, one folder up ---------- */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
