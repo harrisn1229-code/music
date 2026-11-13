@@ -87,6 +87,7 @@
       deg: i, qid: qid, rpc: rpc,
       name: rootName(root) + SUFFIX[qid],
       notes: tones.map(function (t) { return spell(root, t[0], t[1]); }),
+      ncls: tones.map(function (t) { return ["d-r", "d-n", "d-3", "d-n", "d-5", "d-n", "d-7"][t[0]] || "d-n"; }),
       midis: tones.map(function (t) { return rootMidi + t[1]; }),
       numeral: (LOWER[qid] ? rn.toLowerCase() : rn) + NUM_SUFFIX[qid]
     };
@@ -108,7 +109,7 @@
       ? [["maj", p], ["min", P(p - 1)], ["min", P(p + 1)], ["maj", P(p - 1)], ["maj", P(p + 1)], ["min", p], ["min", P(p + 2)]]
       : [["min", p], ["min", P(p + 2)], ["maj", p], ["min", P(p - 1)], ["min", P(p + 1)], ["maj", P(p - 1)], ["maj", P(p + 1)]];
   }
-  var DEGCLS = ["d-r", "d-n", "d-3", "d-n", "d-5", "d-n", "d-7"];   // colour of the degree the chord's root is on
+  var DEGCLS = ["d-r", "d-n", "d-3", "d-4", "d-5", "d-6", "d-7"];   // colour of the degree the chord's root is on
 
   var PROGS = {
     major: [
@@ -373,7 +374,7 @@
     return '<section class="card" aria-label="Chords"><div class="card-head"><h2>Chords</h2>' +
       '<div class="seg-c" role="radiogroup" aria-label="Triads or sevenths"><button type="button" role="radio" data-sev="0" aria-checked="' + !st.sev + '">Triads</button><button type="button" role="radio" data-sev="1" aria-checked="' + st.sev + '">7ths</button></div></div>' +
       '<div class="tiles" id="tiles">' + cs.map(function (c, i) {
-        return '<div class="ct" data-deg="' + i + '"><button class="ct-main" type="button" data-chord="' + i + '" aria-label="Play ' + esc(c.name) + '"><span class="ct-n">' + esc(c.numeral) + '</span><span class="ct-c">' + esc(c.name) + '</span><span class="ct-s">' + esc(c.notes.join(" ")) + "</span></button>" +
+        return '<div class="ct ' + DEGCLS[c.deg] + '" data-deg="' + i + '"><button class="ct-main" type="button" data-chord="' + i + '" aria-label="Play ' + esc(c.name) + '"><span class="ct-n">' + esc(c.numeral) + '</span><span class="ct-c">' + esc(c.name) + '</span><span class="ct-s">' + c.notes.map(function (n, k) { return '<span class="nt ' + c.ncls[k] + '">' + esc(n) + "</span>"; }).join(" ") + "</span></button>" +
           '<a class="ct-lib" href="' + lib("chord/" + c.rpc + "/" + c.qid) + '" aria-label="' + esc(c.name) + ' in Library">' + ARROW + "</a></div>";
       }).join("") + "</div></section>";
   }

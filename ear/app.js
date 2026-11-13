@@ -75,9 +75,9 @@ function detectPitch(buf, sampleRate) {
   };
   var PATH_NAMES = { major: "Major", minor: "Minor", chromatic: "Chromatic" };
   var SETS = { major: MAJ, minor: MIN, chromatic: ALL };
-  /* Degree colours: 1 / 3 / 5 / 7 are Library's root orange, blue, green and red (its dark set).
+  /* Degree colours: 1 / 3 / 5 follow Library's dark set (orange, blue, green); 7 is its pink, 6 its purple and 4 is filled white. 2 stays yellow.
      The altered degrees are a ring of the hue they alter. Order is by semitone, 0..11. */
-  var DCOL = ["#FF9F4A", "#C98A2B", "#F2CB4B", "#6E7FF5", "#71A5FF", "#3FC8D0", "#E24DB8", "#52CC88", "#B35FC4", "#B58CFF", "#E8455F", "#FF7070"];
+  var DCOL = ["#FF9F4A", "#C98A2B", "#F2CB4B", "#6E7FF5", "#71A5FF", "#F1F2F8", "#8FD3E0", "#52CC88", "#9A55E8", "#B58CFF", "#D93A76", "#FF7AA8"];
   var DRING = [false, true, false, true, false, false, true, false, true, false, true, false];
   var CLOCK_ORDER = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];     // 1 5 2 6 3 7 #4 b2 b6 b3 b7 4, clockwise from the top
   var DIFF = {

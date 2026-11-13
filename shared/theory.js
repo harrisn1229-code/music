@@ -24,10 +24,11 @@ function spell(root, steps, semis) {
 }
 const rootName = root => LETTERS[root.l] + acc(root.a);
 const degLabel = (steps, semis) => acc(semis - MAJOR[steps]) + (steps + 1);
-// Color family of a degree label: root orange, 3rd blue, 5th green, 7th red, everything else neutral.
+// Color family of a degree label: root orange, 3rd blue, 5th green, 7th pink, 6th purple, 4th white, 2nd/9th and the rest neutral.
 const degClass = deg => {
   const d = String(deg).replace(/[♭♯]/g, '');
-  return (d === 'R' || d === '1' || d === '8') ? 'd-r' : d === '3' ? 'd-3' : d === '5' ? 'd-5' : d === '7' ? 'd-7' : 'd-n';
+  return (d === 'R' || d === '1' || d === '8') ? 'd-r' : d === '3' ? 'd-3' : d === '5' ? 'd-5' : d === '7' ? 'd-7'
+       : (d === '6' || d === '13') ? 'd-6' : (d === '4' || d === '11') ? 'd-4' : 'd-n';
 };
 
 function intervalName(steps, semis) {

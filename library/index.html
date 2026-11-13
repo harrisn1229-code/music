@@ -23,7 +23,7 @@
    mode and chord in it is listed with its notes; open one for the piano, the
    guitar neck, the arpeggio and every inversion and voicing.
    The page stays neutral grey so the degree colors carry the meaning:
-   root orange, 3rd blue, 5th green, 7th red (the same code Note Cards uses). */
+   root orange, 3rd blue, 5th green, 7th pink, 6th purple, 4th white (the same code Note Cards uses). */
 :root{
   --bg:#F2F3F6; --surface:#FFFFFF; --surface-2:#F0F1F5; --surface-3:#E3E6EE;
   --text:#14171F; --muted:#5F6675; --line:#E3E6EC;
@@ -31,7 +31,9 @@
   --d-r:#F08A24; --d-r-text:#1F1305;
   --d-3:#2F6BDB; --d-3-text:#FFFFFF;
   --d-5:#1F8F4E; --d-5-text:#FFFFFF;
-  --d-7:#D93636; --d-7-text:#FFFFFF;
+  --d-7:#D6336C; --d-7-text:#FFFFFF;
+  --d-6:#7C4DDB; --d-6-text:#FFFFFF;
+  --d-4:#FFFFFF; --d-4-text:#14171F; --d-4-edge:#B9BECC;
   --d-nk:#BAC1D1; --dot-edge:rgb(20 24 40 / .22);
   --mark:#FFFFFF; --mark-edge:#14161B;
   --key-w:#FFFFFF; --key-b:#1E2128; --key-edge:#B7BECB; --fretline:#9AA2B1;
@@ -50,7 +52,7 @@
     --d-r:#FF9F4A; --d-r-text:#1F1305;
     --d-3:#71A5FF; --d-3-text:#0C1426;
     --d-5:#52CC88; --d-5-text:#0A1B12;
-    --d-7:#FF7070; --d-7-text:#240A0A;
+    --d-7:#FF7AA8; --d-7-text:#2A0A16; --d-6:#B58CFF; --d-6-text:#140A2A; --d-4:#F1F2F8; --d-4-text:#14151C; --d-4-edge:#F1F2F8;
     --d-nk:#78829A; --dot-edge:rgb(0 0 0 / .4);
     --mark:#FFFFFF; --mark-edge:#0B0C0F;
     --key-w:#D8DCE4; --key-b:#0B0C0F; --key-edge:#5B6271; --fretline:#4E5666;
@@ -65,7 +67,7 @@
   --d-r:#FF9F4A; --d-r-text:#1F1305;
   --d-3:#71A5FF; --d-3-text:#0C1426;
   --d-5:#52CC88; --d-5-text:#0A1B12;
-  --d-7:#FF7070; --d-7-text:#240A0A;
+  --d-7:#FF7AA8; --d-7-text:#2A0A16; --d-6:#B58CFF; --d-6-text:#140A2A; --d-4:#F1F2F8; --d-4-text:#14151C; --d-4-edge:#F1F2F8;
   --d-nk:#78829A; --dot-edge:rgb(0 0 0 / .4);
   --mark:#FFFFFF; --mark-edge:#0B0C0F;
   --key-w:#D8DCE4; --key-b:#0B0C0F; --key-edge:#5B6271; --fretline:#4E5666;
@@ -178,6 +180,9 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .d-3{--dc:var(--d-3);--dt:var(--d-3-text)}
 .d-5{--dc:var(--d-5);--dt:var(--d-5-text)}
 .d-7{--dc:var(--d-7);--dt:var(--d-7-text)}
+.d-6{--dc:var(--d-6);--dt:var(--d-6-text)}
+.d-4{--dc:var(--d-4);--dt:var(--d-4-text);--db:var(--d-4-edge)}
+.deg.d-4:not(.ct){box-shadow:0 1px 2px rgb(20 24 40 / .18)}
 .d-n{--dc:transparent;--dt:var(--text);--db:var(--text)}
 .deg{display:inline-grid;place-items:center;min-width:1.7rem;height:1.45rem;padding:0 .35rem;border-radius:999px;font-size:.8125rem;font-weight:800;line-height:1;background:var(--dc);color:var(--dt);border:1.5px solid var(--db, transparent)}
 .deg.ct{position:relative;isolation:isolate;width:1.85rem;height:1.85rem;min-width:0;padding:0;background:transparent;border-color:transparent}
@@ -210,7 +215,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .kb svg{display:block;width:100%;height:auto}
 .wk{fill:var(--key-w);stroke:var(--key-edge);stroke-width:1}
 .bk{fill:var(--key-b)}
-.wk.d-r,.bk.d-r{fill:var(--d-r)} .wk.d-3,.bk.d-3{fill:var(--d-3)} .wk.d-5,.bk.d-5{fill:var(--d-5)} .wk.d-7,.bk.d-7{fill:var(--d-7)} .wk.d-n,.bk.d-n{fill:var(--d-nk)}
+.wk.d-r,.bk.d-r{fill:var(--d-r)} .wk.d-3,.bk.d-3{fill:var(--d-3)} .wk.d-5,.bk.d-5{fill:var(--d-5)} .wk.d-7,.bk.d-7{fill:var(--d-7)} .wk.d-6,.bk.d-6{fill:var(--d-6)} .wk.d-4,.bk.d-4{fill:var(--d-4);stroke:var(--text);stroke-width:2} .wk.d-n,.bk.d-n{fill:var(--d-nk)}
 .kb-labels{position:relative;height:1.3rem;margin-top:.3rem}
 .kb-labels span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font-size:.8125rem;font-weight:700}
 
@@ -227,12 +232,12 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .gbox .mute{stroke:var(--muted);stroke-width:1.6;stroke-linecap:round;fill:none}
 .gbox text,.neck text{font-family:var(--ui)}
 .dot{stroke:var(--dot-edge);stroke-width:1}
-.dot.d-r{fill:var(--d-r)} .dot.d-3{fill:var(--d-3)} .dot.d-5{fill:var(--d-5)} .dot.d-7{fill:var(--d-7)}
+.dot.d-r{fill:var(--d-r)} .dot.d-3{fill:var(--d-3)} .dot.d-5{fill:var(--d-5)} .dot.d-7{fill:var(--d-7)} .dot.d-6{fill:var(--d-6)} .dot.d-4{fill:var(--d-4);stroke:var(--text);stroke-width:1.2}
 .dot.d-n{fill:var(--surface);stroke:var(--text);stroke-width:1.5}
 .dot.ct{stroke:var(--text);stroke-width:1.8}
 .dl{font-size:10.5px;font-weight:800;text-anchor:middle;dominant-baseline:central}
 .dl.sm{font-size:9px}
-.dl.d-r{fill:var(--d-r-text)} .dl.d-3{fill:var(--d-3-text)} .dl.d-5{fill:var(--d-5-text)} .dl.d-7{fill:var(--d-7-text)} .dl.d-n{fill:var(--text)}
+.dl.d-r{fill:var(--d-r-text)} .dl.d-3{fill:var(--d-3-text)} .dl.d-5{fill:var(--d-5-text)} .dl.d-7{fill:var(--d-7-text)} .dl.d-6{fill:var(--d-6-text)} .dl.d-4{fill:var(--d-4-text)} .dl.d-n{fill:var(--text)}
 .ctmark{fill:var(--mark);stroke:var(--mark-edge);stroke-width:1.2}
 .nn{font-size:11px;font-weight:700;fill:var(--text);text-anchor:middle}
 .fr,.fnum,.sn{font-size:10px;font-weight:700;fill:var(--muted)}

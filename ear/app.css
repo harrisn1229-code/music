@@ -1,14 +1,14 @@
 /* Ear Training: "night studio". Always dark, rounded system type, one orange accent.
    Degree colours are tokens --c0..--c11 (by semitone): 1 / 3 / 5 / 7 are Library's root orange, blue,
-   green and red; altered degrees are rings of the hue they alter. */
+   green and pink (4 is white, 6 purple); altered degrees are rings of the hue they alter. */
 :root{
   --bg:#0E1018; --glow:#1A1E33;
   --panel:rgb(255 255 255 / .05); --raise:rgb(255 255 255 / .10); --well:rgb(0 0 0 / .26);
   --hair:inset 0 0 0 1px rgb(255 255 255 / .07);
   --text:#F1F2F8; --text2:#A3A8BD; --text3:#6E748A;
   --accent:#E26A1E; --on-accent:#14151C; --focus:#FFB27A; --bad:#FF7070;
-  --c0:#FF9F4A; --c1:#C98A2B; --c2:#F2CB4B; --c3:#6E7FF5; --c4:#71A5FF; --c5:#3FC8D0;
-  --c6:#E24DB8; --c7:#52CC88; --c8:#B35FC4; --c9:#B58CFF; --c10:#E8455F; --c11:#FF7070;
+  --c0:#FF9F4A; --c1:#C98A2B; --c2:#F2CB4B; --c3:#6E7FF5; --c4:#71A5FF; --c5:#F1F2F8;
+  --c6:#8FD3E0; --c7:#52CC88; --c8:#9A55E8; --c9:#B58CFF; --c10:#D93A76; --c11:#FF7AA8;
   --r:1.25rem; --r-md:.875rem;
   --font:ui-rounded,"SF Pro Rounded","Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --gut-l:max(16px, env(safe-area-inset-left, 0px));
