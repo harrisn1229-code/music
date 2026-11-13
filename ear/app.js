@@ -99,7 +99,7 @@ function detectPitch(buf, sampleRate) {
   var lsGet = function (k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
   var lsSet = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var PREFS_KEY = "ear:prefs:v1", PROG_KEY = "ear:progress:v1";
-  var DEFAULTS = { droneVol: 60, noteVol: 80, instrument: "piano", cadence: true, keyEvery: 5, count: 20, labels: "num", unlockAll: false,
+  var DEFAULTS = { droneVol: 60, noteVol: 80, instrument: "piano", cadence: true, keyEvery: 5, count: 20, labels: "num", names: true, unlockAll: false,
     tempo: 45, pause: 2, hfRepeat: 2, hfWait: 3, hfReplay: 1, hfGap: 3, showFeel: true,
     voice: "", voiceName: "", vSpeed: 0.8, vPitch: 0.9, vVol: 55, vStyle: "gentle" };
   var num = function (v, lo, hi, d) { v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
@@ -109,7 +109,7 @@ function detectPitch(buf, sampleRate) {
       droneVol: num(p.droneVol, 0, 100, DEFAULTS.droneVol), noteVol: num(p.noteVol, 0, 100, DEFAULTS.noteVol),
       instrument: ["piano", "flute", "pluck"].indexOf(p.instrument) >= 0 ? p.instrument : "piano",
       cadence: p.cadence !== false, keyEvery: Math.round(num(p.keyEvery, 1, 50, 5)), count: Math.round(num(p.count, 5, 100, 20)),
-      labels: p.labels === "sol" ? "sol" : "num", unlockAll: p.unlockAll === true, showFeel: p.showFeel !== false,
+      labels: p.labels === "sol" ? "sol" : "num", names: p.names !== false, unlockAll: p.unlockAll === true, showFeel: p.showFeel !== false,
       tempo: Math.round(num(p.tempo, 20, 120, DEFAULTS.tempo) / 5) * 5, pause: Math.round(num(p.pause, 0.5, 6, DEFAULTS.pause) * 2) / 2,
       hfRepeat: Math.round(num(p.hfRepeat, 1, 5, DEFAULTS.hfRepeat)), hfWait: Math.round(num(p.hfWait, 0, 10, DEFAULTS.hfWait) * 2) / 2,
       hfReplay: Math.round(num(p.hfReplay, 0, 4, DEFAULTS.hfReplay)), hfGap: Math.round(num(p.hfGap, 1, 10, DEFAULTS.hfGap) * 2) / 2,
@@ -167,6 +167,25 @@ function detectPitch(buf, sampleRate) {
     txt = String(txt || "").replace(/\s+/g, " ").trim().slice(0, 200);
     if (!txt || txt === FEEL[d][0]) delete prog.feelings[d]; else prog.feelings[d] = txt;
     persist();
+  }
+  /* Note name of a degree in a key, spelled by degree (letter follows the degree); never a double accidental. */
+  var LETTERS = ["C", "D", "E", "F", "G", "A", "B"], NATPC = [0, 2, 4, 5, 7, 9, 11], LSTEP = [0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6];
+  var SHARPS = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"], FLATS = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  function noteName(pc, d) {
+    var tonic = KEYNAMES[pc], l = (LETTERS.indexOf(tonic.charAt(0)) + LSTEP[d]) % 7, acc = (((pc + d - NATPC[l]) % 12) + 12) % 12;
+    if (acc > 6) acc -= 12;
+    if (Math.abs(acc) <= 1) return LETTERS[l] + (acc < 0 ? "♭" : acc > 0 ? "♯" : "");
+    return (tonic.indexOf("♭") >= 0 ? FLATS : SHARPS)[(pc + d) % 12];
+  }
+  var spoken = function (n) { return n.replace("♭", " flat").replace("♯", " sharp"); };
+  var ckey = null;                                         // the key shown on screen (null: none known, no names)
+  var nameOf = function (d) { return ckey !== null && prefs.names !== false ? noteName(ckey, d) : ""; };
+  var hitLabel = function (d) { var n = nameOf(d); return DEG[d][2] + (n ? ", " + spoken(n) : ""); };
+  function setClockKey(pc) {
+    ckey = pc;
+    var c = $("clock"); if (!c) return;
+    c.querySelectorAll(".cl-nm").forEach(function (t) { t.textContent = nameOf(+t.getAttribute("data-d")); });
+    c.querySelectorAll(".cl-hit").forEach(function (b) { b.setAttribute("aria-label", hitLabel(+b.dataset.d)); });
   }
   var lab = function (i) { return prefs.labels === "sol" ? DEG[i][1] : DEG[i][0]; };
   var feelOf = function (d) { return prog.feelings[d] || FEEL[d][0]; };
@@ -317,7 +336,7 @@ function detectPitch(buf, sampleRate) {
       if (!ensure()) return;
       var mine = ++gen;
       want = pc; killDrone(0.15); stopNotes();
-      T.key = pc; T.keyName = KEYNAMES[pc]; T.drone = false;
+      T.key = pc; T.keyName = KEYNAMES[pc]; T.drone = false; setClockKey(pc);
       if (withCadence) { var secs = cadence(pc, !!minor); T.cadences++; await sleep(secs * 1000 + 150); if (gen !== mine) return; }
       startDrone(pc);
       await sleep(60000 / prefs.tempo); if (gen !== mine) return;
@@ -457,18 +476,19 @@ function detectPitch(buf, sampleRate) {
     svg += ALL.map(function (d) { var a = POS(d, 86), b = POS(d, 136); return '<line class="cl-spoke" data-d="' + d + '" x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(b[0]) + '" y2="' + f1(b[1]) + '" stroke="' + DCOL[d] + '"/>'; }).join("");
     svg += '<g id="cl-fx"></g>';
     svg += CLOCK_ORDER.map(function (d) {
-      var p = POS(d, 150), q = POS(d, 119), b = POS(d, 173), ring = DRING[d];
+      var p = POS(d, 150), q = POS(d, 117), b = POS(d, 173), ring = DRING[d];
       return '<g class="cl-d' + (on[d] ? "" : " off") + '" data-d="' + d + '" style="--dc:' + DCOL[d] + '">' +
         '<circle class="cl-tg" cx="' + f1(p[0]) + '" cy="' + f1(p[1]) + '" r="18"/>' +
         '<circle class="cl-mk' + (ring ? " ring" : "") + '" cx="' + f1(p[0]) + '" cy="' + f1(p[1]) + '" r="' + (ring ? 8.5 : 10) + '"/>' +
-        '<text class="cl-lab" x="' + f1(q[0]) + '" y="' + f1(q[1]) + '">' + esc(lab(d)) + "</text>" +
+        '<text class="cl-lab" x="' + f1(q[0]) + '" y="' + f1(q[1] - 7) + '">' + esc(lab(d)) + "</text>" +
+        '<text class="cl-nm" data-d="' + d + '" x="' + f1(q[0]) + '" y="' + f1(q[1] + 11) + '">' + esc(nameOf(d)) + "</text>" +
         '<g class="cl-bd yes" transform="translate(' + f1(b[0]) + " " + f1(b[1]) + ')"><circle r="8.5"/><path d="M-3.600 .4l2.600 2.700 4.600-5.600"/></g>' +
         '<g class="cl-bd no" transform="translate(' + f1(b[0]) + " " + f1(b[1]) + ')"><circle r="8.5"/><path d="M-3.200-3.200l6.400 6.400M3.200-3.200l-6.400 6.400"/></g></g>';
     }).join("");
     svg += '<g id="cl-needle" class="cl-needle" hidden><path class="arc" d=""/><line class="tick" x1="0" y1="-13" x2="0" y2="-27"/></g></svg>';
     var hits = o.tap === false ? "" : CLOCK_ORDER.map(function (d) {
       var c = POS(d, 135);
-      return '<button type="button" class="cl-hit" data-d="' + d + '" aria-label="' + DEG[d][2] + '" style="left:' + f1(c[0] / 4) + "%;top:" + f1(c[1] / 4) + '%"' + (on[d] ? "" : " disabled") + "></button>";
+      return '<button type="button" class="cl-hit" data-d="' + d + '" aria-label="' + hitLabel(d) + '" style="left:' + f1(c[0] / 4) + "%;top:" + f1(c[1] / 4) + '%"' + (on[d] ? "" : " disabled") + "></button>";
     }).join("");
     return '<div class="clock' + (Snd.droneOn() ? " droning" : "") + '" id="clock">' + svg + hits + (o.centre || "") + "</div>";
   }
@@ -703,7 +723,7 @@ function detectPitch(buf, sampleRate) {
   var feelLineHTML = function () { return prefs.showFeel ? '<p class="feel-line" id="feel-line"></p>' : ""; };
   function feelLine(d) { var el = $("feel-line"); if (el) el.textContent = d === null ? "" : feelOf(d); }
 
-  var startStage = function () { return '<div class="stage">' + clockHTML({ on: [], tap: false, centre: centreBtn("begin", ICON.play, "Start") }) + "</div>"; };
+  var startStage = function () { ckey = null; return '<div class="stage">' + clockHTML({ on: [], tap: false, centre: centreBtn("begin", ICON.play, "Start") }) + "</div>"; };
   var statusRow = function (ids) { return '<div class="status">' + ids.map(function (x) { return x === "-" ? '<span class="grow"></span>' : '<span class="pill" id="' + x + '"></span>'; }).join("") + "</div>"; };
 
   /* ---------- Degrees: levels ---------- */
@@ -756,6 +776,7 @@ function detectPitch(buf, sampleRate) {
       cur.stop = function () { runId++; };
       return;
     }
+    ckey = null;
     var pc = null, i = 0, asked = -1, answered = true, busy = true, score = 0, midi = 0, results = [], mode = "quiz", lastDeg = -1, started = false;
     function shell() {
       view.innerHTML =
@@ -899,6 +920,7 @@ function detectPitch(buf, sampleRate) {
       cur.stop = function () { runId++; };
       return;
     }
+    ckey = null;
     var pc = null, i = 0, phrase = [], pos = 0, busy = true, okPhrases = 0, okNotes = 0, totNotes = 0, wrongSome = false, states = [];
     view.innerHTML = statusRow(["s-n", "s-k", "-", "s-sc"]) + '<div class="prog"><i id="s-bar"></i></div>' +
       clockHTML({ on: cfg.set, centre: centreBtn("note", "", "Play phrase") }) + pillRow(qbtn("note", "Phrase", ICON.snd) + qbtn("cad", "Key"));
@@ -1049,6 +1071,7 @@ function detectPitch(buf, sampleRate) {
   /* ---------- Free play ---------- */
   function freePlay() {
     var pc = prog.sel.freeKey >= 0 && prog.sel.freeKey < 12 ? prog.sel.freeKey : 0, droneOn = true, started = false;
+    ckey = pc;
     view.innerHTML = clockHTML({ centre: centreBtn("root", "·", "Play one") }) +
       '<div class="card">' + keyChips(pc, "data-key") + '<div class="row"><button type="button" class="chip" data-a="drone" aria-pressed="true" id="dr">Drone</button></div></div>';
     function startDrone() { if (!droneOn) return; Snd.ensure(); Snd.startDrone(pc); T.key = pc; T.keyName = KEYNAMES[pc]; started = true; }
@@ -1056,7 +1079,7 @@ function detectPitch(buf, sampleRate) {
       if (b.dataset.key !== undefined) {
         pc = +b.dataset.key; prog.sel.freeKey = pc; persist();
         view.querySelectorAll("[data-key]").forEach(function (k) { k.setAttribute("aria-checked", String(+k.dataset.key === pc)); });
-        T.key = pc; T.keyName = KEYNAMES[pc];
+        T.key = pc; T.keyName = KEYNAMES[pc]; setClockKey(pc);
         if (droneOn) startDrone(); return;
       }
       if (b.dataset.a === "drone") {
@@ -1106,6 +1129,7 @@ function detectPitch(buf, sampleRate) {
           dm(d) + '<span class="fl-rt">' + esc(feelOf(d)) + "</span></button></li>";
       }).join("");
     }
+    ckey = pc;
     view.innerHTML = clockHTML({ centre: centreBtn("hear", bigDeg(sel), "Hear " + nm(sel)) }) +
       pillRow('<button type="button" class="chip" data-a="keys" id="fl-keybtn" aria-expanded="false" aria-controls="fl-keys">' + keyLabel() + '</button><button type="button" class="chip" data-a="drone" id="fl-dr" aria-pressed="true">Drone</button>') +
       '<div class="card" id="fl-keys" hidden>' + keyChips(pc, "data-key") + "</div>" +
@@ -1154,7 +1178,7 @@ function detectPitch(buf, sampleRate) {
       if (b.dataset.key !== undefined) {
         pc = +b.dataset.key; prog.sel.freeKey = pc; persist();
         view.querySelectorAll("[data-key]").forEach(function (k) { k.setAttribute("aria-checked", String(+k.dataset.key === pc)); });
-        $("fl-keybtn").textContent = keyLabel(); T.key = pc; T.keyName = KEYNAMES[pc];
+        $("fl-keybtn").textContent = keyLabel(); T.key = pc; T.keyName = KEYNAMES[pc]; setClockKey(pc);
         if (droneOn && Snd.droneOn()) startDrone();
         return;
       }
@@ -1190,14 +1214,14 @@ function detectPitch(buf, sampleRate) {
         '<div class="field"><span class="lbl">Key every</span>' + seg([["2", "2 min"], ["5", "5 min"], ["10", "10 min"]], 'data-sel="min"', String(mins), "Key change") + "</div>" +
         '<div class="row"><button type="button" class="chip" data-a="voice" aria-pressed="' + vOpen + '">Voice</button></div></div>' +
         (vOpen ? voiceHTML() : "") +
-        clockHTML({ on: setOf(), tap: false, centre: centreBtn("start", ICON.play, "Start", setName === "custom" && custom.length < 2 ? "off" : "") });
+        (ckey = null, "") + clockHTML({ on: setOf(), tap: false, centre: centreBtn("start", ICON.play, "Start", setName === "custom" && custom.length < 2 ? "off" : "") });
       var c = view.querySelector(".cl-centre"); if (c && setName === "custom" && custom.length < 2) c.disabled = true;
     }
     setup();
     async function run() {
       var id = ++runId, live = function () { return id === runId; };
       var set = setOf().slice(), minor = setName === "minor" || (setName === "custom" && isMinorSet(set));
-      var pc = null, keyAt = 0, count = 0, last = -1;
+      var pc = null, keyAt = 0, count = 0, last = -1; ckey = null;
       running = true; Snd.ensure(); Snd.arm();
       Voice.prime();
       try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (w) { wake = w; T.wake = true; if (!running) { try { w.release(); } catch (e) {} } }, function () {}); } catch (e) {}
@@ -1292,6 +1316,7 @@ function detectPitch(buf, sampleRate) {
     }
     async function round(ctx) {
       var id = ++runId, live = function () { return id === runId; };
+      ckey = null;
       var o = setOfName(setName), pc = null, i = 0, ok = 0, results = [], target = 0, hold = 0, histo = {}, quiet = true, tStart = 0, busy = true, lastTick = 0, lastGood = 0;
       var buf = new Float32Array(an.fftSize);
       active = true;
@@ -1418,7 +1443,7 @@ function detectPitch(buf, sampleRate) {
         slider("p-tempo", "Tempo", prefs.tempo, 20, 120, 5, "") + slider("p-pause", "Pause", prefs.pause, 0.5, 6, 0.5, "s") + "</div>" +
         '<h3 class="sec">Round</h3><div class="card">' +
         slider("p-keyEvery", "Key changes every", prefs.keyEvery, 1, 50, 1, "") + slider("p-count", "Questions", prefs.count, 5, 100, 5, "") +
-        field("Labels", seg([["num", "1 ♭2 2"], ["sol", "do ra re"]], 'data-sel="labels"', prefs.labels, "Labels")) + field("Show feelings", onoff("showFeel", prefs.showFeel)) + field("Unlock all levels", onoff("unlockAll", prefs.unlockAll)) + "</div>" +
+        field("Labels", seg([["num", "1 ♭2 2"], ["sol", "do ra re"]], 'data-sel="labels"', prefs.labels, "Labels")) + field("Note names", onoff("names", prefs.names)) + field("Show feelings", onoff("showFeel", prefs.showFeel)) + field("Unlock all levels", onoff("unlockAll", prefs.unlockAll)) + "</div>" +
         '<h3 class="sec">Hands-free</h3><div class="card">' +
         slider("p-hfRepeat", "Repeat", prefs.hfRepeat, 1, 5, 1, "") + slider("p-hfWait", "Wait", prefs.hfWait, 0, 10, 0.5, "s") +
         slider("p-hfReplay", "Replay", prefs.hfReplay, 0, 4, 1, "") + slider("p-hfGap", "Gap", prefs.hfGap, 1, 10, 0.5, "s") + "</div>" + voiceHTML();
@@ -1438,6 +1463,7 @@ function detectPitch(buf, sampleRate) {
       if (s === "inst") { prefs.instrument = v; Snd.ensure(); playMidi(midiOf(0, 7, 1), v, 0.8); }
       else if (s === "cadence") prefs.cadence = v === "1";
       else if (s === "unlockAll") prefs.unlockAll = v === "1";
+      else if (s === "names") prefs.names = v === "1";
       else if (s === "showFeel") prefs.showFeel = v === "1";
       else if (s === "labels") prefs.labels = v;
       else return;

@@ -133,6 +133,7 @@ input[type=range]::-moz-range-thumb{width:1.625rem;height:1.625rem;border:0;bord
 .cl-mk{fill:var(--dc);transform-box:fill-box;transform-origin:center;transition:transform .2s var(--ease),filter .2s var(--ease)}
 .cl-mk.ring{fill:var(--bg);stroke:var(--dc);stroke-width:3}
 .cl-lab{fill:var(--dc);font:500 22px/1 var(--font);text-anchor:middle;dominant-baseline:central;transition:fill .2s var(--ease)}
+.cl-nm{fill:var(--text2);font:500 14px/1 var(--font);text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .cl-tg{fill:none;stroke:var(--dc);stroke-width:2;opacity:0;transition:opacity .2s var(--ease)}
 .cl-d.off{opacity:.26}
 .cl-d.rv .cl-mk,.cl-d.ok .cl-mk{filter:drop-shadow(0 0 7px var(--dc))}
