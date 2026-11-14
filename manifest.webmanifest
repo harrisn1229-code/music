@@ -6,40 +6,31 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
   "background_color": "#F1F2F5",
   "theme_color": "#F1F2F5",
-  "categories": ["music", "education", "productivity"],
-  "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  "categories": [
+    "music",
+    "education",
+    "productivity"
   ],
-  "shortcuts": [
+  "icons": [
     {
-      "name": "Barline",
-      "description": "Chord charts with a click track",
-      "url": "barline/",
-      "icons": [{ "src": "barline/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "name": "Note Cards",
-      "description": "Flashcards for modes, arpeggios, triads and 7th chords",
-      "url": "note-cards/",
-      "icons": [{ "src": "note-cards/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "name": "Library",
-      "description": "Look up any mode, chord, arpeggio or voicing in any key",
-      "url": "library/",
-      "icons": [{ "src": "library/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "School",
-      "description": "Classes, lessons, quizzes, tests and a song library",
-      "url": "school/",
-      "icons": [{ "src": "school/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
