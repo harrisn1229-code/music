@@ -5774,10 +5774,12 @@ function songsView() {
     <span class="stile-t">${esc(s.title)}</span>
     <span class="stile-a">${esc(s.artist || '—')}</span></button>`; };
   return `<div class="view songsview">
-    <div><p class="eyebrow">Library</p><h2 class="vh">${LOCAL ? 'Covers' : `${all.length} songs`}</h2>
+    ${LOCAL ? `<div class="spread songs-top"><h2 class="vh">Covers</h2>${FILES && FILES.ok()
+        ? addBtn('any', '+ Add charts', CHART_ACCEPT, true) : ''}</div>`
+      : `<div><p class="eyebrow">Library</p><h2 class="vh">${all.length} songs</h2>
       <p class="calnote" style="margin:4px 0 14px;max-width:74ch">Every song note in the vault,
       with what is written on it — key, tempo, form, the chords and whatever has been learned about
-      playing it. A reference shelf: nothing here is assigned or due. Click a sleeve for the note.</p></div>
+      playing it. A reference shelf: nothing here is assigned or due. Click a sleeve for the note.</p></div>`}
     ${/* Every menu is built from what the shelf ACTUALLY holds and carries its own count, so an
           empty result is never a surprise: a tonic nothing is written in, or a tempo band nothing
           falls in, is simply not offered. Same rule the genre menu already followed. */''}
@@ -5846,7 +5848,7 @@ function songHead(s) {
    `white-space:pre` and a mono face are load-bearing, not styling: `pdftotext -layout` encodes the
    chart's meaning as COLUMN POSITION — a chord name sits above the syllable it changes on, and a
    tab stave is a grid. Reflow it and it stops being a chart. */
-let chartOpen = new Set();
+let chartOpen = new Set(), chartShut = new Set();
 function chartBlock(sid) {
   if (LOCAL) return chartBlockLocal(sid);      // the reader's own charts, from their device
   const list = CHARTS[sid] || [];
@@ -5884,6 +5886,7 @@ function sourceView(sid) {
   // the note: off a song you came from the shelf, off anything else from the courses.
   const song = SONGS[sid];
   const back = srcBack && srcBack !== route ? srcBack : song ? 'songs' : 'courses';
+  if (LOCAL && song) return songPage(song, s, back);
   const used = (s.used || []).map(k => {
     const [cid, n] = k.split(':');
     return COURSES[cid]
@@ -5918,6 +5921,46 @@ function sourceView(sid) {
       : `This is the whole note.`}${s.ref && !LOCAL ? ` Nothing in the school assigns this note — it has a
       page because something on the page links to it, and a reference page is held to a shorter
       length than assigned reading.` : ''}</p>`}</div>`;
+}
+
+/* A song page in the app. Nate, 2026-11-14: "simplify the song pages as theres too much content
+   on them". So: the sleeve with the two facts you play by (key, tempo), the chart, then the note
+   folded by section — Chords open, everything else one tap away. No stat grid, chips, word counts
+   or lede; the artifact page keeps the full layout (sourceView). */
+const songSecState = new Map();      // "<song>:<i>" -> open?, once the reader has toggled it
+const SONG_SEC_DROP = /^(see also|learning)$/i;
+function songSections(html) {
+  return String(html || '').split(/<h3[^>]*>/i).slice(1).map(p => {
+    const i = p.search(/<\/h3>/i);
+    const t = i < 0 ? '' : p.slice(0, i);
+    const h = p.slice(i + 5)
+      // Pointers to the chart PDF ("From your chart: …", "Chart on file: …"): the chart is above.
+      .replace(/(<em>)?[^<>.]{0,40}\bchart\b[^<>:]{0,20}:\s*<code>[\s\S]*?<\/code>\.?\s*(<\/em>)?/gi, '')
+      .replace(/<p>\s*<\/p>/g, '').replace(/<blockquote>\s*<\/blockquote>/g, '')
+      .trim();
+    return {t, h};
+  }).filter(x => x.t && x.h && !SONG_SEC_DROP.test(x.t.replace(/<[^>]+>/g, '').trim()));
+}
+function songPage(song, s, back) {
+  const meta = [songKey(song) || song.key, song.bpm ? `${song.bpm} bpm` : ''].filter(Boolean).join(' · ');
+  const secs = songSections(s.html);
+  const sec = (x, i) => {
+    const k = song.id + ':' + i;
+    const open = songSecState.has(k) ? songSecState.get(k) : /^chords?\b/i.test(x.t.replace(/<[^>]+>/g, ''));
+    return `<details class="rd songsec" data-ssec="${esc(k)}"${open ? ' open' : ''}>
+      <summary><span class="rd-t">${x.t}</span></summary>
+      <div class="rd-b prose srcbody">${x.h}</div></details>`;
+  };
+  return `<div class="view songpage">
+    <div class="row"><button class="btn btn-quiet" data-nav="${esc(back)}">← ${
+      back === 'songs' ? 'Covers' : 'Back'}</button></div>
+    <div class="songhead">${songArt(song, 'songhead-art')}
+      <div class="songhead-b"><p class="eyebrow">${esc(song.artist || '')}</p>
+        <h2 class="vh">${esc(song.title)}</h2>
+        ${meta ? `<p class="songhead-m">${esc(meta)}</p>` : ''}</div></div>
+    ${chartBlock(song.id)}
+    ${secs.length ? `<div class="songnotes">${secs.map(sec).join('')}</div>` : ''}
+    ${coverControl(song)}</div>`;
 }
 
 /* PATCH-159 — where a drill page came FROM. A **Technique** line on a lesson's homework now
@@ -6824,32 +6867,25 @@ function chartBlockLocal(sid) {
   if (!FILES) return '';
   const s = SONGS[sid] || {}, have = songCharts(sid), shipped = s.chart_shipped || [];
   const missing = (s.chart_files || []).filter(n => !fhas(n));
-  return `<div class="ovsec chartsec">
-    <div class="dhead"><p class="eyebrow">Chord chart${have.length === 1 ? '' : 's'}</p>
-      <span class="rule"></span><span class="cnt">${shipped.length ? `${shipped.length} included` : ''}${
-        shipped.length && have.length ? ' · ' : ''}${have.length ? `${have.length} on this device`
-        : shipped.length ? '' : 'none added yet'}</span></div>
-    ${shipped.map(n => {
-      const k = sid + ':ship:' + n;
-      return `<details class="rd chart" data-chart="${esc(k)}"${chartOpen.has(k) ? ' open' : ''}>
-        <summary><span class="rd-t">${esc(n.replace(/\.[^.]+$/, ''))}</span>
-          <span class="rd-m">included</span></summary>
-        <div class="rd-b"><div class="fview" data-fship="${esc(n)}"></div></div></details>`;
-    }).join('')}
-    ${have.map(m => {
-      const k = sid + ':' + m.key;
-      return `<details class="rd chart" data-chart="${esc(k)}"${chartOpen.has(k) ? ' open' : ''}>
-        <summary><span class="rd-t">${esc(m.name.replace(/\.[^.]+$/, ''))}</span>
-          <span class="rd-m">${fsize(m.size)} · your copy</span></summary>
-        <div class="rd-b"><div class="fview" data-fview="${esc(m.key)}"></div>
+  const pretty = n => n.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+  const items = shipped.map(n => ({k: sid + ':ship:' + n, t: n,
+      b: `<div class="fview" data-fship="${esc(n)}"></div>`}))
+    .concat(have.map(m => ({k: sid + ':' + m.key, t: m.name,
+      b: `<div class="fview" data-fview="${esc(m.key)}"></div>
         <p class="byo-act"><button type="button" class="lnkedit" data-frm="${esc(m.key)}"
-          data-frm-link="chart:${esc(sid)}">Remove</button></p></div></details>`;
-    }).join('')}
-    ${missing.map(n => waiting(n) || `<div class="byo-miss"><span class="byo-n">${esc(n)}</span>
-      <span class="byo-m">A chart this song's note uses. It is not included with the app.</span>
-      ${addBtn('file:' + n, '+ add your copy', CHART_ACCEPT)}</div>`).join('')}
-    <p class="byo-act">${addBtn('chart:' + sid, '+ add a chart', CHART_ACCEPT, true)}
-      ${lite('<span class="byo-m">A PDF, a photo or a text file. It stays on this device.</span>', '')}</p></div>`;
+          data-frm-link="chart:${esc(sid)}">Remove</button></p>`})));
+  // The chart is what you open a song page to play from, so the first one starts open.
+  const isOpen = (k, i) => chartOpen.has(k) || (i === 0 && !chartShut.has(k));
+  const waits = missing.map(waiting).filter(Boolean);
+  return `<div class="ovsec chartsec">
+    ${items.map((c, i) => `<details class="rd chart" data-chart="${esc(c.k)}"${isOpen(c.k, i) ? ' open' : ''}>
+        <summary><span class="rd-t">${items.length === 1 ? 'Chord chart' : esc(pretty(c.t))}</span></summary>
+        <div class="rd-b">${c.b}</div></details>`).join('')}
+    ${waits.join('')}
+    ${!items.length && !waits.length
+      ? `<div class="byo-miss"><span class="byo-n">No chart yet</span>
+          ${addBtn(missing.length ? 'file:' + missing[0] : 'chart:' + sid, '+ Add chart', CHART_ACCEPT)}</div>`
+      : `<p class="byo-act">${addBtn('chart:' + sid, '+ Add another chart', CHART_ACCEPT, true)}</p>`}</div>`;
 }
 /** A slot whose file the account has: start fetching it and say so. '' when the account does not
     have it (or the download failed), which is the caller's cue to offer "add your copy". */
@@ -6998,6 +7034,40 @@ function slotReg() {
   return (_slotReg = reg);
 }
 
+/* A chart picked by hand rarely carries the exact name its slot expects — "The Beatles - Oh!
+   Darling.pdf" for the-beatles-oh-darling-chords.pdf. Words are compared instead: every word of a
+   song's title must be in the file name, and at most one word may be neither title nor artist.
+   The match fills that song's own slot (so an owner's copy still reaches the account), or attaches
+   to the song when its slots are full or it has none. Filler words are ignored on both sides. */
+const CHART_STOP = new Set(['the', 'chords', 'chord', 'official', 'tab', 'tabs', 'alt', 'sheetmusic',
+  'sheet', 'pdf', 'ultimate', 'archive', 'by', 'version', 'lyrics']);
+function chartWords(x) {
+  let v = String(x || '');
+  try { v = v.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) {}
+  return v.toLowerCase().replace(/\.[a-z0-9]{2,4}$/, '').replace(/['’]/g, '')
+    .split(/[^a-z0-9]+/).filter(w => w && !CHART_STOP.has(w));
+}
+function guessChart(name, taken) {
+  const F = chartWords(name), has = new Set(F);
+  if (!F.length) return null;
+  let best = null, top = 0;
+  Object.values(SONGS).forEach(s => {
+    const T = chartWords(s.title), A = chartWords(s.artist);
+    if (!T.length || !T.every(w => has.has(w))) return;
+    const extra = F.filter(w => !T.includes(w) && !A.includes(w)).length;
+    if (extra > 1) return;
+    const score = T.length * 3 + A.filter(w => has.has(w)).length - extra * 2;
+    if (score > top) { best = s; top = score; }
+  });
+  if (!best) return null;
+  const hint = (w, n) => new RegExp('\\b' + w + '\\b', 'i').test(n);
+  const fit = n => ['official', 'tab'].filter(w => hint(w, name) === hint(w, n)).length
+    - (fhas(n) || taken.has(fkey(n)) ? 10 : 0);
+  const slot = (best.chart_files || []).slice().sort((a, b) => fit(b) - fit(a))[0];
+  if (slot && !fhas(slot) && !taken.has(fkey(slot))) { taken.add(fkey(slot)); return {as: slot}; }
+  return {link: 'chart:' + best.id};
+}
+
 /** One or many files picked through any of the add buttons. `spec` says what they are for:
     book:<id> · file:<slot name> · cover:<song> · chart:<song> · any · folder. */
 async function handleAdd(inp) {
@@ -7006,7 +7076,7 @@ async function handleAdd(inp) {
   if (!picked.length) return;
   if (!FILES || !FILES.ok()) return toast('This browser will not store files (private browsing?).');
   const i = spec.indexOf(':'), kind = i < 0 ? spec : spec.slice(0, i), arg = i < 0 ? '' : spec.slice(i + 1);
-  const reg = slotReg(), todo = [], failed = [];
+  const reg = slotReg(), todo = [], failed = [], taken = new Set();
   let passed = 0;
   for (const f of picked) {
     if (kind === 'book') {
@@ -7019,7 +7089,11 @@ async function handleAdd(inp) {
       todo.push([f, s.cover_file ? {as: s.cover_file} : {link: 'cover:' + arg}]);
     } else if (kind === 'chart') todo.push([f, {link: 'chart:' + arg}]);
     else if (reg.has(fkey(f.name))) todo.push([f, {}]);
-    else passed++;                                 // a bulk add only takes names the school knows
+    else {
+      // Not a name the school knows: try it as a chart named after its song ("Artist - Title.pdf").
+      const g = guessChart(f.name, taken);
+      if (g) todo.push([f, g]); else passed++;     // a bulk add only takes files it can place
+    }
   }
   if (kind === 'cover' && todo.length && !(SONGS[arg] || {}).cover_file) {
     for (const m of FILES.linked('cover:' + arg)) {      // one sleeve per song: the new one replaces
@@ -7799,7 +7873,7 @@ app.addEventListener('click', e => {
     + '[data-orig-note],[data-orig-notedel],[data-origlog],'
     + '[data-book],[data-bkzoom],'
     + '[data-hw-open],[data-hw-turnin],[data-hw-undo],[data-plog],[data-plogdel],[data-course-lesson],'
-    + '[data-note-add],[data-note-del],[data-songclear],[data-chart],'
+    + '[data-note-add],[data-note-del],[data-songclear],[data-chart],[data-ssec],'
     + '[data-ear-play],[data-ear-show],[data-ear-next],[data-ear-prev],[data-ear-go],[data-ear-reset]');
   if (!t) return;
   const d = t.dataset;
@@ -7815,7 +7889,12 @@ app.addEventListener('click', e => {
     return; }
   // spec-176b — a chord chart fold, on exactly the reading fold's contract above: <details> owns
   // its open/close and we only record it so the next render reopens it. `t.open` is pre-click.
-  if (d.chart) { if (e.target.closest('summary')) { t.open ? chartOpen.delete(d.chart) : chartOpen.add(d.chart); }
+  if (d.chart) { if (e.target.closest('summary')) {
+      if (t.open) { chartOpen.delete(d.chart); chartShut.add(d.chart); }
+      else { chartOpen.add(d.chart); chartShut.delete(d.chart); } }
+    return; }
+  // A song page's note section, on the same contract: record what the browser is about to do.
+  if (d.ssec) { if (e.target.closest('summary')) songSecState.set(d.ssec, !t.open);
     return; }
   /* spec-172 — the book fold, on the same contract as the reading fold above: <details> owns
      its open/close and we only record it. The difference is that this one ships EMPTY and is

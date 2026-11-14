@@ -184,3 +184,12 @@ a.dtile{text-decoration:none;color:inherit;}
 .vthumb{border:0;border-radius:var(--r-md);box-shadow:var(--sh);}
 .vtile:active .vthumb{transform:scale(.97);}
 .vtile-t{font-size:.875rem;font-weight:700;}
+
+/* The app's song page (songPage in app.js): sleeve, chart, then the note folded by section. */
+.songs-top{align-items:center;margin-bottom:12px;}
+.songpage .songhead{grid-template-columns:96px minmax(0,1fr);gap:16px;align-items:center;margin-bottom:2px;}
+.songpage .songhead-art{width:96px;max-width:none;}
+.songpage .songhead-b .vh{font-size:1.5rem;line-height:1.15;}
+.songnotes{display:flex;flex-direction:column;gap:8px;}
+.songsec .rd-b{padding-top:4px;}
+.songpage .songhead-c{margin-top:4px;}
