@@ -298,7 +298,13 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "ios";
     if (/Android/.test(ua)) return "android";
     const safari = /Safari\//.test(ua) && !/Chrome\/|Chromium\/|Edg\/|OPR\/|Firefox\//.test(ua);
-    if (/Macintosh/.test(ua) && safari) return "mac-safari";
+    if (/Macintosh/.test(ua) && safari) {
+      // Add to Dock arrived with Safari 17 on macOS Sonoma. Safari 16 or older cannot do it at all;
+      // Safari 17+ on an older macOS shows no Add to Dock either, which the page cannot detect,
+      // so that case is covered in the sheet's note.
+      const v = +((ua.match(/Version\/(\d+)/) || [])[1] || 0);
+      return v && v < 17 ? "mac-old" : "mac-safari";
+    }
     if (/Firefox\//.test(ua)) return "firefox";
     if (/Chrome\/|Edg\//.test(ua)) return "chrome";
     return "other";
@@ -312,7 +318,11 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     "mac-safari": { title: "Add to Dock", steps: [
       "<b>In the menu bar, choose File, then Add to Dock.</b> Or click the Share button in Safari’s toolbar and choose Add to Dock.",
       "<b>Click Add.</b> Music opens in its own window from the Dock, Launchpad and Spotlight."],
-      note: "Needs macOS Sonoma or later. " + CARRY },
+      note: "No Add to Dock in the File menu? It needs macOS Sonoma or later: update macOS, or open this page in Chrome or Edge and use the install icon in the address bar. " + CARRY },
+    "mac-old": { title: "Install Music", steps: [
+      "<b>Update macOS</b> to Sonoma or later (System Settings, General, Software Update), then choose File, Add to Dock in Safari.",
+      "<b>Or open this page in Chrome or Edge</b> and click the install icon at the right end of the address bar."],
+      note: "This version of Safari can’t add web apps to the Dock." },
     android: { title: "Install Music", steps: [
       "<b>Open the browser menu</b> (⋮).",
       "<b>Tap Install app</b> or Add to Home screen."], note: "" },
