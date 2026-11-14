@@ -70,6 +70,12 @@ self.addEventListener("fetch", (event) => {
   const own = self.MUSIC.apps.find((app) => app.worker && url.pathname.startsWith(ROOT + app.id + "/"));
   if (own && !own.files.some((file) => url.pathname === ROOT + own.id + "/" + file)) return;
 
+  // The manifest decides the app's identity in Chrome, so always read it fresh when online.
+  if (url.pathname === ROOT + "manifest.webmanifest") {
+    event.respondWith(fetch(request, { cache: "no-store" }).catch(() =>
+      caches.open(VERSION).then((cache) => cache.match(url.pathname, { ignoreVary: true }))));
+    return;
+  }
   const page = request.mode === "navigate";
   // "/music/barline" without the last slash would break that app's links to its own files; send it to "/music/barline/".
   if (page && self.MUSIC.apps.some((app) => url.pathname === ROOT + app.id)) {
