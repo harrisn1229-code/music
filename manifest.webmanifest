@@ -2,7 +2,7 @@
   "name": "Music",
   "short_name": "Music",
   "description": "Your music tools in one app: chord charts, flashcards, a theory reference and a school. Works offline.",
-  "id": "./",
+  "id": "/music/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
