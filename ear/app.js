@@ -388,17 +388,21 @@ function detectPitch(buf, sampleRate) {
     function resolve() {
       var all = load(), v = null;
       if (prefs.voice) v = all.filter(function (x) { return uriOf(x) === prefs.voice; })[0] || (prefs.voiceName && all.filter(function (x) { return x.name === prefs.voiceName; })[0]) || null;
+      if (v && !fine(v) && all.some(function (x) { return isEn(x) && fine(x); })) v = null;   // a plain voice picked before is no longer offered
       return v || auto();
     }
     function options() {
       var all = load(), sel = null, i;
       if (prefs.voice) sel = all.filter(function (x) { return uriOf(x) === prefs.voice; })[0] || (prefs.voiceName && all.filter(function (x) { return x.name === prefs.voiceName; })[0]) || null;
-      var rank = function (v) { return (isEn(v) ? 0 : 2) + (fine(v) ? 0 : 1); };
-      var sorted = all.slice().sort(function (a, b) { return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name)) || String(a.lang).localeCompare(String(b.lang)); });
+      // Only Enhanced / Premium English voices; if the device has none, its English voices.
+      var pool = all.filter(function (v) { return isEn(v) && fine(v); });
+      if (!pool.length) pool = all.filter(isEn);
+      if (sel && pool.indexOf(sel) < 0) sel = null;
+      var sorted = pool.sort(function (a, b) { return String(a.name).localeCompare(String(b.name)) || String(a.lang).localeCompare(String(b.lang)); });
       var out = '<option value=""' + (sel ? "" : " selected") + ">Auto</option>";
       for (i = 0; i < sorted.length; i++) {
         var v = sorted[i], r = region(v);
-        out += '<option value="' + esc(uriOf(v)) + '" data-name="' + esc(v.name) + '"' + (sel === v ? " selected" : "") + ">" + esc(v.name) + (r ? " · " + esc(r) : "") + (fine(v) ? " ★" : "") + "</option>";
+        out += '<option value="' + esc(uriOf(v)) + '" data-name="' + esc(v.name) + '"' + (sel === v ? " selected" : "") + ">" + esc(v.name) + (r ? " · " + esc(r) : "") + "</option>";
       }
       return out;
     }
