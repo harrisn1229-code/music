@@ -291,7 +291,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .rows > li{min-width:0}
 @media (max-width:61.99rem){ .entry.two{grid-template-columns:minmax(0, 1fr)} }
 .pills.jump .pill{flex:0 1 auto;max-width:100%;height:auto;min-height:2rem;padding:.3rem .8rem;white-space:normal;text-align:left}
-.row .flow{display:block;margin-top:.3rem;color:var(--muted);font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.filters.f2{margin-top:.5rem}
 .pick-star{margin-left:.35rem;color:var(--focus);font-size:.8em}
 .cfacts dd{min-width:0;overflow-wrap:anywhere}
 .cfacts dd a{color:inherit;text-decoration:underline;text-underline-offset:2px}
@@ -964,13 +964,11 @@ button.node{cursor:zoom-in}
     return chainLoad;
   }
   const chainType = (c) => KIND_LABEL[c.kind] || c.kind;
+  // One line per chain: its name, its type, nothing more (the entry page has the rest).
   function chainRow(c, picks) {
-    const plugs = c.plugins || [];
-    const flow = plugs.length ? plugs.slice(0, 6).join(" → ") + (plugs.length > 6 ? " → +" + (plugs.length - 6) : "") : c.reference || "";
     return '<li><a class="row" href="#/chain/' + esc(c.id) + '"><span class="row-head"><span class="row-t">' + esc(c.title) +
       (picks.includes(c.id) ? '<span class="pick-star" aria-label="Picked">★</span>' : "") + "</span>" +
-      '<span class="row-s">' + esc(chainType(c) + (c.source && c.source !== "n/a" ? " · " + c.source : "")) + "</span>" + ICON.go + "</span>" +
-      (flow ? '<span class="flow">' + esc(flow) + "</span>" : "") + "</a></li>";
+      '<span class="row-s">' + esc(chainType(c)) + "</span>" + ICON.go + "</span></a></li>";
   }
   function chainsListHTML(d, query) {
     const cp = prefs.chains, picks = chainPicks(), q = query.trim(), terms = q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -994,10 +992,11 @@ button.node{cursor:zoom-in}
     const cp = prefs.chains;
     const chip = (attr, val, text, on) => '<button class="chip" type="button" data-' + attr + '="' + esc(val) + '" aria-pressed="' + on + '">' + esc(text) + "</button>";
     const fams = d.families.filter((f) => d.chains.some((c) => c.family === f));
-    return '<div class="filters" id="cfilters" role="group" aria-label="Filter">' + chip("cf", "", "All", !cp.fam) +
-      fams.map((f) => chip("cf", f, f, cp.fam === f)).join("") + '<span class="fsep" aria-hidden="true"></span>' +
-      CHAIN_TYPES.map((t) => chip("ck", t[0], t[1], cp.kind === t[0])).join("") + '<span class="fsep" aria-hidden="true"></span>' +
-      '<button class="chip" type="button" data-cpicks aria-pressed="' + cp.picks + '">★ Picks</button></div>';
+    // Families on the first row; types and picks on their own row under it.
+    return '<div id="cfilters"><div class="filters" role="group" aria-label="Family">' + chip("cf", "", "All", !cp.fam) +
+      fams.map((f) => chip("cf", f, f, cp.fam === f)).join("") + "</div>" +
+      '<div class="filters f2" role="group" aria-label="Type">' + CHAIN_TYPES.map((t) => chip("ck", t[0], t[1], cp.kind === t[0])).join("") +
+      '<span class="fsep" aria-hidden="true"></span><button class="chip" type="button" data-cpicks aria-pressed="' + cp.picks + '">★ Picks</button></div></div>';
   }
   const CHAIN_HEAD = '<div class="head"><div class="head-t"><h2 class="title">Production chains</h2></div></div>';
   function renderChainShelf(d) {
