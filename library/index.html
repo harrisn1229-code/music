@@ -324,6 +324,22 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .md hr{border:0;border-top:1px solid var(--line);margin:1.2rem 0}
 .md a{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--muted)}
 .md img{max-width:100%;height:auto}
+/* plugin screenshots: under each step, and from the signal chain; tap for the full-size view */
+.shot{margin:.75rem 0 1rem}
+.shot-btn{display:block;width:100%;border-radius:var(--r-md);overflow:hidden;background:var(--surface-2);box-shadow:0 0 0 1px var(--line);cursor:zoom-in}
+.shot-btn img{display:block;width:100%;height:auto}
+.shot figcaption{margin-top:.45rem;color:var(--muted);font-size:.8125rem;line-height:1.5}
+button.node{cursor:zoom-in}
+.node svg{width:.95rem;height:.95rem;margin-left:-.1rem;color:var(--muted);flex:none}
+#zoom{width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#0B0C10;color:#fff}
+#zoom::backdrop{background:#0B0C10}
+#zoom .zoom-in{width:100%;height:100%;overflow:auto;display:grid;place-items:center;padding:calc(env(safe-area-inset-top, 0px) + 3.75rem) .75rem calc(env(safe-area-inset-bottom, 0px) + 1rem)}
+#zoom img{max-width:100%;max-height:100%;width:auto;height:auto;cursor:zoom-in}
+#zoom.full .zoom-in{display:block}
+#zoom.full img{max-width:none;max-height:none;cursor:zoom-out}
+#zoom .zoom-cap{position:fixed;left:1rem;right:4.5rem;top:calc(env(safe-area-inset-top, 0px) + 1.15rem);margin:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#zoom .zoom-x{position:fixed;top:calc(env(safe-area-inset-top, 0px) + .6rem);right:.75rem;width:2.5rem;height:2.5rem;border-radius:50%;background:rgb(255 255 255 / .16);display:grid;place-items:center}
+#zoom .zoom-x svg{width:1.1rem;height:1.1rem}
 </style>
 </head>
 <body>
@@ -995,13 +1011,38 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     $("q").addEventListener("input", (e) => { queries.chains = e.target.value; $("lists").innerHTML = chainsListHTML(d, queries.chains); });
     current = { play: {} };
   }
+  /* Plugin screenshots. The numbered ones carry badges matching the (1) (2) (3) in the notes; the caption names them. */
+  const SHOT_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="1.8" y="3" width="12.4" height="10" rx="2"/><circle cx="5.8" cy="6.8" r="1.2"/><path d="M2.6 12.2l3.6-3.6 2.6 2.6 1.8-1.8 2.8 2.8"/></svg>';
+  const circled = (n) => String.fromCharCode(0x245F + n);
+  function shotHTML(sid, p) {
+    if (!p) return "";
+    return '<figure class="shot"><button class="shot-btn" type="button" style="max-width:' + Math.round(p.w * 1.5) + 'px" data-zoom="' + esc(sid) + '" aria-label="' + esc(p.name) + ', full size"><img src="' + esc(p.src) +
+      '" width="' + p.w + '" height="' + p.h + '" loading="lazy" decoding="async" alt="' + esc(p.name) + '"></button>' +
+      (p.keys.length ? "<figcaption>" + p.keys.map((k) => circled(k[0]) + "\u00a0" + esc(k[1])).join(" · ") + "</figcaption>" : "") + "</figure>";
+  }
+  function zoomShot(sid) {
+    const p = chainData && chainData.plugins && chainData.plugins[sid];
+    if (!p) return;
+    let dlg = $("zoom");
+    if (!dlg) {
+      dlg = document.createElement("dialog"); dlg.id = "zoom";
+      document.body.appendChild(dlg);
+      // Tap the picture for its real size (scroll around it); tap anywhere else to close.
+      dlg.addEventListener("click", (e) => { if (e.target.closest("img") && !e.target.closest(".zoom-x")) dlg.classList.toggle("full"); else dlg.close(); });
+      dlg.addEventListener("close", () => dlg.classList.remove("full"));
+    }
+    dlg.innerHTML = '<div class="zoom-in"><img src="' + esc(p.src) + '" alt="' + esc(p.name) + '"></div><p class="zoom-cap">' + esc(p.name) + "</p>" +
+      '<button class="zoom-x" type="button" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>';
+    dlg.showModal();
+  }
   /* Markdown from the vault, tidied for the page: tables scroll on their own, outside links open a new tab. */
-  function mdHTML(md, ids) {
+  function mdHTML(md, ids, plugs) {
     const box = document.createElement("div"), heads = [];
     box.innerHTML = marked.parse(md || "", { gfm: true, headerIds: false, mangle: false });
     box.querySelectorAll("table").forEach((t) => { const w = document.createElement("div"); w.className = "tbl"; t.parentNode.insertBefore(w, t); w.appendChild(t); });
     box.querySelectorAll("a[href]").forEach((a) => { if (/^https?:/i.test(a.getAttribute("href"))) { a.target = "_blank"; a.rel = "noopener"; } });
     if (ids) box.querySelectorAll("h2").forEach((h, i) => { h.id = "s" + i; heads.push({ id: h.id, text: h.textContent }); });
+    box.querySelectorAll("[data-plug]").forEach((el) => { const sid = el.getAttribute("data-plug"); el.outerHTML = shotHTML(sid, plugs && plugs[sid]); });
     return { html: box.innerHTML, heads: heads };
   }
   // The routing line, with each step that is itself a chain linked to it.
@@ -1012,7 +1053,13 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       return m ? "[" + m[1].split(",").map((x) => x.trim()).filter(Boolean).map(link).join(", ") + "]" : link(seg);
     }).join(" → ");
   }
-  const nodesHTML = (list, cls) => '<div class="nodes">' + list.map((n, i) => (i ? '<span class="arr" aria-hidden="true">→</span>' : "") + '<span class="node' + (cls ? " " + cls : "") + '"><i>' + (i + 1) + "</i>" + esc(n) + "</span>").join("") + "</div>";
+  // A step whose plugin has a screenshot is a button that opens it.
+  const nodesHTML = (list, cls, shots) => '<div class="nodes">' + list.map((n, i) => {
+    const sid = shots && shots[n], c = "node" + (cls ? " " + cls : ""), inner = "<i>" + (i + 1) + "</i>" + esc(n);
+    return (i ? '<span class="arr" aria-hidden="true">→</span>' : "") + (sid
+      ? '<button class="' + c + '" type="button" data-zoom="' + esc(sid) + '" aria-label="' + esc(n) + ', screenshot">' + inner + SHOT_ICON + "</button>"
+      : '<span class="' + c + '">' + inner + "</span>");
+  }).join("") + "</div>";
   const pickText = (on) => (on ? "★ Picked" : "☆ Pick");
   function renderChain(d, c) {
     const fact = (k, v) => (v ? "<div><dt>" + k + "</dt><dd>" + v + "</dd></div>" : "");
@@ -1020,15 +1067,15 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       fact("Routing", c.routing ? '<span class="rt">' + routingHTML(d, c) + "</span>" : "") + fact("Reference", esc(c.reference || "")) +
       fact("Mics", esc(c.mics || "")) + fact("Status", esc(STATUS_LABEL[c.status] || ""));
     const uad = c.uad || [], plugs = c.plugins || [];
-    const md = mdHTML(c.body, true), on = chainPicks().includes(c.id);
+    const md = mdHTML(c.body, true, d.plugins), on = chainPicks().includes(c.id);
     view.innerHTML =
       '<div class="head"><div class="head-t"><h2 class="title">' + esc(c.title) + '</h2><p class="sub">' + esc(chainType(c) + " · " + c.family + (c.artist ? " · Artist chain" : "")) + "</p></div>" +
       '<button class="play small" type="button" data-pick aria-pressed="' + on + '">' + pickText(on) + "</button></div>" +
       '<div class="entry two">' +
         (facts ? '<section class="card"><dl class="facts cfacts">' + facts + "</dl></section>" : "") +
         (uad.length || plugs.length ? '<section class="card"><h3>Signal chain</h3>' +
-          (uad.length ? '<span class="picker-l">UAD Console</span>' + nodesHTML(uad, "uad") : "") +
-          (plugs.length ? (uad.length ? '<span class="picker-l">Ableton</span>' : "") + nodesHTML(plugs) : "") + "</section>" : "") +
+          (uad.length ? '<span class="picker-l">UAD Console</span>' + nodesHTML(uad, "uad", c.shots) : "") +
+          (plugs.length ? (uad.length ? '<span class="picker-l">Ableton</span>' : "") + nodesHTML(plugs, "", c.shots) : "") + "</section>" : "") +
         '<section class="card wide">' +
           (md.heads.length ? '<div class="pills jump">' + md.heads.map((h) => '<button class="pill" type="button" data-sec="' + h.id + '">' + esc(h.text) + "</button>").join("") + "</div>" : "") +
           '<div class="md">' + md.html + "</div></section>" +
@@ -1126,8 +1173,9 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 
   /* Production chains: filters, the pick toggle and the jump buttons on an entry. */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-cf],[data-ck],[data-cpicks],[data-pick],[data-sec]");
+    const t = e.target.closest("[data-cf],[data-ck],[data-cpicks],[data-pick],[data-sec],[data-zoom]");
     if (!t) return;
+    if (t.hasAttribute("data-zoom")) { zoomShot(t.dataset.zoom); return; }
     const r = parse();
     if (t.hasAttribute("data-pick")) {
       if (r.view !== "chain") return;

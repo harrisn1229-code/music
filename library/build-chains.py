@@ -14,16 +14,46 @@ Usage (from anywhere):
 
 Wiki links between chain notes ([[3 Vocal Bus|Vocal Bus]]) become links inside Library; links to
 any other vault note become plain text. Vault paths are left out of the output.
+
+Plugin screenshots: a step heading that links a plugin note ("### 1. [[LALA]] - Level ride") gets
+that plugin's screenshot from Production/Plugins/Images right under it. The numbered version
+(<name>.annotated.png) is used when there is one, so the (1) (2) (3) markers in the chain notes
+match the badges, with the badges' names from the plugin note's Key Parameters table as the
+caption. Images are shrunk and saved as WebP in library/plugins/ (needs Pillow:
+`pip3 install pillow`). A plugin in SKIP below is left out until it is re-shot.
 """
 import json
 import os
 import re
 import sys
 
+try:
+    from PIL import Image
+except ImportError:
+    sys.exit("Pillow is needed for the plugin screenshots: pip3 install pillow")
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "chains.json")
 CHAINS_REL = os.path.join("00 Human", "20 Music", "School & Content", "Production", "Chains")
+PLUGINS_REL = os.path.join("00 Human", "20 Music", "School & Content", "Production", "Plugins")
+IMG_DIR = os.path.join(HERE, "plugins")
+IMG_MAX_W = 1600
 SYSTEM_NOTE = "FX Chain System"
+CIRCLED = {chr(0x2460 + i): i + 1 for i in range(20)}   # (1) .. (20)
+
+# Names used in chain notes that aren't a plugin note's name or alias. Name -> plugin note.
+PLUGIN_ALIASES = {"UAD 1176LN": "UAD UA 1176LN", "RX 11 Voice De-noise": "RX Voice De-noise"}
+
+# Screenshots that exist but show the wrong thing; left out until re-shot (see the vault's
+# Production/Plugins/_Re-shoot Queue.md). Name -> why.
+SKIP = {
+    "API-2500": "YouTube thumbnail, not a capture (licence also showed a demo bar)",
+    "Gem Dopamine": "vendor/tutorial image with overlay text (licence showed a demo dialog)",
+    "ValhallaPlate": "tutorial image with an arrow and caption overlay",
+    "ValhallaRoom": "'In depth with' YouTube thumbnail, old v1 UI",
+    "Drum Rack": "empty pad grid, no kit loaded",
+    "Simpler": "no sample loaded",
+}
 SYSTEM_HREF = "#/chains/system"
 
 FAMILIES = ["Vocals", "Drums", "FX", "Bass", "Inst & Synth", "Guitars", "Effects", "Master"]
@@ -90,6 +120,91 @@ def slug(s):
 
 def as_list(v):
     return v if isinstance(v, list) else []
+
+
+def load_plugins(vault):
+    """Plugin notes by lowercase name/alias -> {name, image, coords, keys}."""
+    pdir = os.path.join(vault, PLUGINS_REL)
+    idir = os.path.join(pdir, "Images")
+    found = {}
+    if not os.path.isdir(pdir):
+        return found
+    for f in sorted(os.listdir(pdir)):
+        if not f.endswith(".md") or f.startswith("_"):
+            continue
+        name = f[:-3]
+        fm, body = parse_frontmatter(open(os.path.join(pdir, f), encoding="utf-8").read())
+        if fm.get("type") not in (None, "", "plugin"):
+            continue
+        img = coords = None
+        for ext in (".annotated.png", ".png", ".jpg", ".jpeg"):
+            if os.path.isfile(os.path.join(idir, name + ext)):
+                img = os.path.join(idir, name + ext)
+                break
+        if img and img.endswith(".annotated.png") and os.path.isfile(os.path.join(idir, name + ".coords.json")):
+            coords = os.path.join(idir, name + ".coords.json")
+        keys = []
+        sec = re.search(r"^## Key Parameters\s*\n(.*?)(?=^## |\Z)", body, re.S | re.M)
+        for m in re.finditer(r"^\|\s*([\u2460-\u2473])\s*\|\s*([^|]+?)\s*\|", sec.group(1) if sec else "", re.M):
+            keys.append([CIRCLED[m.group(1)], re.sub(r"[*_`]", "", m.group(2)).strip()])
+        p = {"name": name, "image": img, "coords": coords, "keys": keys}
+        for n in [name, *as_list(fm.get("aliases"))]:
+            found.setdefault(n.lower(), p)
+    return found
+
+
+def plugin_image(p, used):
+    """Shrink one plugin screenshot to WebP in library/plugins/; returns its entry for chains.json."""
+    sid = slug(p["name"])
+    out = os.path.join(IMG_DIR, sid + ".webp")
+    used.add(sid + ".webp")
+    if not (os.path.isfile(out) and os.path.getmtime(out) >= os.path.getmtime(p["image"])):
+        im = Image.open(p["image"])
+        im = im.convert("RGBA" if im.mode in ("RGBA", "LA", "P") else "RGB")
+        if im.width > IMG_MAX_W:
+            im = im.resize((IMG_MAX_W, round(im.height * IMG_MAX_W / im.width)), Image.LANCZOS)
+        im.save(out, "WEBP", quality=82, method=6)
+    w, h = Image.open(out).size
+    keys = p["keys"]
+    if p["coords"]:   # caption only the controls that carry a badge on the image
+        badged = {b[0] for b in json.load(open(p["coords"], encoding="utf-8")).get("badges", [])}
+        keys = [k for k in keys if k[0] in badged]
+    elif not p["image"].endswith(".annotated.png"):
+        keys = []
+    return sid, {"name": p["name"], "src": "plugins/" + sid + ".webp", "w": w, "h": h, "keys": keys}
+
+
+def add_screenshots(body, plugins, shots, used):
+    """After each heading that links a plugin with a screenshot, a placeholder Library fills in."""
+    def heading(m):
+        wl = re.search(r"\[\[([^\]]+)\]\]", m.group(0))
+        name = wl_parts(wl.group(1))[0] if wl else ""
+        p = plugins.get(PLUGIN_ALIASES.get(name, name).lower())
+        if not p or not p["image"] or p["name"] in SKIP:
+            return m.group(0)
+        sid = slug(p["name"])
+        if sid not in shots:
+            shots[sid] = plugin_image(p, used)[1]
+        return m.group(0) + '\n\n<div data-plug="' + sid + '"></div>\n'
+    return re.sub(r"^#{2,5}[ \t]+.*$", heading, body, flags=re.M)
+
+
+def node_shots(c, plugins, shots, used):
+    """Signal-chain step name -> screenshot id, for the steps whose plugin has one."""
+    out = {}
+    for name in c["uad"] + c["plugins"]:
+        base = re.sub(r"\s*\(.*?\)\s*$", "", name).strip()
+        for cand in (name, base, re.sub(r"\s+(Rev E|Silver)$", "", base)):
+            cand = PLUGIN_ALIASES.get(cand, cand)
+            p = plugins.get(cand.lower())
+            if p:
+                if p["image"] and p["name"] not in SKIP:
+                    sid = slug(p["name"])
+                    if sid not in shots:
+                        shots[sid] = plugin_image(p, used)[1]
+                    out[name] = sid
+                break
+    return out
 
 
 def clean_body(body, links):
@@ -161,14 +276,23 @@ def main():
         for name in [c["_stem"], c["title"], *c["_aliases"]]:
             links.setdefault(name.lower(), "#/chain/" + c["id"])
 
+    plugins, shots, used = load_plugins(vault), {}, set()
+    os.makedirs(IMG_DIR, exist_ok=True)
     for c in chains:
-        c["body"] = clean_body(c.pop("_body"), links)
+        c["body"] = clean_body(add_screenshots(c.pop("_body"), plugins, shots, used), links)
+        c["shots"] = node_shots(c, plugins, shots, used)
         del c["_stem"], c["_aliases"]
+    for f in os.listdir(IMG_DIR):   # screenshots no chain uses any more
+        if f not in used:
+            os.remove(os.path.join(IMG_DIR, f))
 
-    data = {"families": FAMILIES, "overview": clean_body(overview, links), "chains": chains}
+    data = {"families": FAMILIES, "overview": clean_body(overview, links), "chains": chains,
+            "plugins": dict(sorted(shots.items()))}
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, separators=(",", ":"))
+    kb = sum(os.path.getsize(os.path.join(IMG_DIR, f)) for f in os.listdir(IMG_DIR)) // 1024
     print(f"{len(chains)} chains -> {os.path.relpath(OUT)} ({os.path.getsize(OUT) // 1024} KB)")
+    print(f"{len(shots)} plugin screenshots -> {os.path.relpath(IMG_DIR)}/ ({kb} KB)")
 
 
 if __name__ == "__main__":

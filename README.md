@@ -117,6 +117,15 @@ Links between chain notes become links inside Library and `FX Chain System.md` b
 "How the chains fit together" page; links to any other vault note become plain text, and vault
 paths are left out. Rebuild after editing a chain note, raise `version` in `apps.js`, and publish.
 
+Plugin screenshots come from the vault too (`Production/Plugins/Images/`). Each chain step that
+links a plugin note gets its screenshot under the heading, and each signal-chain step opens it.
+The numbered (`.annotated.png`) version is used where there is one, so the ① ② ③ in the notes
+match the badges, and the caption names them from the plugin note's Key Parameters table. The
+build shrinks them to WebP in `library/plugins/` (needs Pillow: `pip3 install pillow`). They are
+not saved for offline use up front; each is kept once it has been viewed. Screenshots that show
+the wrong thing (a YouTube thumbnail, an empty device) are listed in `SKIP` in the build script
+until they are re-shot.
+
 ## Claude
 
 `shared/ai.js` is the one connection to Claude. The key is the musician's own Anthropic API key,
