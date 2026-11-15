@@ -15,17 +15,17 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.20.6",
+  version: "1.21.0",
   // Files more than one app uses. Kept available offline like everything else.
-  shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js"],
+  shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   apps: [
     {
       id: "library",
       name: "Library",
-      about: "Songs, drills, and every mode, chord and voicing in any key",
+      about: "Songs, drills, production chains, and every mode, chord and voicing in any key",
       color: "#9F2D3F",
       icon: "icon-192.png",
-      files: ["index.html", "icon.svg", "icon-192.png"]
+      files: ["index.html", "icon.svg", "icon-192.png", "chains.json"]
     },
     {
       id: "barline",                       // folder name, also the link from the home screen

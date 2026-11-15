@@ -9,7 +9,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | --- | --- | --- |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
-| Library | `library/` | Songs, drills and your own ideas, plus every mode, chord, arpeggio and voicing in any key |
+| Library | `library/` | Songs, drills, your own ideas and production chains, plus every mode, chord, arpeggio and voicing in any key |
 | School | `school/` | Classes, lessons, quizzes, tests and a song library |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
@@ -36,11 +36,11 @@ shared/ai.js           The one Claude connection (your Anthropic API key) every 
 shared/assistant.js    The one AI assistant: a sheet opened from the home screen and every tool's top bar
 shared/cloud.js        The one email account: sign-in, saved data, private files
 shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
-shared/vendor/         The Supabase browser library
+shared/vendor/         The Supabase browser library, and marked (Markdown for Library's chain notes)
 cloud/setup.sql        One-time database setup for accounts
 barline/               Barline, self-contained
 note-cards/            Note Cards (reads shared/theory.js)
-library/               Library (reads shared/theory.js)
+library/               Library (reads shared/theory.js; chains.json is built from the vault)
 ear/                   Ear Training (index.html, app.js, app.css; synthesizes all its sound)
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler)
@@ -98,8 +98,24 @@ progress), so they are the same engine opened in a second mode: `school/library.
 Library tool's front page links to. School's own menu keeps only coursework and Classes.
 
 Library opens on its shelves: Modes and chords (`library/#/theory`, the mode, chord and voicing
-lookup), Songs, Drills, Originals and My files. All of them, and School, share one look — School's
+lookup), Production chains, Songs, Drills, Originals and My files. All of them, and School, share one look — School's
 is `school/music-skin.css`, written from the `music-school` repo.
+
+### Production chains
+
+Library's Production chains shelf (`library/#/chains`) is every FX chain note in the vault: the
+track, group, bus, send and master chains and the artist chains, searchable and filterable by
+family and type, with a picks list kept on the device (`library:chain-picks:v1`). The notes stay in
+the vault (`00 Human/20 Music/School & Content/Production/Chains/`); `library/chains.json` is built
+from them, never edited by hand:
+
+```
+python3 library/build-chains.py ~/Documents/hyperion
+```
+
+Links between chain notes become links inside Library and `FX Chain System.md` becomes the shelf's
+"How the chains fit together" page; links to any other vault note become plain text, and vault
+paths are left out. Rebuild after editing a chain note, raise `version` in `apps.js`, and publish.
 
 ## Claude
 

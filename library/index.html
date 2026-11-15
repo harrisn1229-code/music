@@ -286,6 +286,44 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
 .guide b{display:block}
 .guide span{display:block;color:var(--muted);font-size:.9375rem}
 .guide em{display:block;margin-top:.3rem;font-style:normal;font-weight:700;letter-spacing:.02em}
+
+/* ---------- production chains ---------- */
+.rows > li{min-width:0}
+@media (max-width:61.99rem){ .entry.two{grid-template-columns:minmax(0, 1fr)} }
+.pills.jump .pill{flex:0 1 auto;max-width:100%;height:auto;min-height:2rem;padding:.3rem .8rem;white-space:normal;text-align:left}
+.row .flow{display:block;margin-top:.3rem;color:var(--muted);font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick-star{margin-left:.35rem;color:var(--focus);font-size:.8em}
+.cfacts dd{min-width:0;overflow-wrap:anywhere}
+.cfacts dd a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.nodes{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.node{display:inline-flex;align-items:center;gap:.45rem;min-height:2rem;padding:.2rem .8rem .2rem .3rem;border-radius:999px;background:var(--surface-2);font-weight:700;font-size:.875rem}
+.node i{font-style:normal;flex:none;width:1.45rem;height:1.45rem;border-radius:50%;background:var(--sel);color:var(--on-sel);display:grid;place-items:center;font-size:.75rem;font-weight:800}
+.node.uad{background:transparent;border:1.5px dashed var(--surface-3);padding:calc(.2rem - 1.5px) calc(.8rem - 1.5px) calc(.2rem - 1.5px) calc(.3rem - 1.5px)}
+.nodes .arr{color:var(--muted);font-weight:700}
+.card.md{display:block}
+.md{line-height:1.55;overflow-wrap:break-word;min-width:0}
+.md > :not(.tbl):not(pre){max-width:46rem}
+.md p{margin:.55rem 0}
+.md h2{scroll-margin-top:5rem;font-size:1.25rem;font-weight:800;letter-spacing:-.01em;margin:1.6rem 0 .5rem}
+.md > :first-child{margin-top:0}
+.md h3{font-size:1.0625rem;font-weight:800;margin:1.2rem 0 .4rem}
+.md h4{font-size:1rem;font-weight:700;margin:1rem 0 .3rem}
+.md ul{list-style:disc;padding-left:1.25rem;margin:.55rem 0}
+.md ol{list-style:decimal;padding-left:1.25rem;margin:.55rem 0}
+.md li{margin:.3rem 0}
+.md li > ul,.md li > ol{margin:.2rem 0}
+.md strong{font-weight:700}
+.md code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.85em;background:var(--surface-2);padding:.1em .35em;border-radius:.35rem}
+.md pre{background:var(--surface-2);padding:.8rem;border-radius:var(--r-md);overflow-x:auto;margin:.7rem 0}
+.md pre code{background:none;padding:0;border-radius:0}
+.md blockquote{margin:.6rem 0;padding:.1rem 0 .1rem .85rem;border-left:3px solid var(--surface-3);color:var(--muted)}
+.md .tbl{overflow-x:auto;margin:.7rem 0;-webkit-overflow-scrolling:touch}
+.md table{border-collapse:collapse;font-size:.9375rem;width:100%}
+.md th,.md td{padding:.45rem .6rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.md th{font-weight:700}
+.md hr{border:0;border-top:1px solid var(--line);margin:1.2rem 0}
+.md a{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--muted)}
+.md img{max-width:100%;height:auto}
 </style>
 </head>
 <body>
@@ -313,7 +351,10 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
      #/mode/<key>/<mode>     one mode        (key is 0-11, C = 0)
      #/chord/<key>/<quality> one chord: spelling, inversions and voicings
      #/arp/<key>/<quality>   one arpeggio: notes, guitar neck and piano
-     #/voicings              how inversions and voicings are named */
+     #/voicings              how inversions and voicings are named
+     #/chains                the Production chains shelf: search, family and type filters, picks
+     #/chain/<id>            one production chain: facts, signal chain and notes
+     #/chains/system         how the production chains fit together */
 (function () {
   "use strict";
   const $ = (id) => document.getElementById(id);
@@ -622,10 +663,13 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   /* ---------- index ---------- */
   /* What the shelves remember beyond the key: filters per shelf, and archived guitar shapes. */
   const FILTER_IDS = { modes: MODES.map((m) => m.id), chords: QUALS.map((q) => q.id), arps: ARP_QUALITIES.map((q) => q.id) };
+  const CHAIN_KINDS = ["track", "group", "bus", "send", "master", "artist"];
   (function cleanPrefs() {
     const f = prefs.filters && typeof prefs.filters === "object" ? prefs.filters : {};
     prefs.filters = {};
     Object.keys(FILTER_IDS).forEach((k) => { prefs.filters[k] = FILTER_IDS[k].filter((id) => Array.isArray(f[k]) && f[k].includes(id)); });
+    const cc = prefs.chains && typeof prefs.chains === "object" ? prefs.chains : {};
+    prefs.chains = { fam: typeof cc.fam === "string" ? cc.fam : "", kind: CHAIN_KINDS.includes(cc.kind) ? cc.kind : "", picks: cc.picks === true };
     prefs.archivedShapes = Array.isArray(prefs.archivedShapes) ? prefs.archivedShapes.filter((x, i, a) => typeof x === "string" && a.indexOf(x) === i) : [];
   })();
   const QSHORT = { maj: "maj", min: "m", aug: "aug", dim: "dim" };
@@ -660,7 +704,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     chords: { title: "Chords", ph: "Search chords", pref: "#/chord/" },
     arps: { title: "Arpeggios", ph: "Search arpeggios", pref: "#/arp/" }
   };
-  const queries = { modes: "", chords: "", arps: "" };
+  const queries = { modes: "", chords: "", arps: "", chains: "" };
   const listsClass = (kind, query) => "lists" + (query.trim() ? "" : kind === "modes" ? " one" : " two");
   function listsHTML(kind, query) {
     const pc = prefs.pc;
@@ -688,7 +732,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   function renderShelves() {
     const tile = (href, name) => '<li><a class="tile" href="' + href + '">' + name + "</a></li>";
     view.innerHTML = '<ul class="tiles">' +
-      tile("#/modes", "Modes") + tile("#/chords", "Chords") + tile("#/arps", "Arpeggios") +
+      tile("#/modes", "Modes") + tile("#/chords", "Chords") + tile("#/arps", "Arpeggios") + tile("#/chains", "Production chains") +
       tile("../school/library.html#songs", "Covers") + tile("../school/library.html#drills", "Drills") +
       tile("../school/library.html#originals", "Originals") + tile("../school/library.html#files", "My files") + "</ul>";
     current = { play: {} };
@@ -866,9 +910,166 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     }).join("") + "</ul></section>";
   }
 
+  /* ---------- production chains ----------
+     chains.json and the markdown reader load the first time a chain page opens. */
+  const CHAIN_PICKS_KEY = "library:chain-picks:v1";
+  const CHAIN_TYPES = [["track", "Track"], ["group", "Group"], ["bus", "Bus"], ["send", "Send"], ["master", "Master"], ["artist", "Artist"]];
+  const KIND_LABEL = { track: "Track", group: "Group", bus: "Bus", send: "Send", master: "Master", foundation: "Foundation", style: "Style" };
+  const STATUS_LABEL = { default: "Vault default", "video-derived": "From video", reference: "Reference", active: "Active" };
+  const SOURCE_LABEL = { mic: "Mic", di: "DI", digital: "Digital", mixed: "Mixed" };
+  let chainData = null, chainLoad = null;
+  const chainPicks = () => { const p = lsGet(CHAIN_PICKS_KEY); return Array.isArray(p) ? p.filter((x) => typeof x === "string") : []; };
+  function loadScript(src) {
+    return new Promise((ok, fail) => {
+      if (window.marked) { ok(); return; }
+      const s = document.createElement("script");
+      s.src = src; s.onload = () => ok(); s.onerror = () => fail(new Error("script"));
+      document.head.appendChild(s);
+    });
+  }
+  function loadChains() {
+    if (chainData) return Promise.resolve(chainData);
+    if (!chainLoad) {
+      chainLoad = Promise.all([
+        loadScript("../shared/vendor/marked.min.js"),
+        fetch("chains.json").then((r) => { if (!r.ok) throw new Error("chains"); return r.json(); })
+      ]).then((x) => {
+        const d = x[1];
+        d.byId = {}; d.byTitle = {};
+        d.chains.forEach((c) => {
+          d.byId[c.id] = c;
+          if (!d.byTitle[c.title.toLowerCase()]) d.byTitle[c.title.toLowerCase()] = c;
+          c._h = [c.title, c.family, c.kind, c.source, c.routing, c.reference, c.mics, (c.uad || []).join(" "), (c.plugins || []).join(" "), c.body].join(" ").toLowerCase();
+        });
+        chainData = d;
+        return d;
+      }).catch((e) => { chainLoad = null; throw e; });
+    }
+    return chainLoad;
+  }
+  const chainType = (c) => KIND_LABEL[c.kind] || c.kind;
+  function chainRow(c, picks) {
+    const plugs = c.plugins || [];
+    const flow = plugs.length ? plugs.slice(0, 6).join(" → ") + (plugs.length > 6 ? " → +" + (plugs.length - 6) : "") : c.reference || "";
+    return '<li><a class="row" href="#/chain/' + esc(c.id) + '"><span class="row-head"><span class="row-t">' + esc(c.title) +
+      (picks.includes(c.id) ? '<span class="pick-star" aria-label="Picked">★</span>' : "") + "</span>" +
+      '<span class="row-s">' + esc(chainType(c) + (c.source && c.source !== "n/a" ? " · " + c.source : "")) + "</span>" + ICON.go + "</span>" +
+      (flow ? '<span class="flow">' + esc(flow) + "</span>" : "") + "</a></li>";
+  }
+  function chainsListHTML(d, query) {
+    const cp = prefs.chains, picks = chainPicks(), q = query.trim(), terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const typeOk = (c) => !cp.kind || (cp.kind === "artist" ? c.artist || c.kind === "style" : c.kind === cp.kind);
+    const found = d.chains.filter((c) => (!cp.fam || c.family === cp.fam) && typeOk(c) && (!cp.picks || picks.includes(c.id)) && terms.every((t) => c._h.indexOf(t) >= 0));
+    if (!found.length) return '<p class="empty">' + (cp.picks && !picks.length ? "No picks yet." : q ? "Nothing matches “" + esc(q) + "”." : "Nothing matches.") + "</p>";
+    let html = "";
+    if (!q && !cp.fam && !cp.kind && !cp.picks) {
+      html += '<section class="sec"><ul class="rows"><li><a class="row plain" href="#/chains/system"><span>How the chains fit together</span>' + ICON.go + "</a></li></ul></section>";
+    }
+    const groups = [];
+    found.forEach((c) => {
+      const key = c.family + "|" + !!c.artist;
+      let g = groups[groups.length - 1];
+      if (!g || g.key !== key) { g = { key: key, title: c.family + (c.artist ? " · Artist chains" : ""), rows: [] }; groups.push(g); }
+      g.rows.push(chainRow(c, picks));
+    });
+    return html + groups.map((g) => '<section class="sec"><h2>' + esc(g.title) + '</h2><ul class="rows">' + g.rows.join("") + "</ul></section>").join("");
+  }
+  function chainFiltersHTML(d) {
+    const cp = prefs.chains;
+    const chip = (attr, val, text, on) => '<button class="chip" type="button" data-' + attr + '="' + esc(val) + '" aria-pressed="' + on + '">' + esc(text) + "</button>";
+    const fams = d.families.filter((f) => d.chains.some((c) => c.family === f));
+    return '<div class="filters" id="cfilters" role="group" aria-label="Filter">' + chip("cf", "", "All", !cp.fam) +
+      fams.map((f) => chip("cf", f, f, cp.fam === f)).join("") + '<span class="fsep" aria-hidden="true"></span>' +
+      CHAIN_TYPES.map((t) => chip("ck", t[0], t[1], cp.kind === t[0])).join("") + '<span class="fsep" aria-hidden="true"></span>' +
+      '<button class="chip" type="button" data-cpicks aria-pressed="' + cp.picks + '">★ Picks</button></div>';
+  }
+  const CHAIN_HEAD = '<div class="head"><div class="head-t"><h2 class="title">Production chains</h2></div></div>';
+  function renderChainShelf(d) {
+    const rec = recents().filter((x) => x.h.indexOf("#/chain/") === 0), q = queries.chains;
+    if (prefs.chains.fam && !d.families.includes(prefs.chains.fam)) { prefs.chains.fam = ""; savePrefs(); }
+    view.innerHTML = CHAIN_HEAD +
+      '<label class="search">' + ICON.search + '<input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Search chains" aria-label="Search chains"></label>' +
+      (rec.length ? '<div class="recent" aria-label="Recently looked up">' + rec.map((x) => '<a class="pill" href="' + esc(x.h) + '">' + esc(x.t) + "</a>").join("") + "</div>" : "") +
+      chainFiltersHTML(d) + '<div class="lists one" id="lists">' + chainsListHTML(d, q) + "</div>";
+    $("q").value = q;
+    $("q").addEventListener("input", (e) => { queries.chains = e.target.value; $("lists").innerHTML = chainsListHTML(d, queries.chains); });
+    current = { play: {} };
+  }
+  /* Markdown from the vault, tidied for the page: tables scroll on their own, outside links open a new tab. */
+  function mdHTML(md, ids) {
+    const box = document.createElement("div"), heads = [];
+    box.innerHTML = marked.parse(md || "", { gfm: true, headerIds: false, mangle: false });
+    box.querySelectorAll("table").forEach((t) => { const w = document.createElement("div"); w.className = "tbl"; t.parentNode.insertBefore(w, t); w.appendChild(t); });
+    box.querySelectorAll("a[href]").forEach((a) => { if (/^https?:/i.test(a.getAttribute("href"))) { a.target = "_blank"; a.rel = "noopener"; } });
+    if (ids) box.querySelectorAll("h2").forEach((h, i) => { h.id = "s" + i; heads.push({ id: h.id, text: h.textContent }); });
+    return { html: box.innerHTML, heads: heads };
+  }
+  // The routing line, with each step that is itself a chain linked to it.
+  function routingHTML(d, c) {
+    const link = (name) => { const t = d.byTitle[name.toLowerCase()]; return t && t.id !== c.id ? '<a href="#/chain/' + esc(t.id) + '">' + esc(name) + "</a>" : esc(name); };
+    return c.routing.split("→").map((seg) => seg.trim()).filter(Boolean).map((seg) => {
+      const m = /^\[(.*)\]$/.exec(seg);
+      return m ? "[" + m[1].split(",").map((x) => x.trim()).filter(Boolean).map(link).join(", ") + "]" : link(seg);
+    }).join(" → ");
+  }
+  const nodesHTML = (list, cls) => '<div class="nodes">' + list.map((n, i) => (i ? '<span class="arr" aria-hidden="true">→</span>' : "") + '<span class="node' + (cls ? " " + cls : "") + '"><i>' + (i + 1) + "</i>" + esc(n) + "</span>").join("") + "</div>";
+  const pickText = (on) => (on ? "★ Picked" : "☆ Pick");
+  function renderChain(d, c) {
+    const fact = (k, v) => (v ? "<div><dt>" + k + "</dt><dd>" + v + "</dd></div>" : "");
+    const facts = fact("Source", c.source && c.source !== "n/a" ? esc(SOURCE_LABEL[c.source] || c.source) : "") +
+      fact("Routing", c.routing ? '<span class="rt">' + routingHTML(d, c) + "</span>" : "") + fact("Reference", esc(c.reference || "")) +
+      fact("Mics", esc(c.mics || "")) + fact("Status", esc(STATUS_LABEL[c.status] || ""));
+    const uad = c.uad || [], plugs = c.plugins || [];
+    const md = mdHTML(c.body, true), on = chainPicks().includes(c.id);
+    view.innerHTML =
+      '<div class="head"><div class="head-t"><h2 class="title">' + esc(c.title) + '</h2><p class="sub">' + esc(chainType(c) + " · " + c.family + (c.artist ? " · Artist chain" : "")) + "</p></div>" +
+      '<button class="play small" type="button" data-pick aria-pressed="' + on + '">' + pickText(on) + "</button></div>" +
+      '<div class="entry two">' +
+        (facts ? '<section class="card"><dl class="facts cfacts">' + facts + "</dl></section>" : "") +
+        (uad.length || plugs.length ? '<section class="card"><h3>Signal chain</h3>' +
+          (uad.length ? '<span class="picker-l">UAD Console</span>' + nodesHTML(uad, "uad") : "") +
+          (plugs.length ? (uad.length ? '<span class="picker-l">Ableton</span>' : "") + nodesHTML(plugs) : "") + "</section>" : "") +
+        '<section class="card wide">' +
+          (md.heads.length ? '<div class="pills jump">' + md.heads.map((h) => '<button class="pill" type="button" data-sec="' + h.id + '">' + esc(h.text) + "</button>").join("") + "</div>" : "") +
+          '<div class="md">' + md.html + "</div></section>" +
+      "</div>";
+    current = { play: {} };
+  }
+  function renderChainSystem(d) {
+    view.innerHTML = '<div class="head"><div class="head-t"><h2 class="title">How the chains fit together</h2></div></div>' +
+      '<div class="entry two"><section class="card wide md">' + mdHTML(d.overview, false).html + "</section></div>";
+    current = { play: {} };
+  }
+  function routeChains(r, from) {
+    const hash = location.hash;
+    current = { play: {} };
+    setNav(r.view === "chains" ? "#/" : "#/chains", ICON.back, r.view === "chains" ? "Back to Library" : "Back to production chains");
+    document.title = r.view === "chains" ? "Production chains – Library" : r.view === "chainsys" ? "How the chains fit together – Library" : "Library";
+    view.innerHTML = r.view === "chains" ? CHAIN_HEAD : "";
+    window.scrollTo(0, 0);
+    loadChains().then((d) => {
+      if (location.hash !== hash) return;
+      if (r.view === "chains") {
+        renderChainShelf(d);
+        window.scrollTo(0, from === "chain" || from === "chainsys" ? shelfScroll.chains : 0);
+        return;
+      }
+      if (r.view === "chainsys") { renderChainSystem(d); window.scrollTo(0, 0); return; }
+      const c = d.byId[r.id];
+      if (!c) { location.replace("#/chains"); return; }
+      renderChain(d, c);
+      document.title = c.title + " – Library";
+      remember("#/chain/" + c.id, c.title);
+      window.scrollTo(0, 0);
+    }, () => {
+      if (location.hash !== hash) return;
+      view.insertAdjacentHTML("beforeend", '<p class="empty">Couldn\'t load the chains.</p>');
+    });
+  }
+
   /* ---------- getting around ---------- */
   let current = { play: {} };
-  const shelfScroll = { modes: 0, chords: 0, arps: 0 };
+  const shelfScroll = { modes: 0, chords: 0, arps: 0, chains: 0 };
   let curShelf = null, prevView = null;
   const ARPQ = Object.fromEntries(ARP_QUALITIES.map((q) => [q.id, q]));
   const SHELF_KIND = { modes: "modes", theory: "modes", chords: "chords", arps: "arps" };
@@ -880,6 +1081,8 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     if (p[0] === "chord" && okPc && QUAL[p[2]]) return { view: "chord", pc: pc, id: p[2] };
     if (p[0] === "arp" && okPc && ARPQ[p[2]]) return { view: "arp", pc: pc, id: p[2] };
     if (p[0] === "voicings") return { view: "guide" };
+    if (p[0] === "chains") return { view: p[1] === "system" ? "chainsys" : "chains" };
+    if (p[0] === "chain" && p[1]) { let id = p[1]; try { id = decodeURIComponent(id); } catch (e) {} return { view: "chain", id: id }; }
     if (SHELF_KIND[p[0]]) return { view: "shelf", kind: SHELF_KIND[p[0]] };
     return { view: "shelves" };
   }
@@ -891,7 +1094,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     const r = parse(), from = prevView;
     lastArch = null; clearTimeout(archTimer);
     if (curShelf) shelfScroll[curShelf] = window.scrollY;
-    curShelf = r.view === "shelf" ? r.kind : null;
+    curShelf = r.view === "shelf" ? r.kind : r.view === "chains" ? "chains" : null;
     prevView = r.view;
     if (r.view === "shelves") {
       setNav("../", ICON.home, "Music home, all apps");
@@ -907,6 +1110,7 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
       window.scrollTo(0, ["mode", "chord", "arp", "guide"].includes(from) ? shelfScroll[r.kind] : 0);
       return;
     }
+    if (r.view === "chains" || r.view === "chainsys" || r.view === "chain") { routeChains(r, from); return; }
     const back = r.view === "mode" ? ["modes", "Back to modes"] : r.view === "arp" ? ["arps", "Back to arpeggios"] : ["chords", "Back to chords"];
     setNav("#/" + back[0], ICON.back, back[1]);
     if (r.view === "mode") renderMode(r.pc, MODE[r.id]);
@@ -920,6 +1124,35 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
   }
   window.addEventListener("hashchange", route);
 
+  /* Production chains: filters, the pick toggle and the jump buttons on an entry. */
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-cf],[data-ck],[data-cpicks],[data-pick],[data-sec]");
+    if (!t) return;
+    const r = parse();
+    if (t.hasAttribute("data-pick")) {
+      if (r.view !== "chain") return;
+      const list = chainPicks(), i = list.indexOf(r.id);
+      if (i >= 0) list.splice(i, 1); else list.push(r.id);
+      lsSet(CHAIN_PICKS_KEY, list);
+      t.setAttribute("aria-pressed", String(i < 0)); t.textContent = pickText(i < 0);
+      return;
+    }
+    if (t.hasAttribute("data-sec")) {
+      const h = view.querySelector('.md [id="' + t.dataset.sec + '"]');
+      if (h) h.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (r.view !== "chains" || !chainData || !$("cfilters")) return;
+    const cp = prefs.chains;
+    if (t.hasAttribute("data-cf")) cp.fam = t.dataset.cf;
+    else if (t.hasAttribute("data-ck")) cp.kind = cp.kind === t.dataset.ck ? "" : t.dataset.ck;
+    else cp.picks = !cp.picks;
+    savePrefs();
+    $("cfilters").querySelectorAll("[data-cf]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cf === cp.fam)));
+    $("cfilters").querySelectorAll("[data-ck]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ck === cp.kind)));
+    $("cfilters").querySelector("[data-cpicks]").setAttribute("aria-pressed", String(cp.picks));
+    $("lists").innerHTML = chainsListHTML(chainData, queries.chains);
+  });
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-pc],[data-start],[data-inv],[data-v],[data-play],[data-f],[data-fall],[data-arch],[data-undo],[data-unarch],[data-archtoggle]");
     if (!t) return;
@@ -1001,6 +1234,13 @@ main{padding-top:.25rem;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,
     app: "library", button: $("ai-btn"),
     context: () => {
       const r = parse(), t = document.title.replace(/ – Library$/, "");
+      if (r.view === "chains") return "In Library, on the Production chains shelf.";
+      if (r.view === "chainsys") return "In Library, reading how the production chains fit together.";
+      const pc = r.view === "chain" && chainData && chainData.byId[r.id];
+      if (pc) {
+        const sig = (pc.uad || []).concat(pc.plugins || []);
+        return "In Library, looking at the production chain “" + pc.title + "” (" + pc.family + ", " + chainType(pc) + ")." + (sig.length ? " Signal chain: " + sig.join(" → ") + "." : "");
+      }
       return r.view === "shelves" ? "In Library, on the front page." : "In Library, looking at: " + t + ".";
     }
   });
