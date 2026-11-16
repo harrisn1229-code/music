@@ -3,7 +3,7 @@
    Barline had an assistant that could build and edit charts. This is that assistant lifted out so
    every tool opens the same one (a round button in each tool's top bar and on the home screen),
    and so it can work across tools: charts, the Originals idea board, theory lookups, practice
-   stats, settings and Ear Training's feelings.
+   stats, settings, Ear Training's feelings and the Scratchpad (a brain dump it sorts and routes).
 
    - It talks to Anthropic through MusicAI (shared/ai.js): the musician's own key, straight from
      this device. The conversation is kept in sessionStorage so it follows you from tool to tool;
@@ -18,7 +18,7 @@
 
    API
      MusicAssistant.mount({ app, button, context, tools, dark, onOpen })
-        app      the tool id: home, library, barline, note-cards, school, ear
+        app      the tool id: home, library, barline, note-cards, school, ear, scratchpad
         button   an element (or list of them) that opens the assistant; any element with a
                  data-assistant attribute does too
         context  () => short text on where the musician is and what is on screen
@@ -28,7 +28,9 @@
                  where undo is plain data handed back to tools.__undo, and href is relative to
                  the Music root.
         dark     force the dark look (Ear Training)
-     MusicAssistant.open() / close() / icon (the sparkle glyph) */
+     MusicAssistant.open() / close() / icon (the sparkle glyph)
+     MusicAssistant.ask(text)  open and send text (Scratchpad's Sort button); without a key it is
+                               left in the box instead */
 (function () {
   "use strict";
   if (self.MusicAssistant) return;
@@ -47,8 +49,8 @@
      The system prompt
      =================================================================== */
   var SYSTEM = [
-    "You are the assistant inside Music, a set of tools for working musicians: Barline (chord charts with a click track), Library (songs, drills, an Originals idea board, and a theory reference of modes, chords and arpeggios), Note Cards (flashcards), School (classes and lessons) and Ear Training (scale degrees over a drone). The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
-    "You can see and change their things with tools: list_charts, get_chart, create_chart, update_chart and move_chart (Barline's charts); list_originals and add_original_idea (the Originals idea board); theory_lookup and list_theory (notes of a mode, chord or arpeggio); practice_stats (Note Cards, Ear Training and School progress); get_settings and change_settings (theme, Barline look, Ear Training preferences); get_feelings and set_feeling (the musician's own words for each scale degree in Ear Training). Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button. Keep your replies short.",
+    "You are the assistant inside Music, a set of tools for working musicians: Barline (chord charts with a click track), Library (songs, drills, an Originals idea board, and a theory reference of modes, chords and arpeggios), Note Cards (flashcards), School (classes and lessons), Ear Training (scale degrees over a drone) and Scratchpad (a daily brain dump you sort for them). The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
+    "You can see and change their things with tools: list_charts, get_chart, create_chart, update_chart and move_chart (Barline's charts); list_originals and add_original_idea (the Originals idea board); theory_lookup and list_theory (notes of a mode, chord or arpeggio); practice_stats (Note Cards, Ear Training and School progress); get_settings and change_settings (theme, Barline look, Ear Training preferences); get_feelings and set_feeling (the musician's own words for each scale degree in Ear Training); list_scratch, add_scratch and sort_scratch (the Scratchpad). Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button. Keep your replies short.",
     "",
     "Creating a song from its name: search the web for its key, tempo (BPM), time signature, chord progression and structure (intro, verse, chorus, bridge and so on, with bar counts and repeats), and use web_fetch to read the most useful pages. Then call create_chart once with what you found. Fill in the artist. If sources disagree, go with the most reliable ones. If you can't find something, make a sensible musical choice and say which details are guesses.",
     "Editing: call get_chart first, then update_chart with the complete chart. Keep everything they didn't ask to change exactly as it is. Each message starts with a note in square brackets saying where the musician is and what's on their screen; in Barline, \"this song\" means the open chart.",
@@ -66,6 +68,8 @@
     "Theory: use theory_lookup for the notes and degrees of a mode, chord or arpeggio rather than working them out; list_theory shows the names available, so map loose names (\"dominant seventh\", \"half diminished\", \"minor pentatonic\" is not available) onto them. The result includes a link button to the Library page for it, so don't write out addresses.",
     "Practice: practice_stats reads Note Cards ratings, Ear Training accuracy and School enrolment. Say what stands out (weakest degrees, decks with many Rusty cards, streaks) in a sentence or two, with the numbers.",
     "Settings: change_settings changes the theme, Barline's accent and title font, and Ear Training's preferences; values outside a setting's range are clamped and the result says what was actually set. get_settings shows the current values.",
+    "Scratchpad: the musician's daily brain dump, usually dictated and messy. list_scratch reads it (unsorted notes by default; give a pile to read that pile). add_scratch jots a new note when they say note this, jot this down or remember this, from anywhere in Music.",
+    "Sorting the Scratchpad (\"sort my notes\"): call list_scratch, then for each unsorted note split it into the separate thoughts it holds and call sort_scratch once for that note with every piece. Piles: song (a song idea: a title, concept, hook or feel), lyrics (lines or verses to sing), chords (progressions, riffs, voicings), practice (things to practise or learn), production (mixing, sound design, arrangement), gear (instruments, plugins, things to buy or fix), todo (other things to do), other. Route as you file: a new song idea also goes on the Originals idea board with add_original_idea (title it from the note; put the idea, and any lyric lines that belong to it, in idea; check list_originals first and don't add one that is already there). Chords they want to keep for a song become a chart with create_chart in the folder Originals, but only when they gave actual chords. Each piece's sent_to says where you sent it, like \"Originals: Glass Coast\" or \"Barline: Glass Coast\", or \"\" when it only stays in its pile. Keep their words: drop filler like um, but never rewrite or polish lyrics. Finish by saying in a sentence what went where.",
     "Feelings: set_feeling saves the musician's own words for a scale degree in Ear Training (200 characters at most; empty text resets it to the starting words); get_feelings lists them.",
     "",
     "Reply in one to three short, plain sentences: what you did and anything worth double-checking. No headings, lists or markdown."
@@ -107,6 +111,7 @@
   var CHART_REQ = Object.keys(CHART_PROPS);
   function objSchema(props, req) { return { type: "object", properties: props, required: req, additionalProperties: false }; }
   function assign(a) { for (var i = 1; i < arguments.length; i++) { var s = arguments[i]; for (var k in s) if (Object.prototype.hasOwnProperty.call(s, k)) a[k] = s[k]; } return a; }
+  var SCRATCH_PILES = ["song", "lyrics", "chords", "practice", "production", "gear", "todo", "other"];
   var num = function (d, lo, hi, step) { return { type: "number", description: d + ": " + lo + " to " + hi + (step ? ", steps of " + step : "") }; };
 
   // [owner, definition]. Owners: barline, school, ear (their pages implement them) and self (this file).
@@ -162,7 +167,22 @@
       type: "object", additionalProperties: false, required: ["degree", "text"],
       properties: {
         degree: { type: "string", description: "The scale degree: 1, b2, 2, b3, 3, 4, #4, 5, b6, 6, b7 or 7" },
-        text: { type: "string", description: "At most 200 characters" } } } }]
+        text: { type: "string", description: "At most 200 characters" } } } }],
+    ["scratchpad", { name: "list_scratch", description: "Read the Scratchpad. With no pile: notes (id, when, text, and their pieces once sorted), unsorted ones by default. With a pile: the pieces filed there.", input_schema: {
+      type: "object", additionalProperties: false,
+      properties: {
+        status: { type: "string", enum: ["unsorted", "sorted", "all"] },
+        pile: { type: "string", enum: SCRATCH_PILES },
+        include_done: { type: "boolean", description: "With a pile: include pieces marked done" },
+        limit: { type: "integer", description: "Most to return, default 50" } } } }],
+    ["scratchpad", { name: "add_scratch", description: "Jot a new note in the Scratchpad, as the musician said it.", input_schema: objSchema({ text: { type: "string" } }, ["text"]), strict: true }],
+    ["scratchpad", { name: "sort_scratch", description: "File one Scratchpad note: split it into pieces, each in a pile, with where you sent it. Replaces any earlier sorting of that note.", input_schema: objSchema({
+      note_id: { type: "string" },
+      pieces: { type: "array", items: objSchema({
+        text: { type: "string", description: "The piece in the musician's own words" },
+        pile: { type: "string", enum: SCRATCH_PILES },
+        sent_to: { type: "string", description: "Where it was sent, like Originals: Glass Coast, or empty" } }, ["text", "pile", "sent_to"]) }
+    }, ["note_id", "pieces"]), strict: true }]
   ];
   var OWNER = {}, CLIENT_DEFS = [];
   TOOL_LIST.forEach(function (t) { OWNER[t[1].name] = t[0]; CLIENT_DEFS.push(t[1]); });
@@ -170,8 +190,8 @@
     { type: "web_search_20260209", name: "web_search", max_uses: 8 },
     { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 }
   ]);
-  var OWNER_PAGE = { barline: "barline/index.html", school: "school/library.html", ear: "ear/index.html" };
-  var OWNER_NAME = { barline: "Barline", school: "School", ear: "Ear Training" };
+  var OWNER_PAGE = { barline: "barline/index.html", school: "school/library.html", ear: "ear/index.html", scratchpad: "scratchpad/index.html" };
+  var OWNER_NAME = { barline: "Barline", school: "School", ear: "Ear Training", scratchpad: "Scratchpad" };
 
   /* ===================================================================
      Small helpers
@@ -785,7 +805,8 @@
     "note-cards": ["How are my cards doing?", "Spell F#m7b5"],
     school: ["Add an Originals idea", "How is my practice going?"],
     ear: ["Which degrees are weakest?", "Set the tempo to 60", "Feeling for ♭3"],
-    home: ["Create Autumn Leaves", "Notes in D Dorian", "How is my practice going?", "Dark theme"]
+    scratchpad: ["Sort my notes", "What lyrics have I jotted lately?", "What's on my to-do pile?"],
+    home: ["Create Autumn Leaves", "Sort my Scratchpad", "How is my practice going?", "Dark theme"]
   };
   var CSS = [
     ".ma-root{--ma-bg:#FFFFFF;--ma-ink:#121419;--ma-muted:#5C6370;--ma-rule:#E1E4E9;--ma-soft:#F1F2F5;--ma-user:#121419;--ma-user-ink:#FFFFFF;--ma-bad:#B3261E;--ma-focus:#B76A00;--ma-shadow:0 -10px 40px -12px rgb(0 0 0 / .35);",
@@ -1117,5 +1138,13 @@
     if (ui.root) ui.root.classList.toggle("ma-dark", !!mounted.dark);
   }
 
-  self.MusicAssistant = { mount: mount, open: open, close: close, icon: ICON };
+  function ask(text) {
+    open();
+    if (!ui.root || ui.root.hidden) return;
+    var A = ai();
+    if (A && A.has() && !chat.busy) send(text);
+    else if (!chat.busy) { ui.ta.value = String(text || ""); autosize(); }
+  }
+
+  self.MusicAssistant = { mount: mount, open: open, close: close, ask: ask, icon: ICON };
 })();
