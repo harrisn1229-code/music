@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.24.0",
+  version: "1.24.1",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   apps: [
@@ -34,6 +34,7 @@ self.MUSIC = {
       about: "Your own songs: ideas, lyrics, notes and Barline charts",
       color: "#B3245B",
       icon: "icon-192.png",
+      home: false,                          // opened from Library, not the home screen
       sync: { at: "originals:syncedAt" },
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
     },

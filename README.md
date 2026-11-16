@@ -7,7 +7,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 
 | Tool | Folder | What it does |
 | --- | --- | --- |
-| Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals |
+| Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
@@ -76,7 +76,8 @@ ratings, so do not change how a key is built.
    - if it syncs, load `../shared/account.js` and use `MusicAccount` for the
      token instead of keeping its own (see Sync between devices).
 3. Add an entry to `apps.js` (name, color, icon, and every file the tool needs). The home screen
-   shows the icon and the name, nothing else, in the order of that list. Files used by more than
+   shows the icon and the name, nothing else, in the order of that list. `home: false` keeps a
+   tool off the home screen (Originals is opened from Library) while it is still saved offline and synced. Files used by more than
    one tool go in `shared/` and are listed under `shared` in `apps.js`.
 4. Raise `version` in `apps.js`.
 5. Optional: add a shortcut for it in `manifest.webmanifest`.

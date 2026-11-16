@@ -270,7 +270,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   function render() {
     const list = $("tiles");
     list.textContent = "";
-    REG.apps.forEach((app) => {
+    REG.apps.filter((app) => app.home !== false).forEach((app) => {
       const li = el("li", "tile");
       const open = el("a", "tile-open");
       open.href = app.id + "/";
