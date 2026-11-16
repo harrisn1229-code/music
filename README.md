@@ -7,11 +7,12 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 
 | Tool | Folder | What it does |
 | --- | --- | --- |
+| Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
-| Library | `library/` | Songs, drills, your own ideas and production chains, plus every mode, chord, arpeggio and voicing in any key |
-| School | `school/` | Classes, lessons, quizzes, tests and a song library |
+| Library | `library/` | Covers, drills and production chains, plus every mode, chord, arpeggio and voicing in any key |
+| School | `school/` | The curriculum and your progress: classes, lessons, quizzes and tests |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
 | Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click and presets |
@@ -46,6 +47,7 @@ ear/                   Ear Training (index.html, app.js, app.css; synthesizes al
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
+originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
 scratchpad/            Scratchpad (index.html, app.js, app.css; owns the assistant's Scratchpad tools)
 school/                School, built from the music-school repo. Do not edit by hand.
 ```
@@ -94,13 +96,13 @@ offline use as well. School does not need `version` raised when only `school/` c
 
 ### Library's shelves
 
-Songs, Drills, Originals and My files are reached from Library, not from School. They are the
+Songs (Covers), Drills and My files are reached from Library, not from School. They are the
 same notes and the same saved progress as School (a drill's tempo log and a song's status are
 progress), so they are the same engine opened in a second mode: `school/library.html`, which the
 Library tool's front page links to. School's own menu keeps only coursework and Classes.
 
 Library opens on its shelves: Modes and chords (`library/#/theory`, the mode, chord and voicing
-lookup), Production chains, Songs, Drills, Originals and My files. All of them, and School, share one look — School's
+lookup), Production chains, Songs, Drills, Originals (a link to the Originals tool) and My files. All of them, and School, share one look — School's
 is `school/music-skin.css`, written from the `music-school` repo.
 
 ### Production chains
@@ -139,20 +141,31 @@ straight from the device to Anthropic. A key added in any tool works in all of t
 with `MusicAssistant.mount({ app, button, context, tools })` and puts the sparkle button in its top
 bar (any element with `data-assistant` opens it). `context()` says where the musician is; it is sent
 in square brackets at the start of each message. The tools a page owns go in `tools` (Barline: the
-chart tools; School: the Originals tools; Ear Training: the feeling tools). From any other page the
+chart tools; Originals and Scratchpad: their own tools; Ear Training: the feeling tools). From any other page the
 assistant opens the owner in a hidden frame (`?bridge=1`, which shows nothing and opens no sheets)
 and calls it with `postMessage`. A tool result may carry an `action` with plain-data `undo`
 (handed back to the owner's `__undo`) and a `link` (`href` relative to the Music root). The theory,
 stats and settings tools are in `assistant.js` itself. The conversation is kept in sessionStorage
 so it follows the musician from tool to tool.
 
+## Originals
+
+Originals is the musician's own songs, a tool of its own (it used to be a shelf inside School). An
+idea has a title, a status (spark, working, parked, done), key, tempo and feel, the idea, its
+lyrics and a thread of notes. Any Barline chart in a folder called "Originals" is listed too, read
+live from Barline's storage and opened in Barline. Saved under `originals:v1`; with an account it
+syncs idea by idea. On first open it brings over the ideas from School's old board
+(`school:progress` → `originals`, on the device and in the account), keeping their ids. The
+assistant's tools: `list_originals`, `get_original`, `add_original_idea`, `update_original`
+(`add_lyrics` and `add_note` append, so nothing written is lost).
+
 ## Scratchpad
 
 Scratchpad is a brain dump: type or dictate a note, save it, move on. A note is kept exactly as
 written. Sorting splits it into pieces filed in piles (Song ideas, Lyrics, Chords & riffs, Practice,
 Production, Gear, To do, Other). The Sort button asks the assistant to do it (`MusicAssistant.ask`):
-it reads the unsorted notes (`list_scratch`), sends a new song idea to the Originals board and kept
-chords to a Barline chart in Originals, and files every piece with `sort_scratch`, noting where each
+it reads the unsorted notes (`list_scratch`), sends a new song idea to Originals (lyrics for a song already
+there are added to it) and kept chords to a Barline chart in Originals, and files every piece with `sort_scratch`, noting where each
 went. A note can also be filed by hand from its sheet. `add_scratch` lets the assistant jot a note
 from anywhere in Music. Notes are saved under `scratchpad:v1`; with an account they sync note by
 note (newest change wins, deletions kept as tombstones for 120 days).
@@ -163,7 +176,8 @@ A Music account is an email and a password, and it is one sign-in for the whole 
 button on the home screen opens it (the first time Music is opened on a device it is offered
 once), and a tool that needs it links there with `../#account`. Signed in, every tool that syncs
 keeps its data in the account: Barline its charts (`barline`), Note Cards its ratings
-(`note-cards`), School its progress (`school`), Scratchpad its notes (`scratchpad`). A device that was syncing through GitHub keeps
+(`note-cards`), School its progress (`school`), Scratchpad its notes (`scratchpad`), Originals its
+songs (`originals`). A device that was syncing through GitHub keeps
 doing so until someone signs in on it; after that the account is what the tools use, and what was
 on the device is merged in. If a different person signs in on a device, Barline and Note Cards
 will not hand the first person's charts and ratings to them, and School starts them fresh.

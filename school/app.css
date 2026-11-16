@@ -1214,18 +1214,11 @@ code.cmd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
 .ef-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
 .extform label,.ef-l{display:flex;flex-direction:column;gap:5px;font-size:10.5px;font-weight:700;
   letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
-/* spec-179 — `.origform` joins this list, and `select` joins the element list. The idea board's
-   note composer is a plain card, not an .extform, so its textarea fell through to the browser
-   default: a white box with black text, unreadable on the dark theme. The status dropdown had the
-   same gap for the same reason — the rule named input and textarea and nothing had used a select
-   here before. */
-.extform input,.extform textarea,.extform select,
-.origform input,.origform textarea,.origform select{font:inherit;font-size:14px;font-family:var(--ui);
+.extform input,.extform textarea,.extform select{font:inherit;font-size:14px;font-family:var(--ui);
   padding:8px 10px;border-radius:7px;border:1px solid var(--line-2);background:var(--raised);
   color:var(--ink);text-transform:none;letter-spacing:normal;font-weight:400;}
-.extform textarea,.origform textarea{resize:vertical;line-height:1.5;}
-.extform input:focus-visible,.extform textarea:focus-visible,.extform select:focus-visible,
-.origform input:focus-visible,.origform textarea:focus-visible,.origform select:focus-visible{
+.extform textarea{resize:vertical;line-height:1.5;}
+.extform input:focus-visible,.extform textarea:focus-visible,.extform select:focus-visible{
   outline:2px solid var(--accent);outline-offset:1px;}
 
 /* --- a domain heading, for pages that group by it -------------------------- */
@@ -1673,74 +1666,6 @@ pre.json{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
 .toolcard-off .dmeta{color:var(--faint);}
 .toolcard-off:hover{opacity:1;}
 
-/* ---------------------------------------------------------------- spec-179: the idea board
-   The one shelf on this page that takes input, so it is styled as a place to write rather than
-   a catalogue to browse: full-width cards in one column, not the tile grid Songs and Tools use.
-   A grid says "pick one of many"; there will be a handful of these and each one is a thread. */
-.origcard{display:block;width:100%;text-align:left;font:inherit;color:inherit;
-  background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;
-  cursor:pointer;margin-bottom:12px;}
-.origcard:hover{border-color:var(--line-2);}
-.origcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-.origt{font-size:16px;font-weight:650;margin:0;color:var(--ink);}
-/* `.cnt` is scoped to `.dhead .cnt` in this sheet, and neither of these headers is a .dhead —
-   reusing the name gave a bare unstyled numeral at the right margin. Its own class instead. */
-.origcount{font-size:11.5px;font-weight:600;color:var(--faint);
-  font-variant-numeric:tabular-nums;flex:0 0 auto;}
-.origmeta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:8px;}
-.origfact{font-size:11.5px;color:var(--muted);white-space:nowrap;}
-.origfact + .origfact::before{content:"·";margin-right:7px;color:var(--line-2);}
-.origlede{font-size:13.5px;line-height:1.55;color:var(--ink-2);margin:10px 0 0;max-width:78ch;}
-.origempty{color:var(--muted);font-size:14px;line-height:1.55;}
-
-/* Status reads at a glance or it is just a word in a row of words. `spark` is the loud one on
-   purpose — it is the state that wants somebody to come and do something about it. */
-.origst[data-st="spark"]{color:var(--accent);border-color:var(--accent-line);
-  background:var(--accent-soft);}
-.origst[data-st="working"]{color:var(--ok);border-color:var(--ok);background:var(--ok-soft);}
-.origst[data-st="parked"],.origst[data-st="done"]{color:var(--faint);}
-
-/* The thread. A single rule down the left binds the notes into one conversation instead of a
-   stack of unrelated cards — the same reason a quoted reply is indented anywhere else. */
-.origthread{margin-top:14px;border-left:2px solid var(--line);padding-left:16px;}
-.orignote{padding:12px 0;border-bottom:1px solid var(--line);}
-.orignote:last-child{border-bottom:0;}
-.orignh{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-bottom:5px;}
-.orignh b{font-size:13px;font-weight:650;color:var(--ink);}
-.orignd{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
-.orignote .prose{font-size:14px;}
-.orignote .prose p:first-child{margin-top:0;}
-.orignote .prose p:last-child{margin-bottom:0;}
-/* A note that exists only in this tab, and would die with it. Marked, not hidden — the badge and
-   the board's banner are the only warning there is before a sync. */
-.orignote.pend{opacity:.9;}
-.orignote.pend .prose{color:var(--ink-2);}
-
-/* The board's log (2026-09-10). A three-column row per entry — date, who, what — so a month of
-   them scans down the date gutter the way the activity log and the schedule already do, rather
-   than as a paragraph of sentences that each start differently. */
-.origlog{margin-top:8px;border-top:1px solid var(--line);padding-top:14px;}
-.origlog summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
-  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
-.origlog summary::marker,.origlog summary::-webkit-details-marker{display:none;}
-.origlog summary::before{content:"▸";color:var(--faint);font-size:9px;}
-.origlog[open] summary::before{content:"▾";}
-.origlog summary:hover{color:var(--ink);}
-.origlogb{margin-top:12px;display:flex;flex-direction:column;gap:1px;}
-.origlogr{display:grid;grid-template-columns:88px 72px minmax(0,1fr);gap:12px;align-items:baseline;
-  padding:6px 0;border-bottom:1px solid var(--line);}
-.origlogr:last-child{border-bottom:0;}
-.origlogd{font-size:11.5px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;}
-.origlogw{font-size:11.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;}
-.origlogt{font-size:13px;color:var(--ink-2);line-height:1.5;}
-@media (max-width:640px){
-  /* Three columns in a phone's width gives the entry itself about a dozen characters. The date
-     and the name pair up on their own line and the entry gets the full column. */
-  .origlogr{grid-template-columns:88px minmax(0,1fr);}
-  .origlogt{grid-column:1 / -1;}
-}
-
 /* ================================================================ the app build: your own files
    Slots for what the app does not ship (a book in copyright, chord charts, album art, a
    screenshot in a note), the "My files" page, and the backup/sync card. All of it only ever
@@ -1907,7 +1832,3 @@ nav a.navlink:hover{background:var(--sunk);color:var(--ink);}
 .vthumb.nopic .vplay{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);width:38px;height:38px;font-size:15px;}
 .vtile-t{font-size:13.5px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 @media (max-width:700px){ .vtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px;} }
-
-/* An original that is a Barline chart: the same card as an idea, as a link out to Barline. */
-a.origcard{display:block;text-decoration:none;color:inherit;}
-.blchords{font-family:var(--mono);font-size:13px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

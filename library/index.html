@@ -742,15 +742,15 @@ button.node{cursor:zoom-in}
     return section("Triads", TRIADS.filter((q) => shown(q.id)).map((q) => chordRow(pc, q))) + (sevs.length ? section("7th chords", sevs, link) : '<section class="sec"><ul class="rows">' + link + "</ul></section>");
   }
   /* ---------- the front page: Library's shelves, as tiles ----------
-     Modes, Chords and Arpeggios are this page's own lookups. The rest came over from School and
-     open as their own pages (../school/library.html), built from the same notes as School and
+     Modes, Chords and Arpeggios are this page's own lookups. Originals is its own tool (../originals/).
+     Covers, Drills and My files came over from School and open as their own pages (../school/library.html), built from the same notes as School and
      sharing its saved progress, so a drill's tempo log or a song's status is the same everywhere. */
   function renderShelves() {
     const tile = (href, name) => '<li><a class="tile" href="' + href + '">' + name + "</a></li>";
     view.innerHTML = '<ul class="tiles">' +
       tile("#/modes", "Modes") + tile("#/chords", "Chords") + tile("#/arps", "Arpeggios") + tile("#/chains", "Production chains") +
       tile("../school/library.html#songs", "Covers") + tile("../school/library.html#drills", "Drills") +
-      tile("../school/library.html#originals", "Originals") + tile("../school/library.html#files", "My files") + "</ul>";
+      tile("../originals/", "Originals") + tile("../school/library.html#files", "My files") + "</ul>";
     current = { play: {} };
   }
   /* ---------- a shelf: modes, chords or arpeggios ---------- */

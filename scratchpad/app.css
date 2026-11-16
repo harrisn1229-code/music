@@ -51,7 +51,8 @@ ul,ol{list-style:none}
 main{padding-top:.25rem;padding-bottom:calc(5rem + env(safe-area-inset-bottom, 0px))}
 .col{display:grid;gap:.75rem;max-width:36rem;margin:0 auto}
 .col > *{min-width:0}
-#view{display:grid;gap:.75rem;min-width:0}
+#view{display:grid;grid-template-columns:minmax(0, 1fr);gap:.75rem;min-width:0}
+#view > *{min-width:0}
 
 /* ---------- segmented control ---------- */
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:.25rem;padding:.25rem;border-radius:999px;background:var(--surface-3)}

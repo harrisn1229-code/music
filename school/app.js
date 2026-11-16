@@ -23,7 +23,7 @@ const LOCAL = !!window.MS_APP;
    own menu keeps only what depends on what you are enrolled in, plus Classes. */
 const LIBMODE = LOCAL && window.MS_APP.mode === 'library';
 /* BRIDGE. Music's assistant (shared/assistant.js) works across the tools: from another tool it opens
-   library.html in a hidden frame with ?bridge=1 and asks it to read or add Originals ideas. That
+   library.html in a hidden frame with ?bridge=1 and asks it to read or change things there. That
    copy shows nothing to anyone, never touches the address, the history or the session's route, and
    saves to the same place as ever. */
 const BRIDGE = LOCAL && /[?&]bridge=1(&|$)/.test(location.search) && window.parent !== window;
@@ -31,7 +31,7 @@ const ROUTE_KEY = BRIDGE ? 'hms.route.bridge' : LIBMODE ? 'hms.route.lib' : 'hms
 /* In the Music app pages say less: `lite(full, short)` is the artifact page's sentence there and the
    short form (often nothing) here. */
 function lite(full, short) { return LOCAL ? short : full; }
-const LIB_ROUTES = ['songs', 'drills', 'originals', 'tools', 'files'];
+const LIB_ROUTES = ['songs', 'drills', 'tools', 'files'];
 const FILES = LOCAL ? (window.MSFiles || null) : null;
 const LS_KEY = 'school:progress', LS_AT = 'school:savedAt';
 const C = JSON.parse(document.getElementById('curriculum').textContent);
@@ -103,16 +103,6 @@ const TOOLS = C.tools || [];
 /* spec-178 — the Soundslice shelf: one entry per slice, each carrying every lesson that
    assigned it. Flattened in build.py so the page never has to walk lessons to find a slice. */
 const SLICES = C.slices || [];
-/* spec-179 — the shared idea board, from `School & Content/Originals/`. `|| []` on the same
-   contract as the four shelves above: a school.html built before this spec has no `originals`
-   key, and the board still has to boot on one, because unlike those shelves this tab can be
-   WRITTEN to and its captures live in progress, not in the bundle. */
-const ORIG_NOTES = C.originals || [];
-/* The board's log — every input across all the ideas, newest first, from `Originals/_Log.md`.
-   Its own key, not a field on an idea, because the view it exists to give is the one ACROSS
-   them. `|| []` on the same contract as everything else here: a bundle built before it has no
-   key and the board still has to draw. */
-const ORIG_LOG = C.orig_log || [];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* esc's inverse, and only over the four entities esc itself writes. PATCH-144 reads a note
    name back OUT of rendered markup to look it up — "Time Signatures &amp; Note Values" has to
@@ -2137,7 +2127,6 @@ function rail() {
     <nav>
       ${Object.keys(SONGS).length ? item('songs','Covers') : ''}
       ${item('drills','Drills')}
-      ${item('originals','Originals')}
       ${TOOLS.length ? item('tools','Tools') : ''}
       ${item('files','My files')}
       <a class="navlink" href="../library/#/modes">Modes</a>
@@ -2225,17 +2214,6 @@ function rail() {
             rather than a debt. Hidden entirely on a build that carries no songs — a school.html
             from before this spec has no `songs` key, and an empty tab is worse than no tab. */
         Object.keys(SONGS).length ? item('songs','Songs') : ''}
-      ${/* spec-179 — the shared idea board, beside Songs because it is its sibling: their songs
-            and the world's. Countless, like every shelf here, and for a sharper reason than
-            "nothing is due" — the one count worth having would be captures not yet synced, and
-            PATCH-126 already settled that a badge nothing on this page can clear does not go on
-            this rail. The banner on the board itself carries that, where the sync it asks for is
-            one line away. NOT hidden on an empty board, unlike Songs and Tools: those are shelves
-            and an empty shelf is a dead end, while this one is where you go to write the first
-            one. It is deliberately in the LIBRARY group and not MY SCHOOL — PATCH-111's own test
-            is whether it would look different on a vault that never started a course, and this
-            board would look exactly the same. */
-        item('originals','Originals')}
       ${/* spec-177 — the tools shelf, and countless for the reason spec-174 and spec-176 each
             give in turn: a numeral on this rail means WORK OWED TODAY, and musictheory.net is
             never owed. Hidden entirely on a build carrying no tools, same as Songs — a tab that
@@ -5737,12 +5715,6 @@ if (LOCAL) {
     el.classList.remove('has-art'); el.classList.add('no-art');
     el.innerHTML = `<span>${esc(el.dataset.init || '')}</span>`;
   }, true);
-  // The Originals shelf lists Barline's charts: redraw when Barline changes them in another tab,
-  // or when the reader comes back from Barline with the Back button.
-  window.addEventListener('storage', e => {
-    if ((e.key === 'barline:charts:v1' || e.key === 'barline:folders:v1') && route === 'originals') render();
-  });
-  window.addEventListener('pageshow', e => { if (e.persisted && route === 'originals') render(); });
   window.addEventListener('online', () => { coverStop = 0; if (route === 'songs' || route.startsWith('song:')) render(); });
 }
 
@@ -6416,274 +6388,6 @@ function slicesView() {
       <code class="cmd">Label — URL</code>, one per line, and run <code class="cmd">/school sync</code>.</p></div>`}
     ${section('Open now', 'homework on these is still unticked — this is the week’s work', live)}
     ${section('Reference', 'nothing owed on these; kept because a worksheet is worth returning to', rest)}
-  </div>`;
-}
-
-/* ---------------------------------------------------------------- spec-179: the idea board
-   Nate, 2026-09-10: *"i want to create an 'originals' tab within the music school artifact so
-   myself and my sister can put song ideas there and ideate on them."*
-
-   THE ONE WRITABLE SHELF. Songs, Drills, Tools and Soundslice are all read-only projections of
-   the vault; this one takes input. It could not use the obvious mechanism for that. The page
-   saves by REPUBLISHING ITSELF and only the owner may publish, so a reader on a shared link is
-   `readonly` (PATCH-129) and could never write a word here. And the `db` capability, which does
-   give every viewer a shared store, is ONE STORE PER ARTIFACT — Nate's page and Britt's page are
-   two artifacts, so it would not have joined them either, while declaring it would have made the
-   page organization-internal and taken her access to the school away entirely.
-
-   So the board is VAULT-BACKED and the two pages meet in the repo, not in the browser. An idea
-   typed here lands in `P.originals`, `sync.py` writes it into `School & Content/Originals/`,
-   and `sync-shared.sh` mirrors that folder into the clone the other person builds from. Nate's
-   call, 2026-09-10, told plainly: the round trip is a sync and a rebuild each way. That is the
-   same lag `Handoff.md` has always had, and it is why this is a board rather than a chat.
-
-   Everything below follows PATCH-019's lesson capture, which solved this exact problem already:
-   two sources merged into one list, and a capture that disappears from the page's own half once
-   a note comes back carrying its id. */
-const ORIG_STATUS = {spark: 'Spark', working: 'Working', parked: 'Parked', done: 'Done'};
-/* Whose page this is. build.py stamps `user` into the curriculum, so a capture is attributed
-   without asking and without a picker — there is no `user` capability on this account to ask
-   the runtime who is reading, and a page can only ever be published by the person it was built
-   for. `NAME` is what gets written into the vault note's `### <by> — <date>` heading. */
-const ME = String(C.user || 'me');
-const NAME = ME.charAt(0).toUpperCase() + ME.slice(1);
-let addingIdea = false;
-/* PATCH-007's contract: a <details> owns its own open/close and we only RECORD it, so the next
-   render draws it the way the reader left it. Not `secOpen`, whose toggle reads `aria-expanded`
-   and re-renders — a <details> has neither, and pairing the two double-toggles the fold. */
-let origLogOpen = false;
-
-/* The two dedupe sets, and the whole reason the format carries ids at all. A capture stays in
-   `P.originals` until a REBUILD replaces the page — a save in between hands sync.py the same
-   capture a second time — so both halves match on id rather than on content. */
-const origSyncedIdeas = () => new Set(ORIG_NOTES.map(o => o.capture_id).filter(Boolean));
-const origSyncedNotes = () => {
-  const s = new Set();
-  ORIG_NOTES.forEach(o => (o.notes || []).forEach(n => { if (n.id) s.add(n.id); }));
-  return s;
-};
-const origCaptured = () => {
-  const done = origSyncedIdeas();
-  return ((P.originals || {}).ideas || []).filter(i => !done.has(i.id));
-};
-const origPending = () => {
-  const done = origSyncedNotes();
-  return ((P.originals || {}).notes || []).filter(n => !done.has(n.id));
-};
-const origUnsynced = () => origCaptured().length + origPending().length;
-const origLast = o => [o.started || '', ...(o.notes || []).map(n => n.at || '')].sort().pop() || '';
-
-function origAll() {
-  const pend = origPending();
-  /* A pending comment is merged into its target's thread rather than listed apart, because the
-     thread IS the ideation and splitting it by transport would make it unreadable. Sorted, not
-     prepended: a comment written on a phone yesterday and synced today can legitimately be older
-     than one already in the note. */
-  const thread = (id, base) => [
-    ...pend.filter(n => n.target === id).map(n => Object.assign({}, n, {pending: true})),
-    ...(base || [])].sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
-  return [
-    ...ORIG_NOTES.map(o => Object.assign({}, o, {source: 'note', notes: thread(o.id, o.notes)})),
-    ...origCaptured().map(o => Object.assign({}, o, {source: 'page', notes: thread(o.id, [])})),
-  ].sort((a, b) => origLast(b).localeCompare(origLast(a))
-                || String(b.started || '').localeCompare(String(a.started || '')));
-}
-const origOne = id => origAll().filter(o => o.id === id)[0];
-
-/* The two writes behind the idea board, shared by the form here and by Music's assistant (see the
-   bottom of this file), so an idea added either way is the same thing, with the same kind of id. */
-function origCreate(f) {
-  /* Time-derived, never position-derived — PATCH-136 (B4) states the failure in full for the
-     lesson capture and it is identical here: `length + 1` reuses an id the moment anything is
-     removed, and a reused id is silently skipped by sync.py's dedupe as already-filed. */
-  const id = `idea-${TODAY.replace(/-/g, '')}-${Date.now().toString(36)}`;
-  const t = k => String(f[k] == null ? '' : f[k]).trim();
-  P.originals = P.originals || {};
-  P.originals.ideas = [...(P.originals.ideas || []), {
-    id, title: t('title') || 'Untitled idea', by: NAME, status: ORIG_STATUS[t('status')] ? t('status') : 'spark',
-    key: t('key'), bpm: t('bpm'), feel: t('feel'),
-    idea: t('idea'), started: TODAY, at: TODAY}];
-  return id;
-}
-function origRemove(id) {
-  P.originals = P.originals || {};
-  P.originals.ideas = (P.originals.ideas || []).filter(i => i.id !== id);
-  P.originals.notes = (P.originals.notes || []).filter(n => n.target !== id);
-}
-
-/* A capture is PLAIN TEXT — it has never been near build.py's markdown pass — so it is escaped
-   and given paragraphs here. Deliberately not a second markdown renderer: the note it becomes
-   will be rendered properly by the next build, and shipping a half-implementation of markdown
-   that disagrees with the real one is worse than showing the text as typed. */
-const origText = t => String(t || '').trim().split(/\n{2,}/)
-  .map(p => `<p>${esc(p.trim()).replace(/\n/g, '<br>')}</p>`).join('');
-
-const origLede = o => {
-  const raw = o.source === 'page' ? (o.idea || '') : unesc(String(o.html || '').replace(/<[^>]+>/g, ' '));
-  const s = raw.replace(/\s+/g, ' ').trim();
-  return s.length > 190 ? esc(s.slice(0, 190).replace(/\s\S*$/, '')) + '&hellip;' : esc(s);
-};
-
-const origFacts = o => [o.key, o.bpm ? `${o.bpm} bpm` : '', o.genre, o.feel]
-  .filter(Boolean).map(f => `<span class="origfact">${esc(f)}</span>`).join('');
-
-function origCard(o) {
-  const n = (o.notes || []).length;
-  /* A real <button> with `data-goto`, exactly like a song tile (`stile`) — not a div with
-     role="button". It inherits the delegated handler, focus and Enter/Space for free, and this
-     page has no keydown listener of its own to give a faked button any of that. */
-  return `<button type="button" class="card origcard" data-goto="original:${esc(o.id)}">
-    <div class="spread"><h3 class="origt">${esc(o.title)}</h3>
-      ${n ? `<span class="origcount">${n} note${n === 1 ? '' : 's'}</span>` : ''}</div>
-    <div class="origmeta">
-      ${o.by ? `<span class="pill">${esc(o.by)}</span>` : ''}
-      <span class="pill origst" data-st="${esc(o.status || 'spark')}"
-        >${esc(ORIG_STATUS[o.status] || o.status || 'Spark')}</span>
-      ${origFacts(o)}
-      ${o.source === 'page' ? '<span class="pill pill-due">not synced</span>' : ''}</div>
-    ${origLede(o) ? `<p class="origlede">${origLede(o)}</p>` : ''}</button>`;
-}
-
-/* Originals made in Barline. Nate, 2026-11-11: "if I make a song via Barline that's added to the
-   originals folder, I want that put in the library as my original, and that's just one way to
-   make an original."
-
-   Barline is the next tool over in the same app, so its charts are in this browser's storage
-   too. Any chart in a Barline folder called "Originals" is listed here, read live — nothing is
-   copied, so there is one copy to edit and it is Barline's. The card opens the chart in Barline. */
-function barlineOriginals() {
-  if (!LOCAL) return [];
-  try {
-    const folders = JSON.parse(localStorage.getItem('barline:folders:v1') || '[]') || [];
-    const ids = new Set(folders.filter(f => f && /^(my )?originals?$/i.test(String(f.name || '').trim())).map(f => f.id));
-    if (!ids.size) return [];
-    const charts = JSON.parse(localStorage.getItem('barline:charts:v1') || '{}') || {};
-    return Object.values(charts).filter(c => c && c.id && ids.has(c.folderId))
-      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  } catch (e) { return []; }
-}
-function barlineCard(c) {
-  const secs = (c.sections || []).map(x => x && x.name).filter(Boolean);
-  const names = secs.filter((n, i) => secs.indexOf(n) === i);
-  const chords = [];
-  (c.sections || []).some(x => (x.bars || []).some(b => { (b.chords || []).forEach(ch => {
-    const t = typeof ch === 'string' ? ch : (ch && (ch.name || ch.text || ch.chord)) || '';
-    if (t && chords.length < 8) chords.push(String(t)); }); return chords.length >= 8; }));
-  const sig = c.top && c.bot && !(+c.top === 4 && +c.bot === 4) ? `${c.top}/${c.bot}` : '';
-  return `<a class="card origcard blcard" href="../barline/#c-${esc(c.id)}">
-    <div class="spread"><h3 class="origt">${esc(String(c.title || '').trim() || 'Untitled chart')}</h3>
-      <span class="origcount">Barline &rarr;</span></div>
-    <div class="origmeta"><span class="pill">Chart</span>
-      ${c.key ? `<span class="pill">${esc(c.key)}</span>` : ''}
-      ${c.bpm ? `<span class="pill">&#9833;=${esc(String(c.bpm))}</span>` : ''}
-      ${sig ? `<span class="pill">${esc(sig)}</span>` : ''}</div>
-    ${chords.length ? `<p class="origlede blchords">${chords.map(esc).join('&ensp;')}</p>`
-      : names.length ? `<p class="origlede">${names.map(esc).join(' · ')}</p>` : ''}</a>`;
-}
-function originalsView() {
-  const all = origAll(), un = origUnsynced(), bl = barlineOriginals();
-  return `<div class="view">
-    <div><p class="eyebrow">Library</p><h2 class="vh">Originals</h2>
-      ${LOCAL ? `<p class="calnote" style="margin:4px 0 14px;max-width:74ch">Your idea board — song
-      ideas, one card each, newest first. <b>Nothing here is ever due.</b> What you write is saved
-      on this device with the rest of your progress.</p></div>`
-      : `<p class="calnote" style="margin:4px 0 14px;max-width:74ch">The shared idea board — song
-      ideas the two of you are writing together, one card each, newest first. <b>Nothing here is
-      ever due.</b> Ideas written on this page become notes in
-      <code class="cmd">School &amp; Content/Originals/</code> on the next
-      <code class="cmd">/school sync</code>, and reach the other person's page when they rebuild —
-      so expect a lag, and say the whole thought rather than half of it.
-      Your own song projects are not here and are not shared.</p></div>`}
-    <div class="spread" style="margin-bottom:14px">
-      <span class="pill">${LOCAL ? `${all.length + bl.length} original${all.length + bl.length === 1 ? '' : 's'}`
-        : `${all.length} idea${all.length === 1 ? '' : 's'}`}</span>
-      <span class="row" style="gap:8px">${LOCAL ? '<a class="btn btn-quiet" href="../barline/#new-original">+ New chart</a>' : ''}
-      ${readonly ? '' : '<button class="btn btn-go" data-orig-add="1">+ New idea</button>'}</span></div>
-    ${addingIdea && !readonly ? `<div class="card extform origform">
-      <div class="eyebrow">New idea</div>
-      <div class="ef-grid">
-        <label>Title<input type="text" id="oi-title" placeholder="untitled loop idea"></label>
-        <label>Status<select id="oi-status">${Object.keys(ORIG_STATUS).map(k =>
-          `<option value="${k}">${ORIG_STATUS[k]}</option>`).join('')}</select></label>
-        <label>Key <span style="font-weight:400;color:var(--faint)">(optional)</span>
-          <input type="text" id="oi-key" placeholder="B minor"></label>
-        <label>BPM <span style="font-weight:400;color:var(--faint)">(optional)</span>
-          <input type="text" id="oi-bpm" placeholder="114"></label>
-        <label>Feel <span style="font-weight:400;color:var(--faint)">(optional)</span>
-          <input type="text" id="oi-feel" placeholder="half-time, dragging"></label>
-      </div>
-      <label class="ef-l">The idea
-        <textarea id="oi-idea" rows="4"
-          placeholder="the spark — what it is, what it chases, what made you start it"></textarea></label>
-      <div class="row" style="gap:8px">
-        <button class="btn btn-go" data-orig-save="1">Save idea</button>
-        <button class="btn btn-quiet" data-orig-cancel="1">Cancel</button></div></div>` : ''}
-    ${un && !LOCAL ? `<div class="banner" style="margin-bottom:16px"><span>${un} thing${un === 1 ? '' : 's'}
-      on this page ${un === 1 ? 'is' : 'are'} not in the vault yet. Run
-      <code class="cmd">/school sync</code> to write ${un === 1 ? 'it' : 'them'} out — until then
-      this page is the only copy, and nobody else can see ${un === 1 ? 'it' : 'them'}.</span></div>` : ''}
-    ${bl.map(barlineCard).join('')}
-    ${all.length ? all.map(origCard).join('')
-      : bl.length ? '' : `<div class="card origempty">${lite('Nothing on the board yet.', 'Nothing here yet.')}
-         ${readonly ? 'Ideas added here show up once the page is rebuilt.'
-                    : lite('Start one — a chord loop, a title, a feeling, half a line. It does not have to be finished to be worth writing down.', '')}</div>`}
-    ${/* The log, folded, under the cards. Deliberately NOT a rail tab: a log is what you consult
-          after something changed, never the reason you opened the board, and a tab would advertise
-          it as the latter. Shut by default for the same reason — the ideas are the board. */
-      ORIG_LOG.length ? `<details class="origlog"${origLogOpen ? ' open' : ''} data-origlog="1">
-        <summary>Log <span class="origcount">${ORIG_LOG.length}</span></summary>
-        <div class="origlogb">${ORIG_LOG.map(e => `<div class="origlogr">
-          <span class="origlogd">${esc(e.at)}</span>
-          <span class="origlogw">${esc(e.by)}</span>
-          <span class="origlogt">${e.what || ''}</span></div>`).join('')}</div></details>` : ''}
-  </div>`;
-}
-
-function originalView(id) {
-  const o = origOne(id);
-  /* An idea can genuinely vanish from under a route: a capture removed on this page, or a note
-     deleted in the vault before a rebuild. Say so rather than rendering an empty shell. */
-  if (!o) return `<div class="view">
-    <button class="btn btn-quiet" data-nav="originals">&larr; Originals</button>
-    <div class="card origempty" style="margin-top:16px">That idea is not on this page any more.
-      It may have been removed here, or deleted in the vault before the last rebuild.</div></div>`;
-  const body = o.source === 'page' ? origText(o.idea) : (o.html || '');
-  const noteRow = n => `<div class="orignote${n.pending ? ' pend' : ''}">
-    <div class="orignh"><b>${esc(n.by || '')}</b><span class="orignd">${esc(n.at || '')}</span>
-      ${n.pending ? '<span class="pill pill-due">not synced</span>' : ''}
-      ${n.pending && !readonly ? `<button class="lnkedit"
-        data-orig-notedel="${esc(n.id)}">remove</button>` : ''}</div>
-    <div class="prose">${n.pending ? origText(n.text) : (n.html || '')}</div></div>`;
-  return `<div class="view">
-    <div class="row" style="gap:8px"><button class="btn btn-quiet" data-nav="originals">&larr; Originals</button>
-      ${o.source === 'page' ? '<span class="pill pill-due">not synced</span>' : ''}</div>
-    <div class="spread" style="margin-top:12px"><h2 class="vh">${esc(o.title)}</h2></div>
-    <div class="origmeta" style="margin-bottom:14px">
-      ${o.by ? `<span class="pill">${esc(o.by)}</span>` : ''}
-      <span class="pill origst" data-st="${esc(o.status || 'spark')}"
-        >${esc(ORIG_STATUS[o.status] || o.status || 'Spark')}</span>
-      ${origFacts(o)}
-      ${o.started ? `<span class="origfact">started ${esc(o.started)}</span>` : ''}</div>
-    ${body ? `<div class="card">${o.simple !== false
-      ? `<div class="blk"><div class="lbl">The idea</div><div class="prose">${body}</div></div>`
-      : `<div class="prose origfull">${body}</div>`}</div>` : ''}
-    ${/* The status, the key and the tempo are edited in the NOTE, not here, and that is a scope
-          line rather than an oversight: every one of them would need a third kind of capture and
-          a frontmatter rewrite in sync.py, for a field that changes a handful of times in an
-          idea's life. Comments are the ideation; those are bookkeeping. */''}
-    <div class="spread" style="margin:22px 0 10px"><p class="eyebrow">Notes</p>
-      <span class="origcount">${(o.notes || []).length}</span></div>
-    ${readonly ? `<div class="card origempty">Read-only view — you can read the thread, but a note
-      added here would not be saved.</div>` : `<div class="card origform">
-      <label class="ef-l">Add a note
-        <textarea id="on-text" rows="3"
-          placeholder="what it needs, what it reminds you of, what you'd try next"></textarea></label>
-      <div class="row" style="gap:8px">
-        <button class="btn btn-go" data-orig-note="${esc(o.id)}">Add note</button>
-        ${o.source === 'page' ? `<button class="btn btn-quiet"
-          data-orig-del="${esc(o.id)}">Remove this idea</button>` : ''}</div></div>`}
-    ${(o.notes || []).length ? `<div class="origthread">${o.notes.map(noteRow).join('')}</div>`
-      : `<div class="card origempty">No notes yet.</div>`}
   </div>`;
 }
 
@@ -7839,8 +7543,6 @@ function render() {
     : head === 'watch' ? watchView(arg)       // a play-along video, on its own page
     : head === 'method' ? methodView(arg)     // a practice-method note
     : head === 'songs' ? songsView()          // spec-176 — the song library shelf
-    : head === 'originals' ? originalsView()  // spec-179 — the shared idea board
-    : head === 'original' ? originalView(arg) //           …and one idea's thread
     : head === 'tools' ? toolsView()          // spec-177 — the outside-tools shelf
     : head === 'slices' ? slicesView()        // spec-178 — the Soundslice shelf
     : head === 'files' && LOCAL ? filesView()  // app build — the reader's own books, charts, art
@@ -7869,8 +7571,6 @@ app.addEventListener('click', e => {
     + '[data-editstart],[data-startdone],[data-startreset],'
     + '[data-daypick-start],[data-daypick-cancel],'
     + '[data-ext-add],[data-ext-save],[data-ext-cancel],[data-ext-del],'
-    + '[data-orig-add],[data-orig-save],[data-orig-cancel],[data-orig-del],'
-    + '[data-orig-note],[data-orig-notedel],[data-origlog],'
     + '[data-book],[data-bkzoom],'
     + '[data-hw-open],[data-hw-turnin],[data-hw-undo],[data-plog],[data-plogdel],[data-course-lesson],'
     + '[data-note-add],[data-note-del],[data-songclear],[data-chart],[data-ssec],'
@@ -7958,54 +7658,6 @@ app.addEventListener('click', e => {
       nextDate ? {next_date: nextDate} : {})];
     addingLesson = false; dirty(); render();
     return toast(LOCAL ? 'Lesson saved.' : 'Lesson saved to this page. /school sync writes it to the vault.');
-  }
-  /* ---- spec-179: the idea board. Every mutating branch carries its own `readonly` check
-     rather than trusting the view to have hidden the control. The view DOES hide them, but a
-     read-only reader who writes into `P` still gets a dirty page that can never be saved and a
-     "not synced" badge that will never clear — PATCH-129's whole point, one level down. */
-  if (d.origlog) { if (e.target.closest('summary')) origLogOpen = !t.open; return; }
-  if (d.origAdd) {
-    addingIdea = true;
-    if (route !== 'originals') { route = 'originals'; window.scrollTo(0, 0); }
-    return render();
-  }
-  if (d.origCancel) { addingIdea = false; return render(); }
-  if (d.origSave) {
-    if (readonly) return;
-    const g = id => (document.getElementById(id) || {}).value || '';
-    const title = g('oi-title').trim(), idea = g('oi-idea').trim();
-    if (!title && !idea) return toast('Give it a title, or write the idea.');
-    /* Time-derived, never position-derived — PATCH-136 (B4) states the failure in full for the
-       lesson capture and it is identical here: `length + 1` reuses an id the moment anything is
-       removed, and a reused id is silently skipped by sync.py's dedupe as already-filed. */
-    origCreate({title, idea, status: g('oi-status'), key: g('oi-key'), bpm: g('oi-bpm'), feel: g('oi-feel')});
-    addingIdea = false; dirty(); render();
-    return toast(LOCAL ? 'Idea saved.' : 'Idea saved to this page. /school sync writes it to the vault.');
-  }
-  if (d.origNote) {
-    if (readonly) return;
-    const text = ((document.getElementById('on-text') || {}).value || '').trim();
-    if (!text) return toast('Write the note first.');
-    P.originals = P.originals || {};
-    P.originals.notes = [...(P.originals.notes || []), {
-      id: `n-${Date.now().toString(36)}`, target: d.origNote, by: NAME, text, at: TODAY}];
-    dirty(); render();
-    return toast(LOCAL ? 'Note added.' : 'Note added. /school sync writes it to the vault.');
-  }
-  /* Both removals only ever reach a PENDING item — the view offers them nowhere else. A synced
-     idea or note lives in the vault, and deleting it is a vault edit, not a page one; a page
-     that deleted the note would be writing a third kind of capture nothing reads. */
-  if (d.origDel) {
-    if (readonly) return;
-    origRemove(d.origDel);
-    route = 'originals'; dirty(); render();
-    return toast('Removed. Nothing already synced is touched.');
-  }
-  if (d.origNotedel) {
-    if (readonly) return;
-    P.originals = P.originals || {};
-    P.originals.notes = (P.originals.notes || []).filter(n => n.id !== d.origNotedel);
-    dirty(); return render();
   }
   if (d.editstart) { editStart = true; return render(); }
   if (d.startdone) { editStart = false; return render(); }
@@ -8433,46 +8085,14 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* ---------------------------------------------------------------- Music's assistant
-   School owns the Originals tools: list the idea board, add an idea, take it back. They go through
-   origCreate/origRemove, the same writes as the form, and save at once (a hidden copy of this page
-   answering from another tool must not leave a change waiting for the quarter-second save timer). */
+   School has no tools of its own to offer the assistant (the Originals tools moved out with the
+   idea board); it only says which page the reader is on. */
 if (LOCAL && window.MusicAssistant) {
-  /* A hidden copy may have been open a while: take the stored progress before changing it. */
-  const takeStored = () => {
-    if (!BRIDGE) return;
-    try { const t = localStorage.getItem(LS_KEY); if (t) P = JSON.parse(t); } catch (e) { return; }
-    for (const k of ['concepts','courses','classes','tests','homework','assignments','drills','misses']) P[k] = P[k] || {};
-    if (!Array.isArray(P.undo)) P.undo = [];
-    if (!Array.isArray(P.notes)) P.notes = [];
-  };
-  const changed = () => { dirty(); saveLocal(); render(); };
-  const brief = o => ({id: o.id, title: o.title, status: o.status || 'spark', key: o.key || '', bpm: o.bpm || '', feel: o.feel || '',
-    idea: String(o.source === 'page' ? (o.idea || '') : unesc(String(o.html || '').replace(/<[^>]+>/g, ' '))).replace(/\s+/g, ' ').trim().slice(0, 240),
-    notes: (o.notes || []).length});
   MusicAssistant.mount({
-    app: 'school', tools: {
-      list_originals() { takeStored(); return {content: origAll().map(brief)}; },
-      add_original_idea(inp) {
-        takeStored();
-        inp = inp || {};
-        const idea = inp.idea != null ? inp.idea : inp.notes;
-        if (!String(inp.title || '').trim() && !String(idea || '').trim()) return {content: 'Give it a title, or write the idea.', is_error: true};
-        const id = origCreate(Object.assign({}, inp, {idea}));
-        changed();
-        const o = origOne(id);
-        return {content: {id, title: o ? o.title : inp.title},
-          action: {text: 'Added idea: ' + (o ? o.title : inp.title), undo: {op: 'delete', id}},
-          link: {href: 'school/library.html#originals', label: 'Open'}};
-      },
-      __undo(p) {
-        takeStored();
-        if (p && p.op === 'delete' && p.id) { origRemove(p.id); changed(); return {content: 'ok'}; }
-        return {content: 'Nothing to undo.', is_error: true};
-      }
-    },
+    app: 'school', tools: {},
     context: () => {
       const title = {overview: 'Overview', myclasses: 'My classes', classes: 'Classes', homework: 'Homework', drill: 'Quizzes', tests: 'Tests',
-        ext: 'Outside lessons', sync: 'Activity & backup', songs: 'Covers', drills: 'Drills', originals: 'Originals', tools: 'Tools', files: 'My files'}[route] || '';
+        ext: 'Outside lessons', sync: 'Activity & backup', songs: 'Covers', drills: 'Drills', tools: 'Tools', files: 'My files'}[route] || '';
       return (LIBMODE ? 'In Library, on the ' : 'In School, on the ') + (title || route) + ' page.';
     }
   });

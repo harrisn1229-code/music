@@ -8,8 +8,8 @@
    - It talks to Anthropic through MusicAI (shared/ai.js): the musician's own key, straight from
      this device. The conversation is kept in sessionStorage so it follows you from tool to tool;
      "New chat" clears it.
-   - It works through tools. Some belong to a tool's page (Barline owns the chart tools, School
-     the Originals tools, Ear Training the feelings). When the assistant is open in the owning
+   - It works through tools. Some belong to a tool's page (Barline owns the chart tools, Originals
+     its own tools, Ear Training the feelings). When the assistant is open in the owning
      page it calls that page's handlers directly, so the screen updates live. From any other page
      it opens the owning tool in a hidden same-origin frame (?bridge=1) and talks to it with
      postMessage. A page loaded with ?bridge=1 shows no assistant, it only answers.
@@ -18,7 +18,7 @@
 
    API
      MusicAssistant.mount({ app, button, context, tools, dark, onOpen })
-        app      the tool id: home, library, barline, note-cards, school, ear, scratchpad
+        app      the tool id: home, library, barline, note-cards, school, ear, scratchpad, originals
         button   an element (or list of them) that opens the assistant; any element with a
                  data-assistant attribute does too
         context  () => short text on where the musician is and what is on screen
@@ -49,8 +49,8 @@
      The system prompt
      =================================================================== */
   var SYSTEM = [
-    "You are the assistant inside Music, a set of tools for working musicians: Barline (chord charts with a click track), Library (songs, drills, an Originals idea board, and a theory reference of modes, chords and arpeggios), Note Cards (flashcards), School (classes and lessons), Ear Training (scale degrees over a drone) and Scratchpad (a daily brain dump you sort for them). The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
-    "You can see and change their things with tools: list_charts, get_chart, create_chart, update_chart and move_chart (Barline's charts); list_originals and add_original_idea (the Originals idea board); theory_lookup and list_theory (notes of a mode, chord or arpeggio); practice_stats (Note Cards, Ear Training and School progress); get_settings and change_settings (theme, Barline look, Ear Training preferences); get_feelings and set_feeling (the musician's own words for each scale degree in Ear Training); list_scratch, add_scratch and sort_scratch (the Scratchpad). Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button. Keep your replies short.",
+    "You are the assistant inside Music, a set of tools for working musicians: Barline (chord charts with a click track), Library (songs, drills and a theory reference of modes, chords and arpeggios), Originals (the musician's own songs: ideas, lyrics and notes), Note Cards (flashcards), School (the curriculum and their progress), Ear Training (scale degrees over a drone) and Scratchpad (a daily brain dump you sort for them). The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
+    "You can see and change their things with tools: list_charts, get_chart, create_chart, update_chart and move_chart (Barline's charts); list_originals, get_original, add_original_idea and update_original (Originals, their own songs); theory_lookup and list_theory (notes of a mode, chord or arpeggio); practice_stats (Note Cards, Ear Training and School progress); get_settings and change_settings (theme, Barline look, Ear Training preferences); get_feelings and set_feeling (the musician's own words for each scale degree in Ear Training); list_scratch, add_scratch and sort_scratch (the Scratchpad). Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button. Keep your replies short.",
     "",
     "Creating a song from its name: search the web for its key, tempo (BPM), time signature, chord progression and structure (intro, verse, chorus, bridge and so on, with bar counts and repeats), and use web_fetch to read the most useful pages. Then call create_chart once with what you found. Fill in the artist. If sources disagree, go with the most reliable ones. If you can't find something, make a sensible musical choice and say which details are guesses.",
     "Editing: call get_chart first, then update_chart with the complete chart. Keep everything they didn't ask to change exactly as it is. Each message starts with a note in square brackets saying where the musician is and what's on their screen; in Barline, \"this song\" means the open chart.",
@@ -64,12 +64,12 @@
     "- instrumental: true for songs with no vocals.",
     "- folder (create_chart): a folder name to file the chart in, or \"\" for none. If the note says they're looking at a folder, use it unless they say otherwise.",
     "",
-    "Originals: an original song with chords is a chart filed in the folder \"Originals\" (create_chart or move_chart with that folder name); it then shows in Library under Originals. A song idea without chords (a spark, a title, a feel, a loop) goes on the idea board with add_original_idea. list_originals shows what is already there.",
+    "Originals: an original song with chords is a chart filed in the folder \"Originals\" (create_chart or move_chart with that folder name); it then shows in Originals too. A song idea without chords (a spark, a title, a feel, a loop) is an idea in Originals: add_original_idea makes one, with its lyrics in lyrics. update_original changes an existing one; use add_lyrics to add lines to its lyrics and add_note to add to its notes thread, so nothing already written is lost. list_originals shows what is there; get_original reads one in full. In Originals, \"this song\" is the idea named in the note at the start of the message.",
     "Theory: use theory_lookup for the notes and degrees of a mode, chord or arpeggio rather than working them out; list_theory shows the names available, so map loose names (\"dominant seventh\", \"half diminished\", \"minor pentatonic\" is not available) onto them. The result includes a link button to the Library page for it, so don't write out addresses.",
     "Practice: practice_stats reads Note Cards ratings, Ear Training accuracy and School enrolment. Say what stands out (weakest degrees, decks with many Rusty cards, streaks) in a sentence or two, with the numbers.",
     "Settings: change_settings changes the theme, Barline's accent and title font, and Ear Training's preferences; values outside a setting's range are clamped and the result says what was actually set. get_settings shows the current values.",
     "Scratchpad: the musician's daily brain dump, usually dictated and messy. list_scratch reads it (unsorted notes by default; give a pile to read that pile). add_scratch jots a new note when they say note this, jot this down or remember this, from anywhere in Music.",
-    "Sorting the Scratchpad (\"sort my notes\"): call list_scratch, then for each unsorted note split it into the separate thoughts it holds and call sort_scratch once for that note with every piece. Piles: song (a song idea: a title, concept, hook or feel), lyrics (lines or verses to sing), chords (progressions, riffs, voicings), practice (things to practise or learn), production (mixing, sound design, arrangement), gear (instruments, plugins, things to buy or fix), todo (other things to do), other. Route as you file: a new song idea also goes on the Originals idea board with add_original_idea (title it from the note; put the idea, and any lyric lines that belong to it, in idea; check list_originals first and don't add one that is already there). Chords they want to keep for a song become a chart with create_chart in the folder Originals, but only when they gave actual chords. Each piece's sent_to says where you sent it, like \"Originals: Glass Coast\" or \"Barline: Glass Coast\", or \"\" when it only stays in its pile. Keep their words: drop filler like um, but never rewrite or polish lyrics. Finish by saying in a sentence what went where.",
+    "Sorting the Scratchpad (\"sort my notes\"): call list_scratch, then for each unsorted note split it into the separate thoughts it holds and call sort_scratch once for that note with every piece. Piles: song (a song idea: a title, concept, hook or feel), lyrics (lines or verses to sing), chords (progressions, riffs, voicings), practice (things to practise or learn), production (mixing, sound design, arrangement), gear (instruments, plugins, things to buy or fix), todo (other things to do), other. Route as you file: call list_originals first. A new song idea also goes into Originals with add_original_idea (title it from the note; the idea in idea, any lyric lines for it in lyrics). Lyrics or thoughts about a song already in Originals go to it with update_original (add_lyrics for lines to sing, add_note for anything else) rather than a new idea. Chords they want to keep for a song become a chart with create_chart in the folder Originals, but only when they gave actual chords. Each piece's sent_to says where you sent it, like \"Originals: Glass Coast\" or \"Barline: Glass Coast\", or \"\" when it only stays in its pile. Keep their words: drop filler like um, but never rewrite or polish lyrics. Finish by saying in a sentence what went where.",
     "Feelings: set_feeling saves the musician's own words for a scale degree in Ear Training (200 characters at most; empty text resets it to the starting words); get_feelings lists them.",
     "",
     "Reply in one to three short, plain sentences: what you did and anything worth double-checking. No headings, lists or markdown."
@@ -121,16 +121,28 @@
     ["barline", { name: "create_chart", description: "Create a new chart in the library from complete contents. Returns the new chart's id.", input_schema: objSchema(assign({}, CHART_PROPS, { folder: { type: "string" } }), CHART_REQ.concat(["folder"])), strict: true }],
     ["barline", { name: "update_chart", description: "Replace an existing chart's contents with the complete chart given. Read it with get_chart first and keep what wasn't asked to change.", input_schema: objSchema(assign({ chart_id: { type: "string" } }, CHART_PROPS), ["chart_id"].concat(CHART_REQ)), strict: true }],
     ["barline", { name: "move_chart", description: "File a chart in a folder by name (the folder is created if it doesn't exist), or pass an empty folder to take it out of its folder.", input_schema: objSchema({ chart_id: { type: "string" }, folder: { type: "string" } }, ["chart_id", "folder"]), strict: true }],
-    ["school", { name: "list_originals", description: "List the song ideas on the Originals idea board: id, title, status, key, tempo, feel and the start of the idea. Songs with chords are charts in Barline's Originals folder (see list_charts).", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
-    ["school", { name: "add_original_idea", description: "Add a song idea to the Originals idea board.", input_schema: {
+    ["originals", { name: "list_originals", description: "List the musician's originals: each idea's id, title, status, key, tempo, feel, the start of the idea, whether it has lyrics and how many notes; plus the Barline charts filed in Originals.", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
+    ["originals", { name: "get_original", description: "Read one idea in full: idea, lyrics and its notes thread.", input_schema: objSchema({ id: { type: "string" } }, ["id"]), strict: true }],
+    ["originals", { name: "add_original_idea", description: "Add a new song idea to Originals.", input_schema: {
       type: "object", additionalProperties: false, required: ["title"],
       properties: {
         title: { type: "string" },
         idea: { type: "string", description: "The idea itself: what it is, what it chases, what made them start it." },
+        lyrics: { type: "string", description: "Lyric lines for it, in the musician's words" },
         status: { type: "string", enum: ["spark", "working", "parked", "done"] },
         key: { type: "string", description: "Like B minor" },
         bpm: { type: "string", description: "Tempo, like 114" },
         feel: { type: "string", description: "Like half-time, dragging" }
+      } } }],
+    ["originals", { name: "update_original", description: "Change an existing idea. Give only what changes. add_lyrics appends lines to its lyrics and add_note adds to its notes thread; idea and lyrics replace the whole text, so use them only to rewrite on request.", input_schema: {
+      type: "object", additionalProperties: false, required: ["id"],
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        status: { type: "string", enum: ["spark", "working", "parked", "done"] },
+        key: { type: "string" }, bpm: { type: "string" }, feel: { type: "string" },
+        idea: { type: "string" }, lyrics: { type: "string" },
+        add_lyrics: { type: "string" }, add_note: { type: "string" }
       } } }],
     ["self", { name: "list_theory", description: "List the modes, chord qualities and arpeggio qualities theory_lookup knows, with their ids.", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
     ["self", { name: "theory_lookup", description: "Look up a mode, chord or arpeggio in a key: its notes (correctly spelled), degrees and step pattern, with a link to its Library page.", input_schema: {
@@ -190,8 +202,8 @@
     { type: "web_search_20260209", name: "web_search", max_uses: 8 },
     { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 }
   ]);
-  var OWNER_PAGE = { barline: "barline/index.html", school: "school/library.html", ear: "ear/index.html", scratchpad: "scratchpad/index.html" };
-  var OWNER_NAME = { barline: "Barline", school: "School", ear: "Ear Training", scratchpad: "Scratchpad" };
+  var OWNER_PAGE = { barline: "barline/index.html", school: "school/library.html", ear: "ear/index.html", scratchpad: "scratchpad/index.html", originals: "originals/index.html" };
+  var OWNER_NAME = { barline: "Barline", school: "School", ear: "Ear Training", scratchpad: "Scratchpad", originals: "Originals" };
 
   /* ===================================================================
      Small helpers
@@ -801,9 +813,10 @@
   var SR = self.SpeechRecognition || self.webkitSpeechRecognition;
   var EXAMPLES = {
     barline: ["Create Wonderwall by Oasis", "Make a 12-bar blues in A at 120", "Add a bridge to this song", "Put this song in Originals"],
-    library: ["Notes in D Dorian", "Spell Cmaj7", "Add an Originals idea"],
+    library: ["Notes in D Dorian", "Spell Cmaj7", "Arpeggio for Bm7b5"],
+    originals: ["Add a song idea", "Add a verse to this song", "Which ideas are still sparks?"],
     "note-cards": ["How are my cards doing?", "Spell F#m7b5"],
-    school: ["Add an Originals idea", "How is my practice going?"],
+    school: ["How is my practice going?", "Which classes am I in?"],
     ear: ["Which degrees are weakest?", "Set the tempo to 60", "Feeling for ♭3"],
     scratchpad: ["Sort my notes", "What lyrics have I jotted lately?", "What's on my to-do pile?"],
     home: ["Create Autumn Leaves", "Sort my Scratchpad", "How is my practice going?", "Dark theme"]
