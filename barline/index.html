@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Barline</title>
 <meta name="description" content="Chord charts with a click track. Works offline; charts stay on this device.">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#16181B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Music">
@@ -49,9 +49,11 @@
      transport bar along the bottom of the chart screen. Neutral greys so the
      chords carry the colour. */
   :root{
-    --paper:#F2F3F5; --surface:#FFFFFF; --surface-2:#EBEDF0; --sunk:#DEE1E5;
-    --ink:#111317; --muted:#5A616D; --faint:#8B919C;
-    --rule:#E2E5E9; --rule-strong:#C9CED5;
+    --bg:#F2F3F6; --surface-3:#E3E6EE; --r-lg:1.25rem; --r-md:.875rem;
+    --sh:0 0 0 1px rgb(20 24 44 / .07), 0 1px 2px rgb(22 26 52 / .05);
+    --paper:#F2F3F6; --surface:#FFFFFF; --surface-2:#F0F1F5; --sunk:#E3E6EE;
+    --ink:#14171F; --muted:#5F6675; --faint:#8B919C;
+    --rule:#E3E6EC; --rule-strong:#C9CED5;
     --chord:#0F766E; --chord-soft:#DDF1EE;
     --accent-fill:#0F766E; --on-accent:#FFFFFF;
     --beat:#B45309; --beat-soft:#FCEEDB;
@@ -61,7 +63,7 @@
     --dock-ink:#F1F3F5; --dock-mute:#8D939D; --lcd:#FFB547; --lcd-soft:#3A2B12;
     --toast-bg:#1B1E23; --toast-ink:#F1F3F5; --toast-act:#FFB547;
     --scrim:rgba(10,12,15,.4);
-    --shadow:0 1px 2px rgba(17,19,23,.06);
+    --shadow:var(--sh);
     --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI",sans-serif;
     --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     --serif:"Fraunces",Georgia,"Times New Roman",serif;
@@ -70,9 +72,11 @@
   }
   /* Dark theme: data-scheme is set in <head> from Settings (System follows the device). */
   :root[data-scheme="dark"]{
-    --paper:#0B0C0E; --surface:#16181B; --surface-2:#212429; --sunk:#08090B;
-    --ink:#EDEFF2; --muted:#A3A9B3; --faint:#6C727D;
-    --rule:#262A30; --rule-strong:#383D45;
+    --bg:#0D0E12; --surface-3:#2E323D;
+    --sh:0 0 0 1px rgb(255 255 255 / .06);
+    --paper:#0D0E12; --surface:#181A20; --surface-2:#21242C; --sunk:#2E323D;
+    --ink:#ECEEF4; --muted:#9BA1B0; --faint:#6C727D;
+    --rule:#292D38; --rule-strong:#383D45;
     --chord:#4FD1BE; --chord-soft:#11302C;
     --accent-fill:#2DD4BF; --on-accent:#03211D;
     --beat:#FFB547; --beat-soft:#33260F;
@@ -80,7 +84,7 @@
     --dock:#111316; --dock-2:#1E2126; --dock-3:#2A2E34; --dock-line:rgba(255,255,255,.08);
     --toast-bg:#EDEFF2; --toast-ink:#121417; --toast-act:#9A4A06;
     --scrim:rgba(0,0,0,.6);
-    --shadow:none;
+    --shadow:var(--sh);
     color-scheme:dark;
   }
 
@@ -119,23 +123,27 @@
   /* ---------- top bar ---------- */
   .topbar{
     position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top,0px);
-    background:var(--surface);
-    background:color-mix(in srgb,var(--surface) 86%,transparent);
-    -webkit-backdrop-filter:saturate(1.8) blur(16px);backdrop-filter:saturate(1.8) blur(16px);
-    border-bottom:.5px solid var(--rule);
+    background:var(--paper);
+    background:color-mix(in srgb,var(--paper) 88%,transparent);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
   }
-  .nav{display:flex;align-items:center;gap:6px;height:50px}
-  .nav-side{flex:0 0 92px;display:flex;align-items:center}
+  .nav{display:flex;align-items:center;gap:.65rem;min-height:3.75rem}
+  .nav-side{flex:0 0 6.5rem;display:flex;align-items:center;gap:.5rem}
   .nav-side.end{justify-content:flex-end}
-  .navtitle{flex:1;min-width:0;text-align:center;font-weight:600;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .back{display:flex;align-items:center;gap:1px;height:40px;padding:0 10px 0 2px;margin-left:-8px;color:var(--chord);font-size:16.5px;border-radius:12px}
+  .navtitle{flex:1;min-width:0;text-align:center;font-weight:800;letter-spacing:-.015em;font-size:1.0625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .back{display:flex;align-items:center;gap:1px;height:2.5rem;padding:0 .8rem 0 .4rem;color:var(--ink);font-size:.9375rem;font-weight:700;border-radius:999px;background:var(--surface);box-shadow:var(--sh)}
   .iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--chord);flex:none}
   .back:active,.iconbtn:active{background:var(--surface-2)}
-  .brandrow{display:flex;align-items:center;gap:10px;height:54px}
-  .brandrow .home{margin:0 -4px 0 -10px;text-decoration:none}
-  .logo{width:30px;height:30px;border-radius:8px;background:var(--logo);display:grid;place-items:center;flex:none}
-  .appname{flex:1;font-family:var(--disp);font-size:24px;font-weight:600;letter-spacing:-.015em}
-  .search{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;margin-bottom:10px;background:var(--surface-2);border-radius:11px;color:var(--faint)}
+  .topbar .iconbtn{width:2.5rem;height:2.5rem;border-radius:50%;background:var(--surface);box-shadow:var(--sh);color:var(--ink)}
+  .topbar .iconbtn:active,.topbar .back:active{transform:scale(.92)}
+  .topbar .iconbtn svg{width:1.25rem;height:1.25rem}
+  .brandrow{display:flex;align-items:center;gap:.65rem;min-height:3.75rem}
+  .brandrow .home{text-decoration:none}
+  .brandrow .appname~.iconbtn{flex:none}
+  .brandrow #libAi{margin-left:auto}
+  .logo{width:2.25rem;height:2.25rem;border-radius:.6rem;background:var(--logo);display:grid;place-items:center;flex:none}
+  .appname{font-family:var(--disp);font-size:1.3125rem;font-weight:800;letter-spacing:-.015em;line-height:1}
+  .search{display:flex;align-items:center;gap:8px;height:2.5rem;padding:0 .9rem;margin-bottom:.6rem;background:var(--surface,#fff);box-shadow:var(--sh);border-radius:var(--r-md);color:var(--faint)}
   .search input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:16px;color:var(--ink);-webkit-appearance:none;appearance:none}
   .search input::placeholder{color:var(--faint)}
   .search input::-webkit-search-cancel-button{-webkit-appearance:none}
@@ -163,16 +171,16 @@
   .lib-head span{font-size:12.5px;color:var(--faint)}
   .lib-head-r{display:flex;align-items:center;gap:4px}
   .lib-head .iconbtn{width:34px;height:28px;border-radius:8px;color:var(--muted)}
-  .folders{display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px 10px;scrollbar-width:none}
+  .folders{display:flex;gap:.4rem;overflow-x:auto;margin:0 -16px;padding:0 16px 10px;scrollbar-width:none}
   .folders::-webkit-scrollbar{display:none}
-  .fchip{flex:none;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:16px;background:var(--surface-2);font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
+  .fchip{flex:none;display:inline-flex;align-items:center;gap:.45rem;height:2.5rem;padding:0 .9rem;border-radius:999px;background:var(--surface-2);font-size:.875rem;font-weight:700;color:var(--ink);white-space:nowrap}
   .fchip .n{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
   .fchip[aria-pressed="true"]{background:var(--accent-fill);color:var(--on-accent)}
   .fchip[aria-pressed="true"] .n{color:inherit;opacity:.75}
   .fchip.add{background:none;box-shadow:inset 0 0 0 1px var(--rule-strong);padding:0 12px 0 9px}
   .fchip svg{width:16px;height:16px}
   .card-tag{flex:none;max-width:38%;padding:1px 7px;border-radius:6px;background:var(--surface-2);font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cards{display:flex;flex-direction:column;background:var(--surface);border:.5px solid var(--rule);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .cards{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden}
   .card{position:relative;display:flex;align-items:center}
   .card + .card::before{content:"";position:absolute;top:0;left:74px;right:0;border-top:.5px solid var(--rule)}
   .card-open{flex:1;min-width:0;display:flex;align-items:center;gap:14px;padding:12px 2px 12px 14px;text-align:left}

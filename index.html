@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Music</title>
 <meta name="description" content="Your music tools in one app: chord charts, flashcards and a theory reference. Works offline; everything stays on this device.">
-<meta name="theme-color" content="#F1F2F5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0C0D10" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Music">
@@ -27,7 +27,8 @@
   src:url(fonts/big-shoulders-display.woff2) format("woff2");
 }
 :root{
-  --paper:#F1F2F5; --surface:#FFFFFF; --ink:#121419; --muted:#5C6370; --rule:#E1E4E9;
+  --paper:#F2F3F6; --surface:#FFFFFF; --ink:#14171F; --muted:#5F6675; --rule:#E3E6EC;
+  --sh:0 0 0 1px rgb(20 24 44 / .07), 0 1px 2px rgb(22 26 52 / .05);
   --amber:#F5A93B; --charcoal:#15171B; --focus:#B76A00; --ok:#1F8F4E; --bad:#B3261E;
   --panel:#FFFFFF; --panel-ink:#121419; --panel-muted:#5C6370; --panel-track:#E6E8EE;
   --nailed:#E8B23A; --solid:#7F97B8; --rusty:#D9764C;
@@ -41,14 +42,14 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#0C0D10; --surface:#17191D; --ink:#ECEEF2; --muted:#A0A6B1; --rule:#262A30; --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
+    --paper:#0D0E12; --surface:#181A20; --ink:#ECEEF4; --muted:#9BA1B0; --rule:#292D38; --sh:0 0 0 1px rgb(255 255 255 / .06); --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
     --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
     --acc-teal:#2DD4BF; --acc-blue:#5C9BFF; --acc-violet:#A987FA; --acc-graphite:#E3E6EA;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --paper:#0C0D10; --surface:#17191D; --ink:#ECEEF2; --muted:#A0A6B1; --rule:#262A30; --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
+  --paper:#0D0E12; --surface:#181A20; --ink:#ECEEF4; --muted:#9BA1B0; --rule:#292D38; --sh:0 0 0 1px rgb(255 255 255 / .06); --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
   --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
   --acc-teal:#2DD4BF; --acc-blue:#5C9BFF; --acc-violet:#A987FA; --acc-graphite:#E3E6EA;
   color-scheme:dark;
@@ -76,13 +77,13 @@ a{color:inherit}
 .mark{width:2.25rem;height:2.25rem;border-radius:.6rem;flex:none;display:block}
 .wordmark{margin:0 auto 0 0;font:800 2rem/1 var(--display);letter-spacing:.005em}
 .get{
-  height:2.25rem;padding:0 .9rem;border-radius:999px;background:var(--ink);color:var(--paper);
-  font-size:.875rem;font-weight:600;flex:none;
+  height:2.5rem;padding:0 1rem;border-radius:999px;background:var(--ink);color:var(--paper);
+  font-size:.9375rem;font-weight:700;flex:none;
 }
 .get:active{transform:scale(.96)}
 /* sync button: a cloud, with a dot that says how sync is doing */
-.cloud,.round{position:relative;width:2.25rem;height:2.25rem;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface);box-shadow:0 0 0 1px var(--rule);color:var(--muted)}
-.cloud svg,.round svg{width:1.2rem;height:1.2rem}
+.cloud,.round{position:relative;width:2.5rem;height:2.5rem;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface);box-shadow:var(--sh);color:var(--muted)}
+.cloud svg,.round svg{width:1.25rem;height:1.25rem}
 .cloud:active,.round:active{transform:scale(.94)}
 .round{color:var(--ink)}
 .cloud[data-state="on"],.cloud[data-state="syncing"],.cloud[data-state="error"]{color:var(--ink)}
