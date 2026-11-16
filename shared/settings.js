@@ -6,7 +6,7 @@
 
    Load with a plain <script src="../shared/settings.js"></script> in <head>, after the
    theme-color <meta> tags and before the stylesheet-dependent first paint, so the theme
-   is in place before anything is drawn. Ear Training is dark by design and doesn't load it.
+   is in place before anything is drawn. Every tool loads it, Ear Training included.
 
    MusicSettings.get()         the settings, {theme}
    MusicSettings.set(patch)    save a change and apply it

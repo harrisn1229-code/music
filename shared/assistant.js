@@ -27,7 +27,7 @@
                  { content, is_error, action: { text, undo }, link: { href, label } }
                  where undo is plain data handed back to tools.__undo, and href is relative to
                  the Music root.
-        dark     force the dark look (Ear Training)
+        dark     force the dark look (no tool uses it now)
      MusicAssistant.open() / close() / icon (the sparkle glyph)
      MusicAssistant.ask(text)  open and send text (Scratchpad's Sort button); without a key it is
                                left in the box instead */

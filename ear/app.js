@@ -75,9 +75,10 @@ function detectPitch(buf, sampleRate) {
   };
   var PATH_NAMES = { major: "Major", minor: "Minor", chromatic: "Chromatic" };
   var SETS = { major: MAJ, minor: MIN, chromatic: ALL };
-  /* Degree colours: 1 / 3 / 5 follow Library's dark set (orange, blue, green); 7 is its pink, 6 its purple and 4 is filled white. 2 stays yellow.
+  /* Degree colours: 1 / 3 / 5 follow Library's set (orange, blue, green); 7 is its pink, 6 its purple and 4 is filled white. 2 stays yellow.
      The altered degrees are a ring of the hue they alter. Order is by semitone, 0..11. */
-  var DCOL = ["#FF9F4A", "#C98A2B", "#F2CB4B", "#6E7FF5", "#71A5FF", "#F1F2F8", "#8FD3E0", "#52CC88", "#9A55E8", "#B58CFF", "#D93A76", "#FF7AA8"];
+  // The colours themselves are tokens in app.css (--c0..--c11), with a light and a dark set.
+  var DCOL = []; for (var ci = 0; ci < 12; ci++) DCOL.push("var(--c" + ci + ")");
   var DRING = [false, true, false, true, false, false, true, false, true, false, true, false];
   var CLOCK_ORDER = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];     // 1 5 2 6 3 7 #4 b2 b6 b3 b7 4, clockwise from the top
   var DIFF = {
@@ -477,7 +478,7 @@ function detectPitch(buf, sampleRate) {
     var svg = '<svg class="cl-svg" viewBox="0 0 400 400" aria-hidden="true" focusable="false"><circle class="cl-ring" cx="200" cy="200" r="150"/>' +
       (o.hold ? '<circle class="cl-hold" id="cl-hold" cx="200" cy="200" r="83" pathLength="100" transform="rotate(-90 200 200)"/>' : "") +
       '<polyline class="cl-line" id="cl-line" points=""/>';
-    svg += ALL.map(function (d) { var a = POS(d, 86), b = POS(d, 136); return '<line class="cl-spoke" data-d="' + d + '" x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(b[0]) + '" y2="' + f1(b[1]) + '" stroke="' + DCOL[d] + '"/>'; }).join("");
+    svg += ALL.map(function (d) { var a = POS(d, 86), b = POS(d, 136); return '<line class="cl-spoke" data-d="' + d + '" x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(b[0]) + '" y2="' + f1(b[1]) + '" style="stroke:' + DCOL[d] + '"/>'; }).join("");
     svg += '<g id="cl-fx"></g>';
     svg += CLOCK_ORDER.map(function (d) {
       var p = POS(d, 150), q = POS(d, 117), b = POS(d, 173), ring = DRING[d];
@@ -506,7 +507,7 @@ function detectPitch(buf, sampleRate) {
     function fx(attrs) {
       var layer = q("#cl-fx"); if (!layer || reduced()) return null;
       var c = document.createElementNS(SVGNS, "circle"); c.setAttribute("class", "cl-rp");
-      Object.keys(attrs).forEach(function (k) { c.setAttribute(k, attrs[k]); });
+      Object.keys(attrs).forEach(function (k) { if (k === "stroke") c.style.stroke = attrs[k]; else c.setAttribute(k, attrs[k]); });
       layer.appendChild(c); setTimeout(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 1100);
       return c;
     }
@@ -522,7 +523,7 @@ function detectPitch(buf, sampleRate) {
       reveal: pulse,
       ripple: function () {                                  // a question note: the centre only, nothing about which degree
         var c = q(".cl-centre"); if (c) hold(c, "q", 600);
-        anim(fx({ cx: 200, cy: 200, r: 76, stroke: "rgb(255 255 255 / .55)" }), [{ transform: "scale(1)", opacity: 0.8 }, { transform: "scale(1.32)", opacity: 0 }], { duration: 1000, easing: "ease-out" });
+        anim(fx({ cx: 200, cy: 200, r: 76, stroke: "rgb(var(--hl) / .55)" }), [{ transform: "scale(1)", opacity: 0.8 }, { transform: "scale(1.32)", opacity: 0 }], { duration: 1000, easing: "ease-out" });
       },
       clear: function () {
         view.querySelectorAll(".cl-d").forEach(function (g) { g.classList.remove("ok", "bad", "hint", "near", "target"); });
@@ -1561,7 +1562,7 @@ function detectPitch(buf, sampleRate) {
   window.addEventListener("music:prefs-changed", function () { takePrefs(true); });
   window.addEventListener("storage", function (e) { if (e.key === PREFS_KEY && !BRIDGE) takePrefs(false); });
   if (window.MusicAssistant) MusicAssistant.mount({
-    app: "ear", button: $("b-ai"), tools: TOOLS, dark: true,
+    app: "ear", button: $("b-ai"), tools: TOOLS,
     context: function () {
       var t = document.title.replace(/ [–-] Ear Training$/, "");
       return "In Ear Training, on: " + (!t || t === "Ear Training" ? "the front page" : t) + "." + (/^feelings/.test(T.screen) && T.feel != null ? " Degree selected: " + MusicFeelings.by[T.feel].label + "." : "");
