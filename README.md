@@ -11,7 +11,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
-| Library | `library/` | Covers, drills and production chains, plus every mode, chord, arpeggio and voicing in any key |
+| Library | `library/` | Covers, drills, tools, My files, Originals and production chains, plus every mode, chord, arpeggio and voicing in any key |
 | School | `school/` | The curriculum and your progress: classes, lessons, quizzes and tests |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
@@ -97,10 +97,16 @@ offline use as well. School does not need `version` raised when only `school/` c
 
 ### Library's shelves
 
-Songs (Covers), Drills and My files are reached from Library, not from School. They are the
-same notes and the same saved progress as School (a drill's tempo log and a song's status are
-progress), so they are the same engine opened in a second mode: `school/library.html`, which the
-Library tool's front page links to. School's own menu keeps only coursework and Classes.
+School is just the curriculum and your progress. Covers, Drills (and every drill page), Tools,
+My files and Ear training are Library's. They are built from the same notes as School, so they
+run on the same engine opened in a second mode, `school/library.html`, which the Library tool's
+front page links to; nothing is shipped twice. Each page sends the other's routes across: a
+lesson's link to a drill opens it in Library, a drill's link to a course opens it in School.
+
+The practice history (drill tempo logs) belongs to Library: `library:practice` on the device and
+the `practice` document in the account, merged drill by drill. School's Hanon lessons log into
+it too; School's own progress (`school:progress`) no longer holds it, and any copy found there (an
+older device, an old backup) is folded in on load.
 
 Library opens on its shelves: Modes and chords (`library/#/theory`, the mode, chord and voicing
 lookup), Production chains, Songs, Drills, Originals (a link to the Originals tool) and My files. All of them, and School, share one look — School's
@@ -177,8 +183,8 @@ A Music account is an email and a password, and it is one sign-in for the whole 
 button on the home screen opens it (the first time Music is opened on a device it is offered
 once), and a tool that needs it links there with `../#account`. Signed in, every tool that syncs
 keeps its data in the account: Barline its charts (`barline`), Note Cards its ratings
-(`note-cards`), School its progress (`school`), Scratchpad its notes (`scratchpad`), Originals its
-songs (`originals`). A device that was syncing through GitHub keeps
+(`note-cards`), School its progress (`school`), Library's shelves their practice history
+(`practice`), Scratchpad its notes (`scratchpad`), Originals its songs (`originals`). A device that was syncing through GitHub keeps
 doing so until someone signs in on it; after that the account is what the tools use, and what was
 on the device is merged in. If a different person signs in on a device, Barline and Note Cards
 will not hand the first person's charts and ratings to them, and School starts them fresh.

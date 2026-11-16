@@ -31,7 +31,6 @@ const ROUTE_KEY = BRIDGE ? 'hms.route.bridge' : LIBMODE ? 'hms.route.lib' : 'hms
 /* In the Music app pages say less: `lite(full, short)` is the artifact page's sentence there and the
    short form (often nothing) here. */
 function lite(full, short) { return LOCAL ? short : full; }
-const LIB_ROUTES = ['songs', 'drills', 'tools', 'files'];
 const FILES = LOCAL ? (window.MSFiles || null) : null;
 const LS_KEY = 'school:progress', LS_AT = 'school:savedAt';
 const C = JSON.parse(document.getElementById('curriculum').textContent);
@@ -45,6 +44,43 @@ let P = JSON.parse(document.getElementById('progress').textContent);
    the page saying "I am too old to know about this". */
 for (const k of ['concepts','courses','classes','tests','homework','assignments','drills','misses'])
   P[k] = P[k] || {};
+/* Library's practice history. Nate, 2026-11-16: "I want school to just be the curriculum and
+   progress" -- Covers, Drills, Tools and My files moved to Library, "move practice progress with
+   them". The drill tempo logs used to live in P.drills, inside School's progress. In the app
+   (LOCAL) they are their own record now, `library:practice`, saved to the account as its own
+   document ("practice"). School's Hanon lessons still log into it -- one practice history, as
+   Nate chose -- School just doesn't keep it. The artifact page (not LOCAL) is unchanged and keeps
+   P.drills.
+
+   Every load folds any P.drills it finds (an older device's sync, an old backup) into the record
+   and empties it, so the move can run any number of times. An entry carries `t`, the time it was
+   last written; two copies of one drill keep the newer (`prStamp`). */
+const PR_KEY = 'library:practice';
+const prStamp = e => (e && +e.t) || (e && Array.isArray(e.log) && e.log[0] && Date.parse(e.log[0].date)) || 0;
+function prMergeInto(into, from) {
+  let changed = false;
+  Object.keys(from || {}).forEach(k => {
+    const a = into[k], b = from[k];
+    if (!b || typeof b !== 'object') return;
+    const sa = prStamp(a), sb = prStamp(b);
+    const la = a && Array.isArray(a.log) ? a.log.length : 0, lb = Array.isArray(b.log) ? b.log.length : 0;
+    if (!a || sb > sa || (sb === sa && lb > la)) { into[k] = b; changed = true; }
+  });
+  return changed;
+}
+const prRead = () => { try { const v = JSON.parse(localStorage.getItem(PR_KEY) || 'null');
+  return v && v.drills && typeof v.drills === 'object' ? v : null; } catch (e) { return null; } };
+let PR = (LOCAL && prRead()) || {drills: {}};
+let practiceMoved = false;
+if (LOCAL && Object.keys(P.drills).length) {
+  prMergeInto(PR.drills, P.drills);
+  try {
+    PR.savedAt = Date.now();
+    localStorage.setItem(PR_KEY, JSON.stringify(PR));
+    P.drills = {}; practiceMoved = true;     // only once the record is safely written
+  } catch (e) { /* storage full: leave them where they are and try again next load */ }
+}
+const DRL = () => LOCAL ? PR.drills : P.drills;
 /* PATCH-121 — `undo` joins `notes` on the array side of that loop, not the keyed-map side: it is
    a stack of snapshots in the order they were taken, and it was briefly initialised as `{}` by
    the loop above, which made `undoAll().filter` throw on every class page. Same shape rule as
@@ -194,7 +230,7 @@ function unTurnIn(cid, n) { delete P.assignments[akey(cid, n)]; dirty(); }
    invented to sit beside it — the per-session rows EXTEND the existing entry (a `log` array)
    rather than replacing its shape, which is what the contract asks for and what keeps
    `tempo_current` working for the reader who never opens this page. */
-const ds = key => Object.assign({}, D_DRILL, P.drills[key] || {});
+const ds = key => Object.assign({}, D_DRILL, DRL()[key] || {});
 const drillLog = key => { const l = ds(key).log; return Array.isArray(l) ? l : []; };
 function logPractice(key, target, entry) {
   const cur = ds(key), tempo = +entry.tempo || 0;
@@ -205,7 +241,7 @@ function logPractice(key, target, entry) {
      never reach maintenance — which is the honest answer, not a bug to paper over with a
      guessed target. */
   const reached = cur.status === 'maintenance' || (target > 0 && tempo >= target);
-  P.drills[key] = Object.assign({}, cur, {
+  DRL()[key] = Object.assign({}, cur, LOCAL ? {t: Date.now()} : {}, {
     status: reached ? 'maintenance' : 'learning',
     tempo_current: tempo || cur.tempo_current,
     // Newest first, the way every log in this vault reads. Capped because this state travels
@@ -216,7 +252,7 @@ function logPractice(key, target, entry) {
     log: [{date: entry.date || TODAY, tempo: tempo || null, mins: entry.mins || null, note: entry.note || ''}]
            .concat(drillLog(key)).slice(0, 40),
   });
-  dirty();
+  LOCAL ? practiceSaved() : dirty();
 }
 
 /* PATCH-160 — a row's undo IS its delete: no confirm, no toast-undo. Delta-only is the file's
@@ -225,10 +261,16 @@ function logPractice(key, target, entry) {
 function deletePractice(key, idx) {
   const cur = ds(key), log = drillLog(key).slice();
   log.splice(idx, 1);
-  if (!log.length) { delete P.drills[key]; dirty(); return; }
+  // In the app an emptied drill keeps a dated blank rather than vanishing, so the account's
+  // older copy can't bring the deleted sessions back on the next sync.
+  if (!log.length) {
+    if (LOCAL) { DRL()[key] = {status: 'available', tempo_current: null, log: [], t: Date.now()}; practiceSaved(); }
+    else { delete P.drills[key]; dirty(); }
+    return;
+  }
   const newest = log.find(e => e.tempo);
-  P.drills[key] = Object.assign({}, cur, {log, tempo_current: newest ? newest.tempo : null});
-  dirty();
+  DRL()[key] = Object.assign({}, cur, {log, tempo_current: newest ? newest.tempo : null}, LOCAL ? {t: Date.now()} : {});
+  LOCAL ? practiceSaved() : dirty();
 }
 
 /* ------------------------------------------------ PATCH-102: the patch notes log
@@ -1954,13 +1996,38 @@ const earSeen = id => ear.seen.indexOf(id) >= 0;
 const earGo = n => { ear.i = ((n % EAR.length) + EAR.length) % EAR.length; earSave(); };
 
 /* ---------------------------------------------------------------- render */
+/* School is the curriculum and your progress; the shelves (Covers, Drills and the drill pages,
+   Tools, My files, Ear training) are Library's. In the app the two pages are the same engine, so
+   each one sends the other's routes across: a lesson's link to a drill opens it in Library, a
+   drill page's link to a course opens it in School. Reading pages (`source:`) open where you are. */
+const SHELF_HEADS = ['songs', 'drills', 'technique', 'routine', 'watch', 'method', 'tools', 'files', 'ear'];
+const ROUTE_HEADS = SHELF_HEADS.concat(['overview', 'myclasses', 'classes', 'class', 'courses', 'course',
+  'concepts', 'concept', 'source', 'drill', 'sync', 'notes', 'homework', 'ext', 'slices', 'paper', 'tests']);
+const headOf = r => String(r || '').split(':')[0];
+const belongsHere = r => !LOCAL || headOf(r) === 'source'
+  || (LIBMODE ? SHELF_HEADS.includes(headOf(r)) : !SHELF_HEADS.includes(headOf(r)));
+const otherPage = r => belongsHere(r) ? null : (LIBMODE ? 'index.html#' : 'library.html#') + encodeURIComponent(r);
 let route = sessionStorage.getItem(ROUTE_KEY) || (LIBMODE ? 'songs' : 'overview');
-// The Library tool links straight to a shelf (library.html#drills); that beats whatever was open last.
-if (LIBMODE && LIB_ROUTES.includes(location.hash.slice(1))) {
-  route = location.hash.slice(1);
-  // Used once: left in the address it would drag every later reload back to that shelf.
-  try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
+if (!belongsHere(route)) route = LIBMODE ? 'songs' : 'overview';   // saved before the split
+// A link straight to a page (library.html#drills, index.html#course:01) beats whatever was open last.
+if (LOCAL && location.hash.length > 1) {
+  let h = '';
+  try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+  if (ROUTE_HEADS.includes(headOf(h)) && belongsHere(h)) route = h;
+  // Used once: left in the address it would drag every later reload back to that page.
+  if (ROUTE_HEADS.includes(headOf(h))) {
+    try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
+  }
 }
+// The same page asked for another route by address alone (a link to library.html#drills while on
+// library.html): follow it.
+if (LOCAL) window.addEventListener('hashchange', () => {
+  let h = '';
+  try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+  if (!ROUTE_HEADS.includes(headOf(h))) return;
+  try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
+  go(h);
+});
 let filters = {strand:'', status:'', q:'', sq:'', genre:'', key:'', bpm:''};
 let editStart = false;
 /* Nate's day-picker: "when starting a course... prompted with a question of what days do you
@@ -1982,6 +2049,8 @@ try { const d = sessionStorage.getItem('hms.drill');
       if (d) { drill = JSON.parse(d); sessionStorage.removeItem('hms.drill'); } } catch {}
 
 const go = r => {
+  const away = otherPage(r);
+  if (away) { if (pending) saveLocal(); location.href = away; return; }
   // PATCH-138 (I-6) — leaving a live session is the other way one ends; flush rather than wait out
   // the idle debounce with work sitting unsaved.
   if (route === 'drill' && r !== 'drill') flushSave();
@@ -2133,8 +2202,8 @@ function rail() {
       <a class="navlink" href="../library/#/chords">Chords</a>
       <a class="navlink" href="../library/#/arps">Arpeggios</a>
     </nav>${foot}</aside>`;
-  /* School inside Music: only what is yours as a student, plus the catalogue of classes. The
-     shelves moved to the Library tool; the links at the bottom are the way to them. */
+  /* School inside Music: the curriculum and your progress, nothing else. The shelves are the
+     Library tool's (see SHELF_HEADS). */
   if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">
     ${bar('School', 'icon-192.png', '../', 'Music home, all apps', ICO.home)}
     <div class="sem">${kn ? `${kn} ${kn === 1 ? 'class' : 'classes'} enrolled` : 'No classes enrolled'}</div>
@@ -2149,10 +2218,6 @@ function rail() {
       ${item('ext','Outside lessons', extHomeworkDue() || '')}
       ${SLICES.length ? item('slices','Soundslice') : ''}
       ${item('sync','Activity & backup')}
-      <div class="navgrp navgrp-2">In Library</div>
-      <a class="navlink" href="library.html#songs">Covers</a>
-      <a class="navlink" href="library.html#drills">Drills</a>
-      <a class="navlink" href="library.html#files">My files</a>
     </nav>${foot}</aside>`;
   return `<aside class="rail${open ? '' : ' shut'}">
     <button class="rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
@@ -6980,6 +7045,7 @@ async function syncNow(manual) {
   if (sessionLive() && !manual) return syncSoon(30000);       // never reload out from under a quiz
   syncState.busy = true; syncState.err = ''; paintSync();
   try {
+    await practiceSync().catch(() => {});   // first: School's half below may reload the page
     const me = who();
     // A different person signing in on this device starts from THEIR account, never from the
     // progress the last person left here — that copy is set aside, not uploaded as theirs.
@@ -7019,6 +7085,34 @@ async function syncNow(manual) {
   if (manual && !syncState.err) toast('Synced.');
 }
 function paintSync() { if (route === 'sync') render(); }
+
+/* ---- Library's practice history: its own record and its own account document ----
+   Merged drill by drill (newest write wins), not newest-document-wins like School's progress: a
+   tempo logged on the phone and another logged on the Mac are both kept. */
+const PRACTICE_APP = 'practice', PR_USER = 'library:practiceUser';
+let prTimer = null;
+function practiceSaved() {
+  const stored = prRead();
+  if (stored) prMergeInto(PR.drills, stored.drills);   // the other page may have logged since this one loaded
+  PR.savedAt = Date.now();
+  try { localStorage.setItem(PR_KEY, JSON.stringify(PR)); }
+  catch (e) { toast("Couldn't save -- this browser's storage is full or switched off."); }
+  if (CLOUD && who()) { clearTimeout(prTimer); prTimer = setTimeout(() => practiceSync().catch(() => {}), 3000); }
+}
+async function practiceSync() {
+  if (!CLOUD || !who()) return;
+  const me = who(), last = lsGet(PR_USER);
+  if (last && last !== me.id) return;                 // someone else's practice on this device
+  const stored = prRead();
+  if (stored) prMergeInto(PR.drills, stored.drills);
+  const remote = await CLOUD.load(PRACTICE_APP);
+  const theirs = remote && remote.drills && typeof remote.drills === 'object' ? remote.drills : {};
+  const gotNew = prMergeInto(PR.drills, theirs);
+  const sendNew = prMergeInto(Object.assign({}, theirs), PR.drills);
+  if (gotNew) { PR.savedAt = Date.now(); try { localStorage.setItem(PR_KEY, JSON.stringify(PR)); } catch (e) {} render(); }
+  if (sendNew || !remote) await CLOUD.save(PRACTICE_APP, {app: PRACTICE_APP, version: 1, savedAt: Date.now(), drills: PR.drills});
+  lsSet(PR_USER, me.id);
+}
 
 /* ---- the account's private files ---- */
 const cloudFiles = {keys: new Set(), names: new Map(), member: false, owner: false, loaded: false};
@@ -8020,6 +8114,7 @@ app.addEventListener('input', e => {
    its writes are derived and are recomputed next boot, so leaving them unsaved loses nothing and
    they ride along with the next real edit. */
 reconcileReleases();
+if (practiceMoved) dirty();   // School's progress, saved without the practice history it handed to Library
 render();
 const s = sessionStorage.getItem('hms.scroll');
 if (s) { sessionStorage.removeItem('hms.scroll'); window.scrollTo(0, +s); }

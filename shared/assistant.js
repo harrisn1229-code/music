@@ -66,7 +66,7 @@
     "",
     "Originals: an original song with chords is a chart filed in the folder \"Originals\" (create_chart or move_chart with that folder name); it then shows in Originals too. A song idea without chords (a spark, a title, a feel, a loop) is an idea in Originals: add_original_idea makes one, with its lyrics in lyrics. update_original changes an existing one; use add_lyrics to add lines to its lyrics and add_note to add to its notes thread, so nothing already written is lost. list_originals shows what is there; get_original reads one in full. In Originals, \"this song\" is the idea named in the note at the start of the message.",
     "Theory: use theory_lookup for the notes and degrees of a mode, chord or arpeggio rather than working them out; list_theory shows the names available, so map loose names (\"dominant seventh\", \"half diminished\", \"minor pentatonic\" is not available) onto them. The result includes a link button to the Library page for it, so don't write out addresses.",
-    "Practice: practice_stats reads Note Cards ratings, Ear Training accuracy and School enrolment. Say what stands out (weakest degrees, decks with many Rusty cards, streaks) in a sentence or two, with the numbers.",
+    "Practice: practice_stats reads Note Cards ratings, Ear Training accuracy, the drill practice log and School enrolment. Say what stands out (weakest degrees, decks with many Rusty cards, streaks) in a sentence or two, with the numbers.",
     "Settings: change_settings changes the theme, Barline's accent and title font, and Ear Training's preferences; values outside a setting's range are clamped and the result says what was actually set. get_settings shows the current values.",
     "Scratchpad: the musician's daily brain dump, usually dictated and messy. list_scratch reads it (unsorted notes by default; give a pile to read that pile). add_scratch jots a new note when they say note this, jot this down or remember this, from anywhere in Music.",
     "Sorting the Scratchpad (\"sort my notes\"): call list_scratch, then for each unsorted note split it into the separate thoughts it holds and call sort_scratch once for that note with every piece. Piles: song (a song idea: a title, concept, hook or feel), lyrics (lines or verses to sing), chords (progressions, riffs, voicings), practice (things to practise or learn), production (mixing, sound design, arrangement), gear (instruments, plugins, things to buy or fix), todo (other things to do), other. Route as you file: call list_originals first. A new song idea also goes into Originals with add_original_idea (title it from the note; the idea in idea, any lyric lines for it in lyrics). Lyrics or thoughts about a song already in Originals go to it with update_original (add_lyrics for lines to sing, add_note for anything else) rather than a new idea. Chords they want to keep for a song become a chart with create_chart in the folder Originals, but only when they gave actual chords. Each piece's sent_to says where you sent it, like \"Originals: Glass Coast\" or \"Barline: Glass Coast\", or \"\" when it only stays in its pile. Keep their words: drop filler like um, but never rewrite or polish lyrics. Finish by saying in a sentence what went where.",
@@ -152,7 +152,7 @@
         root: { type: "string", description: "The key or root note, like D, F#, Bb" },
         name: { type: "string", description: "A mode (Dorian), or a chord or arpeggio quality (maj7, m7b5, minor, dominant 7). Use list_theory for the names." }
       } } }],
-    ["self", { name: "practice_stats", description: "Read-only practice numbers: Note Cards (cards by rating for each deck), Ear Training (accuracy for each scale degree all-time and over the last 7 days, most-confused pairs, rounds, streak, highest levels) and School (enrolled classes and simple progress).", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
+    ["self", { name: "practice_stats", description: "Read-only practice numbers: Note Cards (cards by rating for each deck), Ear Training (accuracy for each scale degree all-time and over the last 7 days, most-confused pairs, rounds, streak, highest levels), Drills (Library's practice log: tempo now, sessions, minutes this week) and School (enrolled classes and simple progress).", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
     ["self", { name: "get_settings", description: "Read the current settings: theme, Barline's accent and title font, and Ear Training's preferences.", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
     ["self", { name: "change_settings", description: "Change settings. Give only what changes. Out-of-range values are clamped to the setting's real range; the result says what was set.", input_schema: {
       type: "object", additionalProperties: false,
@@ -528,8 +528,22 @@
       .filter(function (c) { return c.status && c.status !== "available"; });
     return { started: true, enrolled_class_numbers: enrolled, concepts_by_status: concepts, concepts_tracked: n, courses_started: courses, tests_recorded: Object.keys(p.tests || {}).length };
   }
+  // Library's practice history (drill tempo logs; School's Hanon lessons log here too).
+  function drillStats() {
+    var p = lsJson("library:practice"), d = p && p.drills && typeof p.drills === "object" ? p.drills : null;
+    if (!d) return { started: false };
+    var wk = Date.now() - 7 * 864e5, sessions = [], drills = [];
+    Object.keys(d).forEach(function (k) {
+      var e = d[k] || {}, log = Array.isArray(e.log) ? e.log : [];
+      if (!log.length) return;
+      drills.push({ drill: k, status: e.status || "learning", tempo_now: e.tempo_current || null, sessions: log.length, last: log[0].date || "" });
+      log.forEach(function (s) { if (Date.parse(s.date) >= wk) sessions.push({ drill: k, date: s.date, tempo: s.tempo || null, mins: s.mins || null }); });
+    });
+    drills.sort(function (a, b) { return String(b.last).localeCompare(String(a.last)); });
+    return { started: drills.length > 0, drills: drills.slice(0, 15), sessions_last_7_days: sessions.length, minutes_last_7_days: sessions.reduce(function (n, s) { return n + (Number(s.mins) || 0); }, 0) };
+  }
   async function practiceStats() {
-    return { content: { note_cards: await cardsStats(), ear_training: earStats(), school: schoolStats() } };
+    return { content: { note_cards: await cardsStats(), ear_training: earStats(), drills: drillStats(), school: schoolStats() } };
   }
 
   /* ===================================================================
