@@ -156,6 +156,7 @@ function detectPitch(buf, sampleRate) {
     if (prog.days[prog.days.length - 1] !== today) { prog.days.push(today); if (prog.days.length > 400) prog.days.shift(); }
     persist();
   }
+  var logQ = function (mode, pc, ok, scale) { MusicLog.count("ear", mode + " · " + KEYNAMES[pc] + (scale ? " " + scale : ""), { unit: "questions", ok: ok }); };
   function streak() {
     var set = {}; prog.days.forEach(function (d) { set[d] = 1; });
     var t = Date.now(), n = 0;
@@ -829,6 +830,7 @@ function detectPitch(buf, sampleRate) {
       answered = true;
       if (!cfg.practice) record(asked, d);
       var right = d === asked;
+      if (!cfg.practice) logQ(cfg.path ? "Degrees" : "Custom degrees", pc, right, cfg.path ? PATH_NAMES[cfg.path].toLowerCase() : (cfg.minor ? "minor" : ""));
       T.vis.push({ kind: right ? "ok" : "bad", d: [d], at: Snd.now() });
       if (right) { Clk.ok(d); score++; } else { Clk.bad(d); }
       Clk.centre(bigDeg(asked)); if (cfg.practice) feelLine(asked); status(); T.phase = right ? "right" : "wrong";
@@ -973,7 +975,7 @@ function detectPitch(buf, sampleRate) {
     function answer(d) {
       if (busy || pos >= phrase.length) return;
       var exp = phrase[pos].d, right = d === exp;
-      record(exp, d); totNotes++; if (right) okNotes++; else wrongSome = true;
+      record(exp, d); logQ(cfg.custom ? "Custom melodies" : "Melodies", pc, right, cfg.minor ? "minor" : "major"); totNotes++; if (right) okNotes++; else wrongSome = true;
       states[pos] = { typed: d, cls: right ? "ok" : "bad" }; pos++;
       view.querySelectorAll(".cl-d").forEach(function (g) { g.classList.remove("ok", "bad"); });
       T.vis.push({ kind: right ? "ok" : "bad", d: [d], at: Snd.now() });
@@ -1068,7 +1070,7 @@ function detectPitch(buf, sampleRate) {
   function customPlay() {
     var D = customDraft;
     if (!D) { location.replace("#/custom"); return; }
-    var cfg = { set: D.set.slice(), oct: D.oct, count: D.count, keyMode: D.keyMode, fixedPc: D.fixedPc, keyEvery: D.keyEvery, instrument: D.instrument, minor: isMinorSet(D.set), diff: D.diff };
+    var cfg = { set: D.set.slice(), oct: D.oct, count: D.count, keyMode: D.keyMode, fixedPc: D.fixedPc, keyEvery: D.keyEvery, instrument: D.instrument, minor: isMinorSet(D.set), diff: D.diff, custom: true };
     if (D.kind === "melodies") runMelodies(cfg, function () { return { again: "#/custom/play", back: "#/custom" }; });
     else runDegrees(cfg, function () { return { again: "#/custom/play", back: "#/custom" }; }, null);
   }
@@ -1079,7 +1081,7 @@ function detectPitch(buf, sampleRate) {
     ckey = pc;
     view.innerHTML = clockHTML({ centre: centreBtn("root", "·", "Play one") }) +
       '<div class="card">' + keyChips(pc, "data-key") + '<div class="row"><button type="button" class="chip" data-a="drone" aria-pressed="true" id="dr">Drone</button></div></div>';
-    function startDrone() { if (!droneOn) return; Snd.ensure(); Snd.startDrone(pc); T.key = pc; T.keyName = KEYNAMES[pc]; started = true; }
+    function startDrone() { if (!droneOn) return; Snd.ensure(); Snd.startDrone(pc); T.key = pc; T.keyName = KEYNAMES[pc]; started = true; MusicLog.playing("drone", true, { text: "Drone · " + KEYNAMES[pc] }); }
     cur.click = function (b) {
       if (b.dataset.key !== undefined) {
         pc = +b.dataset.key; prog.sel.freeKey = pc; persist();
@@ -1089,7 +1091,7 @@ function detectPitch(buf, sampleRate) {
       }
       if (b.dataset.a === "drone") {
         droneOn = !droneOn; b.setAttribute("aria-pressed", String(droneOn));
-        if (droneOn) startDrone(); else { Snd.stopAll(); T.drone = false; }
+        if (droneOn) startDrone(); else { Snd.stopAll(); T.drone = false; MusicLog.playing("drone", false); }
         return;
       }
       var d = b.dataset.d !== undefined ? +b.dataset.d : (b.dataset.a === "root" ? 0 : -1);
@@ -1100,7 +1102,7 @@ function detectPitch(buf, sampleRate) {
         Clk.centre(bigDeg(d));
       }
     };
-    cur.stop = function () { Snd.stopAll(); };
+    cur.stop = function () { Snd.stopAll(); MusicLog.playing("drone", false); };
   }
 
   /* ---------- Feelings: how each degree feels, in words you can rewrite ---------- */
@@ -1144,7 +1146,7 @@ function detectPitch(buf, sampleRate) {
     var drawList = function () { $("fl-list").innerHTML = listHTML(); };
     drawCard(); drawList(); Clk.target(sel); T.feel = sel; T.expected = [sel];
 
-    function startDrone() { if (!droneOn) return; Snd.ensure(); Snd.startDrone(pc); T.key = pc; T.keyName = KEYNAMES[pc]; }
+    function startDrone() { if (!droneOn) return; Snd.ensure(); Snd.startDrone(pc); T.key = pc; T.keyName = KEYNAMES[pc]; MusicLog.playing("drone", true, { text: "Drone · " + KEYNAMES[pc] }); }
     function ready() { Snd.ensure(); if (droneOn && !Snd.droneOn()) startDrone(); }
     function hearDeg(d) {
       ready(); Snd.stopNotes(); T.expected = [d];
@@ -1177,7 +1179,7 @@ function detectPitch(buf, sampleRate) {
         ta.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); editing = false; drawCard(); var b = view.querySelector('[data-a="edit"]'); if (b) b.focus(); } });
       }
     }
-    cur.stop = function () { Snd.stopAll(); };
+    cur.stop = function () { Snd.stopAll(); MusicLog.playing("drone", false); };
     cur.click = function (b) {
       var a = b.dataset.a;
       if (b.dataset.key !== undefined) {
@@ -1191,7 +1193,7 @@ function detectPitch(buf, sampleRate) {
       if (a === "keys") { keysOpen = !keysOpen; $("fl-keys").hidden = !keysOpen; b.setAttribute("aria-expanded", String(keysOpen)); return; }
       if (a === "drone") {
         droneOn = !droneOn; b.setAttribute("aria-pressed", String(droneOn));
-        if (droneOn) { Snd.ensure(); startDrone(); } else { Snd.stopAll(); T.drone = false; }
+        if (droneOn) { Snd.ensure(); startDrone(); } else { Snd.stopAll(); T.drone = false; MusicLog.playing("drone", false); }
         return;
       }
       if (a === "pick") return select(+b.dataset.id, true);
@@ -1239,6 +1241,7 @@ function detectPitch(buf, sampleRate) {
         if (pc === null || (Date.now() - keyAt) / TS >= mins * 60000) {
           var np; do { np = rnd(12); } while (np === pc);
           pc = np; if ($("h-k")) $("h-k").textContent = "Key " + KEYNAMES[pc];
+          MusicLog.playing("listen", true, { text: "Hands-free · " + KEYNAMES[pc] });
           await Snd.keyChange(pc, prefs.cadence, minor); if (!live()) return; keyAt = Date.now();
         }
         var d; do { d = pick(set); } while (set.length > 1 && d === last); last = d;
@@ -1265,7 +1268,7 @@ function detectPitch(buf, sampleRate) {
       }
     }
     function stopRun(soft) {
-      running = false; runId++; Snd.stopAll(); T.phase = "stopped";
+      running = false; runId++; Snd.stopAll(); T.phase = "stopped"; MusicLog.playing("listen", false);
       if (!(soft && prefs.vStyle === "gentle")) Voice.cancel();            // Gentle: the word being said is allowed to finish
       if (wake) { try { wake.release(); } catch (e) {} wake = null; } T.wake = false;
     }
@@ -1343,7 +1346,7 @@ function detectPitch(buf, sampleRate) {
       function resolve(right) {
         var best = -1, n = 0; Object.keys(histo).forEach(function (k) { if (histo[k] > n) { n = histo[k]; best = +k; } });
         var answered = right ? target : (n >= 4 ? best : -1);
-        record(target, answered); if (right) ok++; results.push([target, answered]);
+        record(target, answered); logQ("Sing", pc, right, o.minor ? "minor" : setName === "chromatic" ? "chromatic" : "major"); if (right) ok++; results.push([target, answered]);
         busy = true; T.phase = right ? "right" : "wrong";
         Clk.needle(null); Clk.near(null);
         if (right) { Clk.ok(target); Clk.hold(100); } else { Clk.hint(target); Clk.hold(0); if (answered >= 0 && answered !== target) Clk.bad(answered); }

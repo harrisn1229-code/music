@@ -405,7 +405,12 @@ button.node{cursor:zoom-in}
     const list = recents().filter((x) => x.h !== h);
     list.unshift({ h: h, t: t });
     lsSet(RECENT_KEY, list.slice(0, 18));
+    /* practice log: a lookup counts once it has stayed on screen ~10 s */
+    clearTimeout(lookupTimer);
+    lookupTimer = setTimeout(function () { MusicLog.event("lookup", t); }, 10000);
   }
+  let lookupTimer = 0;
+  window.addEventListener("hashchange", function () { clearTimeout(lookupTimer); });
 
   /* ---------- small pieces ---------- */
   const ICON = {

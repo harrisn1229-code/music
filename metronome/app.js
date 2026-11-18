@@ -65,7 +65,22 @@
     if (ok && !dot) for (let i = 3; i < nb; i += 3) lv[i] = 2;   // eighth beats in 6/8, 9/8, 12/8: accent each group of three
     return lv;
   }
-  const save = () => lsSet(KEY, S);
+  const save = () => { lsSet(KEY, S); logSync(); };
+  // Practice log: what is sounding. The speed trainer is one stretch (its auto steps never re-log).
+  let logText = "", logTimer = 0;
+  function logDesc() {
+    const tr = S.trainer.on ? "Speed trainer " + S.trainer.start + "\u2192" + S.trainer.target : S.bpm + " bpm";
+    const sub = S.sub === "eighth" ? (S.swing > 50 ? "swung eighths" : "eighths") : S.sub === "triplet" ? "triplets" : S.sub === "sixteenth" ? "sixteenths" : S.sub !== "none" ? S.sub : "";
+    return tr + " \u00b7 " + S.num + "/" + S.den + (isDotted() ? " dotted" : "") + (sub ? " \u00b7 " + sub : "");
+  }
+  function logSync() {
+    clearTimeout(logTimer);
+    logTimer = setTimeout(() => {
+      if (!running) return;
+      const t = logDesc();
+      if (t !== logText) { logText = t; MusicLog.playing("click", true, { text: t }); }
+    }, 1500);
+  }
   const sigText = () => S.num + "/" + S.den + (isDotted() ? " ♩." : "");
   const SETUP_KEYS = ["bpm", "num", "den", "dotted", "levels", "sub", "swing", "sound", "flash", "vibrate", "trainer", "gap", "timer", "countIn"];
 
@@ -242,6 +257,7 @@
     runGain = ctx.createGain();
     runGain.connect(master);
     running = true; T.running = true;
+    logText = logDesc(); MusicLog.playing("click", true, { text: logText });
     queue = []; T.ticks.length = 0;
     const t0 = ctx.currentTime + 0.1;
     run = { nextT: t0, beatStart: t0, beatDur: 0, bar: 0, beat: 0, sub: 0, subN: 1, swing: 50, cinBars: S.countIn, musicT0: t0, ended: false, info: null, t0: t0 };
@@ -256,6 +272,7 @@
   function stop() {
     if (!running && !starting) return;
     running = false; T.running = false; starting = false;
+    clearTimeout(logTimer); logText = ""; MusicLog.playing("click", false);
     timerStop();
     if (runGain) {
       const g = runGain; runGain = null;

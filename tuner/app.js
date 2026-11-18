@@ -318,7 +318,8 @@ function detectPitch(buf, sampleRate) {
     toneStr = idx; toneUntil = performance.now() + TONE_MS;
     resetTracking(); D.state = "rest"; D.hz = null; D.cents = 0;
     clearTimeout(toneTimer);
-    toneTimer = setTimeout(function () { toneStr = null; toneUntil = 0; paint(); }, TONE_MS);
+    MusicLog.playing("tone", true, { text: "Reference tone \u00b7 " + cur().group + " " + cur().name });
+    toneTimer = setTimeout(function () { toneStr = null; toneUntil = 0; MusicLog.playing("tone", false); paint(); }, TONE_MS);
     paint();
   }
 
@@ -335,6 +336,7 @@ function detectPitch(buf, sampleRate) {
   function unlockScreen() { try { if (wl) wl.release(); } catch (e) {} wl = null; T.wake = false; }
   function setSession(type) { try { if (navigator.audioSession) navigator.audioSession.type = type; } catch (e) {} }
 
+  function logTuning() { MusicLog.playing("tuner", true, { text: "Tuning \u00b7 " + cur().group + " " + cur().name }); }
   async function startMic() {
     if (listening) return;
     errMsg = ""; paint();
@@ -354,6 +356,7 @@ function detectPitch(buf, sampleRate) {
     src.connect(an); buf = new Float32Array(an.fftSize);
     listening = true; T.mic = "on"; resetTracking(); D.state = "rest"; D.hz = null; D.cents = 0;
     lockScreen(); paint();
+    logTuning();
     raf = requestAnimationFrame(loop);
   }
   function loop(ts) {
@@ -371,6 +374,7 @@ function detectPitch(buf, sampleRate) {
     setSession("playback"); unlockScreen();
   }
   function stopMic() {
+    MusicLog.playing("tuner", false);
     listening = false; releaseMic(); T.mic = "off";
     resetTracking(); D.state = "idle"; D.note = null; D.hz = null; D.cents = 0; seen = false;
     paint();
@@ -408,6 +412,7 @@ function detectPitch(buf, sampleRate) {
   function setTuning(id) {
     P.tuning = id; checks = {}; lockStr = 0; resetTracking(); D.note = null; D.state = listening ? "rest" : "idle"; D.hz = null; D.cents = 0;
     savePrefs(); buildTuning(); buildPrefs(); paint();
+    if (listening) logTuning();
   }
   function setA4(v) {
     v = Math.max(A4_MIN, Math.min(A4_MAX, v)); if (v === P.a4) return;

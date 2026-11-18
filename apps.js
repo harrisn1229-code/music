@@ -15,10 +15,19 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.25.2",
+  version: "1.26.0",
   // Files more than one app uses. Kept available offline like everything else.
-  shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
+  shared: ["shared/theory.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   apps: [
+    {
+      id: "log",
+      name: "Practice Log",
+      about: "Time spent and what you did, recorded on its own",
+      color: "#0B7FA6",
+      icon: "icon-192.png",
+      sync: { at: "log:syncedAt" },
+      files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
+    },
     {
       id: "scratchpad",
       name: "Scratchpad",

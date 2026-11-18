@@ -1030,7 +1030,36 @@
     }
   }
   function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 300); }
-  function touch(){ const c = cur(); if (c) c.updatedAt = Date.now(); saveSoon(); }
+  // Practice log. quiet: tempo, key and transpose changes aren't logged as edits.
+  const editLogged = {};
+  let viewTimer = null, viewFor = null, clickTimer = null, clickText = "";
+  const logTitle = (c) => (c.title || "Untitled chart");
+  function logChartSoon(id){
+    if (viewFor === id) return;
+    clearTimeout(viewTimer); viewFor = id;
+    viewTimer = setTimeout(() => {
+      const c = charts[id];
+      if (c && state.chartId === id) MusicLog.event("chart", logTitle(c) + (c.key ? " · " + c.key : ""));
+    }, 20000);
+  }
+  function logChartLeft(){ clearTimeout(viewTimer); viewFor = null; }
+  function logClick(){
+    const c = cur();
+    if (!c || !state.playing) return;
+    const text = logTitle(c) + " · " + c.bpm + " bpm";
+    if (text === clickText) return;
+    clickText = text;
+    MusicLog.playing("click", true, { text: text });
+  }
+  function touch(quiet){
+    const c = cur();
+    if (c){
+      c.updatedAt = Date.now();
+      if (!quiet && !editLogged[c.id]){ editLogged[c.id] = true; MusicLog.event("edit", "Edited " + logTitle(c)); }
+      if (state.playing){ clearTimeout(clickTimer); clickTimer = setTimeout(logClick, 1500); }
+    }
+    saveSoon();
+  }
   const sortedCharts = () => Object.values(charts).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
   // Folders: a flat list. Each chart is in at most one (chart.folderId; "" = none).
@@ -1908,9 +1937,11 @@
       document.body.classList.add("on-chart");
       $("dockMore").hidden = true; $("bMore").setAttribute("aria-expanded", "false");
       renderChartScreen();
+      logChartSoon(m[1]);
       window.scrollTo(0, 0);
     } else {
       stop();
+      logChartLeft();
       state.chartId = null;
       state.screen = "lib";
       state.navFromLib = false;
@@ -2568,12 +2599,12 @@
   $("fBpm").addEventListener("change", (e) => {
     const c = cur(); if (!c) return;
     c.bpm = clamp(parseInt(e.target.value, 10) || 100, 20, 320);
-    e.target.value = c.bpm; touch();
+    e.target.value = c.bpm; touch(true);
   });
   function nudgeBpm(d){
     const c = cur(); if (!c) return;
     c.bpm = clamp(c.bpm + d, 20, 320);
-    $("fBpm").value = c.bpm; touch();
+    $("fBpm").value = c.bpm; touch(true);
   }
   // Hold the tempo buttons to change it quickly.
   [["bpmDown", -1], ["bpmUp", 1]].forEach(([id, d]) => {
@@ -2587,7 +2618,7 @@
     ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, end));
     b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); nudgeBpm(d); } });
   });
-  $("fKey").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.key = e.target.value; touch(); });
+  $("fKey").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.key = e.target.value; touch(true); });
   $("fTop").addEventListener("change", (e) => {
     const c = cur(); if (!c) return;
     stop();
@@ -2598,7 +2629,7 @@
   function doTranspose(n){
     const c = cur(); if (!c) return;
     transposeChart(c, n);
-    touch(); renderTransport(); refreshViews();
+    touch(true); renderTransport(); refreshViews();
     toast(n > 0 ? "Up a half step." : "Down a half step.");
   }
   $("trUp").addEventListener("click", () => doTranspose(1));
@@ -2889,6 +2920,7 @@
     }
     state.flat = flat;
     state.playing = true;
+    clickText = ""; logClick();
     queue = [];
     const count = opts.countIn === false ? 0 : (prefs.countIn ? beatsPerBar(c) : 0);
     cursor = { i: start, start: start, beat: 0, count: count, chord: chordBefore(flat, start) };
@@ -2909,6 +2941,7 @@
   function stop(){
     if (!state.playing && !lookaheadId){ return; }
     state.playing = false;
+    clearTimeout(clickTimer); clickText = ""; MusicLog.playing("click", false);
     clearInterval(lookaheadId); lookaheadId = null;
     cancelAnimationFrame(rafId);
     if (ctx){ pianoRelease(ctx.currentTime); cancelPendingClicks(ctx.currentTime); }
@@ -3425,7 +3458,7 @@
     [["", "None (C)"]].concat(KEY_OPTIONS.map((k) => [k, pretty(k.replace(/m$/, " minor"))])).forEach(([v, l]) => { const o = h("option", "", l); o.value = v; keySel.appendChild(o); });
     if (curKey === "custom"){ const o = h("option", "", kTxt); o.value = "custom"; keySel.appendChild(o); }
     keySel.value = curKey;
-    keySel.addEventListener("change", () => { if (keySel.value === "custom") return; c.key = keySel.value; touch(); renderTransport(); renderScore(); });
+    keySel.addEventListener("change", () => { if (keySel.value === "custom") return; c.key = keySel.value; touch(true); renderTransport(); renderScore(); });
     keyF.appendChild(keySel); set.appendChild(keyF);
 
     const timeF = h("label", "sc-field"); timeF.appendChild(h("span", "", "Time"));
@@ -3443,7 +3476,7 @@
     const bpmIn = h("input", "");
     bpmIn.type = "number"; bpmIn.inputMode = "numeric"; bpmIn.min = "20"; bpmIn.max = "320"; bpmIn.value = String(c.bpm);
     bpmIn.setAttribute("aria-label", "Tempo in BPM");
-    bpmIn.addEventListener("change", () => { c.bpm = clamp(parseInt(bpmIn.value, 10) || 100, 20, 320); bpmIn.value = c.bpm; touch(); renderTransport(); drawScore(); });
+    bpmIn.addEventListener("change", () => { c.bpm = clamp(parseInt(bpmIn.value, 10) || 100, 20, 320); bpmIn.value = c.bpm; touch(true); renderTransport(); drawScore(); });
     bpmF.appendChild(bpmIn); bpmF.appendChild(h("span", "", "bpm")); set.appendChild(bpmF);
     root.appendChild(set);
 

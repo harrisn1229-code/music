@@ -7,6 +7,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 
 | Tool | Folder | What it does |
 | --- | --- | --- |
+| Practice Log | `log/` | Time spent in each tool and what was done, recorded on its own (no timers to start) |
 | Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
@@ -36,6 +37,7 @@ shared/theory.js       Music theory used by Note Cards and Library
 shared/account.js      The one GitHub connection every tool syncs with
 shared/ai.js           The one Claude connection (your Anthropic API key) every tool uses
 shared/assistant.js    The one AI assistant: a sheet opened from the home screen and every tool's top bar
+shared/log.js          The practice log: loaded by settings.js on every page, counts time and records what was done
 shared/cloud.js        The one email account: sign-in, saved data, private files
 shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
 shared/vendor/         The Supabase browser library, and marked (Markdown for Library's chain notes)
@@ -176,6 +178,27 @@ there are added to it) and kept chords to a Barline chart in Originals, and file
 went. A note can also be filed by hand from its sheet. `add_scratch` lets the assistant jot a note
 from anywhere in Music. Notes are saved under `scratchpad:v1`; with an account they sync note by
 note (newest change wins, deletions kept as tombstones for 120 days).
+
+## Practice Log
+
+`shared/log.js` runs on every page in Music, because `shared/settings.js` (which every tool loads,
+School included) loads it. Nothing has to be started:
+
+- A tool's time counts while it is on screen and was touched in the last 8 minutes, or while it
+  is making sound. A chart left open on the stand keeps counting while you play; a locked phone
+  stops the clock. Hidden frames (the assistant's bridges, the home screen's sync) never count,
+  and neither does Practice Log itself.
+- Time goes into sessions; moving between tools stays in one session, a 15-minute gap starts a
+  new one.
+- What was done comes from small calls in each tool: `MusicLog.playing(key, on, {text})` for
+  sound (the metronome and Barline's click with their tempos, the tuner, Ear Training's drone and
+  hands-free), `MusicLog.count(key, text, {unit, ok})` for cards rated and questions answered, and
+  `MusicLog.event(key, text)` for charts opened, keys and lookups that stayed on screen. Drill
+  tempos (`library:practice`) and the School page open for 30 seconds are picked up without
+  School being changed.
+
+Saved under `log:v1`; with an account Practice Log merges it with the `log` document (sessions by
+id, deletions kept). The assistant reads it with `practice_log`.
 
 ## Accounts
 

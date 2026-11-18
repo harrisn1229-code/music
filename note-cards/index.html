@@ -1388,6 +1388,16 @@ function nextCard() {
     startTimer();
   };
 }
+// Practice log: deck label, plus the key (and mode) when the filter narrows to exactly one.
+function logRating(c, id) {
+  const d = DECK[c.deck], one = g => { const a = state[g]; return a && a.length === 1 && OPTIONS[g].length > 1 ? a[0] : null; };
+  let text = d.label;
+  const k = one(({ modes:'modeKeys', arps:'arpKeys', triads:'triadKeys', sevenths:'sevKeys' })[c.deck] || '');
+  if (k != null) text += ' · ' + KEY_LABELS[Number(k)];
+  const m = c.deck === 'modes' ? one('modes') : null;
+  if (m != null) text += ' · ' + MODES.find(x => x.id === m).name;
+  MusicLog.count('cards', text, { unit: 'cards', ok: id !== 'rusty' });
+}
 // Rate the card, stamp it, then deal the next one.
 function rate(id) {
   const c = current();
@@ -1395,6 +1405,7 @@ function rate(id) {
   busy = true;
   stopTimer();
   const entry = { s: id, t: Date.now() };
+  try { logRating(c, id); } catch (e) {}
   PENDING.set(c.key, entry);
   persist(c, entry);
   renderStatus();

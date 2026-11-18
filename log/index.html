@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Practice Log</title>
+<meta name="description" content="Time spent practicing and what you did, recorded on its own. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Practice Log is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
+    <svg class="logo" aria-hidden="true" viewBox="0 0 512 512"><rect width="512" height="512" rx="114" fill="#0B7FA6"/><rect x="116" y="286" width="64" height="110" rx="20" fill="#fff" opacity=".7"/><rect x="224" y="216" width="64" height="180" rx="20" fill="#fff" opacity=".85"/><rect x="332" y="136" width="64" height="260" rx="20" fill="#fff"/><circle cx="148" cy="176" r="44" fill="none" stroke="#F5A93B" stroke-width="18"/><path d="M148 152v26l16 12" fill="none" stroke="#F5A93B" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1 class="brand">Practice Log</h1>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+<noscript><p class="wrap">Practice Log needs JavaScript turned on.</p></noscript>
+
+<script src="../apps.js"></script>
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
+<script src="../shared/cloud-config.js"></script>
+<script src="../shared/cloud.js"></script>
+<script src="../shared/log.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "log", button: document.getElementById("ai-btn"),
+    context: function () { return window.__logContext ? window.__logContext() : "In Practice Log."; }
+  });
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>

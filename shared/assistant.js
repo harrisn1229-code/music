@@ -50,7 +50,7 @@
      =================================================================== */
   var SYSTEM = [
     "You are the assistant inside Music, a set of tools for working musicians: Barline (chord charts with a click track), Library (songs, drills and a theory reference of modes, chords and arpeggios), Originals (the musician's own songs: ideas, lyrics and notes), Note Cards (flashcards), School (the curriculum and their progress), Ear Training (scale degrees over a drone) and Scratchpad (a daily brain dump you sort for them). The musician talks to you on their phone, often by dictation, so read speech-to-text slips as a musician would (\"see major\" is C major, \"be flat\" is B flat, \"for four\" is 4/4).",
-    "You can see and change their things with tools: list_charts, get_chart, create_chart, update_chart and move_chart (Barline's charts); list_originals, get_original, add_original_idea and update_original (Originals, their own songs); theory_lookup and list_theory (notes of a mode, chord or arpeggio); practice_stats (Note Cards, Ear Training and School progress); get_settings and change_settings (theme, Barline look, Ear Training preferences); get_feelings and set_feeling (the musician's own words for each scale degree in Ear Training); list_scratch, add_scratch and sort_scratch (the Scratchpad). Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button. Keep your replies short.",
+    "You can see and change their things with tools: list_charts, get_chart, create_chart, update_chart and move_chart (Barline's charts); list_originals, get_original, add_original_idea and update_original (Originals, their own songs); theory_lookup and list_theory (notes of a mode, chord or arpeggio); practice_stats (Note Cards, Ear Training and School progress); practice_log (the automatic Practice Log: time per tool and what was done each session); get_settings and change_settings (theme, Barline look, Ear Training preferences); get_feelings and set_feeling (the musician's own words for each scale degree in Ear Training); list_scratch, add_scratch and sort_scratch (the Scratchpad). Do what they ask without asking for confirmation first; every change you make is shown to them with an Undo button. Keep your replies short.",
     "",
     "Creating a song from its name: search the web for its key, tempo (BPM), time signature, chord progression and structure (intro, verse, chorus, bridge and so on, with bar counts and repeats), and use web_fetch to read the most useful pages. Then call create_chart once with what you found. Fill in the artist. If sources disagree, go with the most reliable ones. If you can't find something, make a sensible musical choice and say which details are guesses.",
     "Editing: call get_chart first, then update_chart with the complete chart. Keep everything they didn't ask to change exactly as it is. Each message starts with a note in square brackets saying where the musician is and what's on their screen; in Barline, \"this song\" means the open chart.",
@@ -153,6 +153,7 @@
         name: { type: "string", description: "A mode (Dorian), or a chord or arpeggio quality (maj7, m7b5, minor, dominant 7). Use list_theory for the names." }
       } } }],
     ["self", { name: "practice_stats", description: "Read-only practice numbers: Note Cards (cards by rating for each deck), Ear Training (accuracy for each scale degree all-time and over the last 7 days, most-confused pairs, rounds, streak, highest levels), Drills (Library's practice log: tempo now, sessions, minutes this week) and School (enrolled classes and simple progress).", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
+    ["self", { name: "practice_log", description: "Read-only: the automatic Practice Log. Time spent in each tool per day and per session (counted while a tool is on screen and in use, or making sound) and what was done in each session: metronome and click-track tempos with how long, charts opened, cards rated with score, ear-training questions with score, drill tempos, lessons viewed. Use for questions like how much did I practice, what did I work on this week, at what tempo.", input_schema: objSchema({ days: { type: "integer", description: "How many days back, counting today. Default 7, at most 90." } }, []) }],
     ["self", { name: "get_settings", description: "Read the current settings: theme, Barline's accent and title font, and Ear Training's preferences.", input_schema: { type: "object", properties: {}, additionalProperties: false } }],
     ["self", { name: "change_settings", description: "Change settings. Give only what changes. Out-of-range values are clamped to the setting's real range; the result says what was set.", input_schema: {
       type: "object", additionalProperties: false,
@@ -641,10 +642,37 @@
     return { prev: prev, now: now, notes: notes, any: any };
   }
 
+  /* The Practice Log (shared/log.js): sessions with time per tool and what was done. */
+  async function practiceLog(inp) {
+    var days = Math.max(1, Math.min(90, Math.round((inp && inp.days) || 7)));
+    var log = window.MusicLog && window.MusicLog.read ? window.MusicLog.read() : lsJson("log:v1");
+    var sessions = (log && Array.isArray(log.sessions)) ? log.sessions : [];
+    var from = new Date(); from.setHours(0, 0, 0, 0); from = from.getTime() - (days - 1) * 864e5;
+    var mins = function (s) { return Math.round((s || 0) / 6) / 10; };
+    var byDay = {}, out = [];
+    sessions.filter(function (s) { return s && s.start >= from; }).sort(function (a, b) { return a.start - b.start; }).forEach(function (s) {
+      var apps = {}, tot = 0;
+      Object.keys(s.apps || {}).forEach(function (a) { apps[a] = mins(s.apps[a]); tot += s.apps[a] || 0; });
+      if (tot < 60 && !(s.events || []).length) return;
+      var d = dayStr(s.start), day = byDay[d] || (byDay[d] = { date: d, minutes: 0 });
+      day.minutes = Math.round((day.minutes + tot / 60) * 10) / 10;
+      out.push({ date: d, start: new Date(s.start).toTimeString().slice(0, 5), end: new Date(s.end).toTimeString().slice(0, 5), minutes: mins(tot), minutes_by_tool: apps,
+        did: (s.events || []).map(function (e) {
+          var o = { tool: e.app, what: e.text };
+          if (e.secs != null) o.minutes = mins(e.secs);
+          if (e.n != null) { o.count = e.n; if (e.unit) o.unit = e.unit; }
+          if (e.tried) o.percent_right = Math.round(100 * e.ok / e.tried);
+          return o;
+        }) });
+    });
+    return { content: { days: Object.keys(byDay).map(function (k) { return byDay[k]; }), sessions: out } };
+  }
+
   var SELF = {
     list_theory: listTheory,
     theory_lookup: theoryLookup,
     practice_stats: practiceStats,
+    practice_log: practiceLog,
     get_settings: async function () { return { content: getSettings() }; },
     change_settings: async function (inp) {
       var r = applySettings(inp || {});

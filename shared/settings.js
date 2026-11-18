@@ -68,6 +68,20 @@
   window.addEventListener("storage", function (e) { if (e.key === KEY || e.key === null) reload(); });
   window.addEventListener("pageshow", function () { reload(); });
 
+  /* The practice log (shared/log.js) runs on every page that loads this file. Until it has
+     loaded, calls to MusicLog wait in a queue, so a tool can call it at any time. */
+  if (!self.MusicLog) {
+    var q = [];
+    self.MusicLog = { _q: q };
+    ["playing", "count", "event"].forEach(function (m) { self.MusicLog[m] = function () { q.push([m, arguments]); }; });
+    var me = document.currentScript && document.currentScript.src;
+    if (me) {
+      var s = document.createElement("script");
+      s.src = me.slice(0, me.lastIndexOf("/") + 1) + "log.js";
+      (document.head || document.documentElement).appendChild(s);
+    }
+  }
+
   self.MusicSettings = {
     KEY: KEY,
     get: get,

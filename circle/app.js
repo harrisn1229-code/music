@@ -457,10 +457,12 @@
     // The first write only fills in the address; replaceState does that without a navigation.
     try { if (first) history.replaceState(null, "", location.pathname + location.search + h); else location.replace(location.pathname + location.search + h); } catch (e) {}
   }
+  var keyLogT = 0;
   function select(pos, mode, opts) {
     stopAll();
     st.pos = pos; st.mode = mode;
     paint(opts); save(); writeHash();
+    clearTimeout(keyLogT); keyLogT = setTimeout(function () { MusicLog.event("key", K.full); }, 5000);   // only a key that stays
   }
   window.__circleContext = function () { return "Circle of Fifths: " + rootName(K.root) + ", " + K.mode; };
 
