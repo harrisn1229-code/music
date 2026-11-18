@@ -2164,6 +2164,7 @@ function introHTML(c) {                        // folding walks the DOM; cache p
   return introCache[k];
 }
 
+const coversPage = () => LIBMODE && (route === 'songs' || route.startsWith('song:') || (route.startsWith('source:') && !!SONGS[route.slice(7)]));
 function rail() {
   const due = quizzesOwed();   // PATCH-112/113 — retakes and blocked quizzes are owed too
   const item = (id, label, n) => `<button data-nav="${id}"${route === id || route.startsWith(id+':') ?
@@ -2196,20 +2197,32 @@ function rail() {
     shut: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>',
     ai: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>'
   };
-  const bar = (name, logo, href, label, icon) => `<div class="mbar">
+  /* The tool's mark: the same line-art tile every Music tool uses (see library/index.html and
+     shared/icons.js), inlined because the app shell does not load icons.js. */
+  const LOGO = {
+    library: ['mll1', '#9F2D3F', '#BC6C79', '<path d="M3 20.5h18"/><rect x="4.5" y="5" width="3.5" height="15.5" rx=".5"/><rect x="8" y="3.5" width="3.5" height="17" rx=".5"/><path d="M8 7.5h3.5M8 16.5h3.5"/><path d="m13.6 6.4 3.4-.9 3.9 14.6-3.4.9z"/>'],
+    school: ['mll2', '#33449E', '#707CBB', '<path d="m12 4.5 10 4.5-10 4.5L2 9z"/><path d="M6.5 11v4.5c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3V11"/><path d="M22 9v5.5"/>'],
+    covers: ['mll3', '#2C7BD6', '#6BA3E2', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 10.5a6 6 0 0 1 4-4M17.5 13.5a6 6 0 0 1-4 4"/>']
+  };
+  const logoSvg = id => { const [c, lt, dk, d] = LOGO[id];
+    return `<svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.${c}{stroke:${lt}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .${c}{stroke:${dk}}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .${c}{stroke:${dk}}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="${c}" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</g></svg>`; };
+  const bar = (name, logo, href, label, icon, noMenu) => `<div class="mbar">
       <a class="icon-btn" href="${href}" aria-label="${label}">${icon}</a>
-      <img class="logo" src="${logo}" alt=""><span class="brand">${name}</span>
+      ${logoSvg(logo)}<span class="brand">${name}</span>
       ${LOCAL ? `<button class="icon-btn" type="button" data-assistant aria-label="Assistant">${ICO.ai}</button>` : ''}
-      <button class="icon-btn rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
-        aria-label="${open ? 'Close menu' : 'Open menu'}">${open ? ICO.shut : ICO.menu}</button></div>`;
+      ${noMenu ? '' : `<button class="icon-btn rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
+        aria-label="${open ? 'Close menu' : 'Open menu'}">${open ? ICO.shut : ICO.menu}</button>`}</div>`;
   const foot = `<div class="rail-foot">
       <div class="savechip" data-s="${chipState[0]}"><b></b><span> ${esc(chipState[1])}</span></div>
     </div>`;
   /* The Library tool's shelves (LIBMODE): the same views, their own menu. */
-  if (LIBMODE) return `<aside class="rail${open ? '' : ' shut'}">
-    ${bar('Library', '../library/icon-192.png', '../library/', 'Back to Library', ICO.back)}
+  if (LIBMODE) {
+    /* Covers has its own tile on Music's home screen: its pages carry only the bar, home and Covers. */
+    if (coversPage())
+      return `<aside class="rail covers-rail">${bar('Covers', 'covers', '../', 'Music home, all apps', ICO.home, true)}</aside>`;
+    return `<aside class="rail${open ? '' : ' shut'}">
+    ${bar('Library', 'library', '../library/', 'Back to Library', ICO.back)}
     <nav>
-      ${Object.keys(SONGS).length ? item('songs','Covers') : ''}
       ${item('drills','Drills')}
       ${TOOLS.length ? item('tools','Tools') : ''}
       ${item('files','My files')}
@@ -2217,10 +2230,11 @@ function rail() {
       <a class="navlink" href="../library/#/chords">Chords</a>
       <a class="navlink" href="../library/#/arps">Arpeggios</a>
     </nav>${foot}</aside>`;
+  }
   /* School inside Music: the curriculum and your progress, nothing else. The shelves are the
      Library tool's (see SHELF_HEADS). */
   if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">
-    ${bar('School', 'icon-192.png', '../', 'Music home, all apps', ICO.home)}
+    ${bar('School', 'school', '../', 'Music home, all apps', ICO.home)}
     <div class="sem">${kn ? `${kn} ${kn === 1 ? 'class' : 'classes'} enrolled` : 'No classes enrolled'}</div>
     <nav>
       ${item('overview','Overview')}
@@ -4786,7 +4800,7 @@ function conceptsView() {
       <select data-f="status"><option value="">Any status</option>${
         ['queued','learning','maintenance'].map(s =>
           `<option value="${s}"${filters.status===s?' selected':''}>${qLabel(s)}</option>`).join('')}</select>
-      <input data-f="q" placeholder="Search titles" value="${esc(filters.q)}">
+      ${searchBox('q', 'Search titles', filters.q)}
       <span style="color:var(--muted);font-size:13px">${list.length} shown</span></div>
     <div class="clist">${list.map(c => { const s = cs(c.id), st = dueState(s);
       return `<button class="ccard" data-concept="${esc(c.id)}" style="--h:${hueOf(c.strand)}">
@@ -5799,6 +5813,10 @@ if (LOCAL) {
   window.addEventListener('online', () => { coverStop = 0; if (route === 'songs' || route.startsWith('song:')) render(); });
 }
 
+/* Library's search field in the app (a plain input on the artifact page). */
+const searchBox = (f, ph, v) => LOCAL
+  ? `<label class="search"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="m13.2 13.2 3.6 3.6"/></svg><input data-f="${f}" type="search" enterkeyhint="search" autocomplete="off" placeholder="${esc(ph)}" aria-label="${esc(ph)}" value="${esc(v)}"></label>`
+  : `<input data-f="${f}" placeholder="${esc(ph)}" value="${esc(v)}">`;
 function songsView() {
   const all = Object.values(SONGS).sort(SONG_SORT);
   const q = filters.sq.trim().toLowerCase();
@@ -5847,7 +5865,7 @@ function songsView() {
           `<option value="${esc(b[0])}"${filters.bpm === b[0] ? ' selected' : ''}>${esc(b[1])} (${n})</option>`).join('')}</select>
       <select data-f="genre"><option value="">Any genre</option>${genres.map(g =>
         `<option value="${esc(g)}"${filters.genre === g ? ' selected' : ''}>${esc(g)}</option>`).join('')}</select>
-      <input data-f="sq" placeholder="Search title, artist, album, key" value="${esc(filters.sq)}">
+      ${searchBox('sq', 'Search title, artist, album, key', filters.sq)}
       ${filters.genre || filters.key || filters.bpm || q
         ? `<button class="btn btn-quiet" data-songclear>Clear</button>` : ''}
       <span style="color:var(--muted);font-size:13px">${list.length} shown</span></div>
@@ -7782,7 +7800,7 @@ function render() {
     : head === 'files' && LOCAL ? filesView()  // app build — the reader's own books, charts, art
     : head === 'paper' && LOCAL ? paperView(arg) // app build — a test, sat and marked on the page
     : head === 'tests' ? testsView() : overview();
-  app.style.setProperty('--rail', railOpen() ? (LOCAL ? '15rem' : '236px') : (LOCAL ? '3.5rem' : '56px'));
+  app.style.setProperty('--rail', (railOpen() || coversPage()) ? (LOCAL ? '15rem' : '236px') : (LOCAL ? '3.5rem' : '56px'));
   // PATCH-144 — the one pass that makes every [[vault note]] the school assigns a live link,
   // wherever it appears. Deliberately here and not in the view functions: a dead span turns up
   // on Read lines, in **The material** bullets, inside pulled reading and on a source page
