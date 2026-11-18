@@ -279,7 +279,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   function render() {
     const box = $("tiles");
     box.textContent = "";
-    const apps = REG.apps.filter((app) => app.home !== false);
+    const apps = REG.apps.filter((app) => app.home !== false).concat(REG.shortcuts || []);
     const secs = (REG.sections || []).concat([{ id: null, name: "" }]);   // anything without a known section goes last, untitled
     const known = new Set((REG.sections || []).map((x) => x.id));
     secs.forEach((sec) => {
@@ -291,10 +291,10 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
       these.forEach((app) => {
         const li = el("li", "tile");
         const open = el("a", "tile-open");
-        open.href = app.id + "/";
+        open.href = app.href || app.id + "/";
         const img = el("span", "tile-icon");
         img.style.setProperty("--line", app.color || "#2A2F36");
-        img.innerHTML = window.MusicIcons ? MusicIcons.svg(app.id) : "";
+        img.innerHTML = window.MusicIcons ? (app.href ? MusicIcons.svg(app.icon, "shelf") : MusicIcons.svg(app.id)) : "";
         open.appendChild(img);
         open.appendChild(el("span", "tile-name", app.name));
         li.appendChild(open);

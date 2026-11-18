@@ -15,15 +15,21 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.30.0",
+  version: "1.31.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
   sections: [
     { id: "practice", name: "Practice" },
     { id: "learn", name: "Learn" },
+    { id: "songs", name: "Songs" },
     { id: "write", name: "Write" },
     { id: "reference", name: "Reference" }
+  ],
+  // Home-screen tiles that open a page inside another app rather than an app of their own.
+  // Not saved for offline here (the app they open does that). "icon" is a Library shelf icon.
+  shortcuts: [
+    { id: "covers", name: "Covers", href: "school/library.html#songs", section: "songs", color: "#2C7BD6", icon: "covers" }
   ],
   apps: [
     {
@@ -52,7 +58,7 @@ self.MUSIC = {
       about: "Your own songs: ideas, lyrics, notes and Barline charts",
       color: "#B3245B",
       icon: "icon-192.png",
-      home: false,                          // opened from Library, not the home screen
+      section: "songs",                     // also a shelf in Library
       sync: { at: "originals:syncedAt" },
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
     },
