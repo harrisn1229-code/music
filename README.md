@@ -17,6 +17,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
 | Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click and presets |
+| Voice Memos | `memos/` | Record yourself playing and listen back: waveform, slow-down, loop, share |
 | Circle of Fifths | `circle/` | The circle with key signatures, scales, diatonic chords and common progressions in any key |
 
 Everything runs in the browser and is saved on the device. Three optional
@@ -48,6 +49,7 @@ library/               Library (reads shared/theory.js; chains.json is built fro
 ear/                   Ear Training (index.html, app.js, app.css; synthesizes all its sound)
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler)
+memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
 scratchpad/            Scratchpad (index.html, app.js, app.css; owns the assistant's Scratchpad tools)
@@ -199,6 +201,16 @@ School included) loads it. Nothing has to be started:
 
 Saved under `log:v1`; with an account Practice Log merges it with the `log` document (sessions by
 id, deletions kept). The assistant reads it with `practice_log`.
+
+## Voice Memos
+
+Records with the microphone's raw sound (echo cancelling, noise suppression and auto gain off, so
+an instrument sounds like itself), as `audio/mp4` on iPhone and WebM elsewhere. Recordings stay on
+the device in IndexedDB (`music-memos`), never in the account. While recording, the screen is kept
+awake and the take is saved to a draft every few seconds; leaving the page saves it, and a draft
+left behind becomes a memo the next time Voice Memos opens. Playback slows to 0.5× or 0.75×
+without changing pitch, loops, and shares the file. Recording and listening back count in the
+Practice Log.
 
 ## Accounts
 
