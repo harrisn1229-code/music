@@ -38,7 +38,7 @@
   --gut-l:max(16px, env(safe-area-inset-left, 0px));
   --gut-r:max(16px, env(safe-area-inset-right, 0px));
   --acc-teal:#0F766E; --acc-blue:#1D5BC9; --acc-violet:#6A3DC2; --acc-graphite:#2A2F36;
-  --tile-bg:#FFFFFF; --tile-rim:rgb(20 24 44 / .06); --line-lift:0%;
+  --tile-bg:#FFFFFF; --tile-rim:rgb(20 24 44 / .06); --line-lift:0%; --mark:#B76A00;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
@@ -46,7 +46,7 @@
     --paper:#0D0E12; --surface:#181A20; --ink:#ECEEF4; --muted:#9BA1B0; --rule:#292D38; --sh:0 0 0 1px rgb(255 255 255 / .06); --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
     --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
     --acc-teal:#2DD4BF; --acc-blue:#5C9BFF; --acc-violet:#A987FA; --acc-graphite:#E3E6EA;
-    --tile-bg:#000000; --tile-rim:rgb(255 255 255 / .09); --line-lift:30%;
+    --tile-bg:#000000; --tile-rim:rgb(255 255 255 / .09); --line-lift:30%; --mark:#F5A93B;
     color-scheme:dark;
   }
 }
@@ -54,7 +54,7 @@
   --paper:#0D0E12; --surface:#181A20; --ink:#ECEEF4; --muted:#9BA1B0; --rule:#292D38; --sh:0 0 0 1px rgb(255 255 255 / .06); --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
   --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
   --acc-teal:#2DD4BF; --acc-blue:#5C9BFF; --acc-violet:#A987FA; --acc-graphite:#E3E6EA;
-  --tile-bg:#000000; --tile-rim:rgb(255 255 255 / .09); --line-lift:30%;
+  --tile-bg:#000000; --tile-rim:rgb(255 255 255 / .09); --line-lift:30%; --mark:#F5A93B;
   color-scheme:dark;
 }
 /* Fade between the home screen and an app instead of a hard page flash. */
@@ -77,7 +77,7 @@ a{color:inherit}
 /* ---------- top bar ---------- */
 .bar{padding-top:env(safe-area-inset-top, 0px)}
 .bar-in{display:flex;align-items:center;gap:.65rem;min-height:4rem}
-.mark{width:2.25rem;height:2.25rem;border-radius:.6rem;flex:none;display:block}
+.mark{width:2.25rem;height:2.25rem;border-radius:.6rem;flex:none;display:block;box-shadow:0 0 0 1px var(--tile-rim)}
 .wordmark{margin:0 auto 0 0;font:800 2rem/1 var(--display);letter-spacing:.005em}
 .get{
   height:2.5rem;padding:0 1rem;border-radius:999px;background:var(--ink);color:var(--paper);
@@ -206,7 +206,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
 <header class="bar">
   <div class="bar-in wrap">
-    <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#15171B"/><path d="M214 116h84a18 18 0 0 1 17.500 13.800L378 386a18 18 0 0 1-17.500 22.200H151.500A18 18 0 0 1 134 386l62.500-256.200A18 18 0 0 1 214 116z" fill="#F5A93B"/><path d="M256 352 291 172" stroke="#15171B" stroke-width="18" stroke-linecap="round"/><rect x="253" y="210" width="56" height="32" rx="9" transform="rotate(11 281 226)" fill="#15171B"/><circle cx="256" cy="352" r="16" fill="#15171B"/></svg>
+    <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="var(--tile-bg)"/><g transform="translate(113.5 104.5) scale(12.04)" fill="none" stroke="var(--mark)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6.5l10-2.5v11.5M9 10l10-2.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></g></svg>
     <h1 class="wordmark">Music</h1>
     <button class="round" id="ai-btn" type="button" data-assistant aria-label="Assistant"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
     <button class="round" id="set-btn" type="button" aria-label="Settings"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.700 1.800h2.600l.4 1.700 1.300.7 1.600-.6 1.300 2.300-1.300 1.200v1.800l1.300 1.200-1.300 2.300-1.600-.6-1.300.7-.4 1.700H6.700l-.4-1.700-1.300-.7-1.600.6L2.100 11l1.300-1.200V8L2.100 6.800 3.400 4.500l1.600.6 1.300-.7z" fill="none" stroke="currentColor" stroke-width="1.300" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.900" fill="none" stroke="currentColor" stroke-width="1.300"/></svg></button>
