@@ -1,13 +1,13 @@
 /* Music registry: the one list of apps inside Music.
 
    Two things read this file:
-   - the home screen (index.html) draws one icon per app from it, in this order;
+   - the home screen (index.html) draws one icon per app from it, grouped by "section", in this order;
    - the service worker (sw.js) saves every file listed here so the whole
      of Music opens with no connection.
 
    To add an app:
    1. Put it in its own folder next to barline/, note-cards/ and library/.
-   2. Add an entry below. "files" lists every file in that folder the app
+   2. Add an entry below, with the home-screen section it belongs in. "files" lists every file in that folder the app
       needs to run (paths are relative to the app's folder).
    3. Raise "version". Do the same whenever any file in Music changes,
       so phones that already have it installed pick up the new copy.
@@ -15,12 +15,20 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.29.0",
+  version: "1.30.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
+  // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
+  sections: [
+    { id: "practice", name: "Practice" },
+    { id: "learn", name: "Learn" },
+    { id: "write", name: "Write" },
+    { id: "reference", name: "Reference" }
+  ],
   apps: [
     {
       id: "log",
+      section: "practice",
       name: "Practice Log",
       about: "Time spent and what you did, recorded on its own",
       color: "#0B7FA6",
@@ -30,6 +38,7 @@ self.MUSIC = {
     },
     {
       id: "scratchpad",
+      section: "write",
       name: "Scratchpad",
       about: "A daily brain dump the assistant sorts into song ideas, lyrics and more",
       color: "#A8740F",
@@ -49,6 +58,7 @@ self.MUSIC = {
     },
     {
       id: "library",
+      section: "reference",
       name: "Library",
       about: "Songs, drills, production chains, and every mode, chord and voicing in any key",
       color: "#9F2D3F",
@@ -57,6 +67,7 @@ self.MUSIC = {
     },
     {
       id: "barline",                       // folder name, also the link from the home screen
+      section: "write",
       name: "Barline",
       about: "Chord charts with a click track",
       color: "#0F766E",                    // shown behind the icon while it loads
@@ -68,6 +79,7 @@ self.MUSIC = {
     },
     {
       id: "note-cards",
+      section: "learn",
       name: "Note Cards",
       about: "Flashcards for modes, arpeggios, triads and 7th chords",
       color: "#4D45E3",
@@ -77,6 +89,7 @@ self.MUSIC = {
     },
     {
       id: "school",
+      section: "learn",
       name: "School",
       about: "Classes, lessons, quizzes, tests and a song library",
       color: "#33449E",
@@ -91,6 +104,7 @@ self.MUSIC = {
     },
     {
       id: "ear",
+      section: "learn",
       name: "Ear Training",
       about: "Scale degrees over a drone: degrees, melodies, singing and hands-free listening",
       color: "#C2570C",
@@ -100,6 +114,7 @@ self.MUSIC = {
     },
     {
       id: "tuner",
+      section: "practice",
       name: "Tuner",
       about: "Microphone tuner for guitar, bass and ukulele",
       color: "#2F8F4E",
@@ -108,6 +123,7 @@ self.MUSIC = {
     },
     {
       id: "metronome",
+      section: "practice",
       name: "Metronome",
       about: "Click with accents, subdivisions, swing and practice tools",
       color: "#3B4252",
@@ -116,6 +132,7 @@ self.MUSIC = {
     },
     {
       id: "memos",
+      section: "practice",
       name: "Voice Memos",
       about: "Record yourself playing and listen back",
       color: "#D9483B",
@@ -124,6 +141,7 @@ self.MUSIC = {
     },
     {
       id: "circle",
+      section: "reference",
       name: "Circle of Fifths",
       about: "Keys, signatures, scales, diatonic chords and progressions on the circle",
       color: "#5B3FA8",

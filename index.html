@@ -100,6 +100,8 @@ a{color:inherit}
 /* ---------- tiles ----------
    The home screen of a phone: one icon per tool with its name under it, nothing else. */
 main{flex:1;padding-top:1rem;padding-bottom:1.5rem}
+.sec + .sec{margin-top:1.75rem}
+.sec-h{margin:0 0 .85rem .125rem;font:800 1.375rem/1 var(--display);letter-spacing:.01em;color:var(--muted)}
 .tiles{list-style:none;margin:0;padding:0;display:grid;gap:1.5rem .5rem;
   grid-template-columns:repeat(4, minmax(0, 1fr))}
 @media (min-width:46rem){ .tiles{grid-template-columns:repeat(auto-fill, minmax(7rem, 1fr));gap:2rem 1rem} }
@@ -216,7 +218,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 </header>
 
 <main class="wrap">
-  <ul class="tiles" id="tiles"></ul>
+  <div id="tiles"></div>
   <noscript>Music needs JavaScript turned on to list its apps.</noscript>
 </main>
 
@@ -275,19 +277,31 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
   /* ---------- tiles ---------- */
   function render() {
-    const list = $("tiles");
-    list.textContent = "";
-    REG.apps.filter((app) => app.home !== false).forEach((app) => {
-      const li = el("li", "tile");
-      const open = el("a", "tile-open");
-      open.href = app.id + "/";
-      const img = el("span", "tile-icon");
-      img.style.setProperty("--line", app.color || "#2A2F36");
-      img.innerHTML = window.MusicIcons ? MusicIcons.svg(app.id) : "";
-      open.appendChild(img);
-      open.appendChild(el("span", "tile-name", app.name));
-      li.appendChild(open);
-      list.appendChild(li);
+    const box = $("tiles");
+    box.textContent = "";
+    const apps = REG.apps.filter((app) => app.home !== false);
+    const secs = (REG.sections || []).concat([{ id: null, name: "" }]);   // anything without a known section goes last, untitled
+    const known = new Set((REG.sections || []).map((x) => x.id));
+    secs.forEach((sec) => {
+      const these = apps.filter((app) => (sec.id ? app.section === sec.id : !known.has(app.section)));
+      if (!these.length) return;
+      const wrap = el("section", "sec");
+      if (sec.name) wrap.appendChild(el("h2", "sec-h", sec.name));
+      const list = el("ul", "tiles");
+      these.forEach((app) => {
+        const li = el("li", "tile");
+        const open = el("a", "tile-open");
+        open.href = app.id + "/";
+        const img = el("span", "tile-icon");
+        img.style.setProperty("--line", app.color || "#2A2F36");
+        img.innerHTML = window.MusicIcons ? MusicIcons.svg(app.id) : "";
+        open.appendChild(img);
+        open.appendChild(el("span", "tile-name", app.name));
+        li.appendChild(open);
+        list.appendChild(li);
+      });
+      wrap.appendChild(list);
+      box.appendChild(wrap);
     });
     $("version").textContent = REG.version ? "Music " + REG.version : "";
   }
