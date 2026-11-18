@@ -19,9 +19,9 @@
 <script src="shared/settings.js"></script>
 <link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-/* Music home screen: one tile per app, each in that app's own color, with a
-   small live look at what's inside it. The page itself stays neutral grey so the
-   tiles carry the color. The app list comes from apps.js. */
+/* Music home screen: one tile per app. Tiles are plain white (light theme) or
+   black (dark theme) with the app's line-art icon drawn in the app's own color
+   (shared/icons.js). The app list comes from apps.js. */
 @font-face{
   font-family:"Big Shoulders Display";font-style:normal;font-weight:100 900;font-display:swap;
   src:url(fonts/big-shoulders-display.woff2) format("woff2");
@@ -38,6 +38,7 @@
   --gut-l:max(16px, env(safe-area-inset-left, 0px));
   --gut-r:max(16px, env(safe-area-inset-right, 0px));
   --acc-teal:#0F766E; --acc-blue:#1D5BC9; --acc-violet:#6A3DC2; --acc-graphite:#2A2F36;
+  --tile-bg:#FFFFFF; --tile-rim:rgb(20 24 44 / .06); --line-lift:0%;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
@@ -45,6 +46,7 @@
     --paper:#0D0E12; --surface:#181A20; --ink:#ECEEF4; --muted:#9BA1B0; --rule:#292D38; --sh:0 0 0 1px rgb(255 255 255 / .06); --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
     --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
     --acc-teal:#2DD4BF; --acc-blue:#5C9BFF; --acc-violet:#A987FA; --acc-graphite:#E3E6EA;
+    --tile-bg:#000000; --tile-rim:rgb(255 255 255 / .09); --line-lift:30%;
     color-scheme:dark;
   }
 }
@@ -52,6 +54,7 @@
   --paper:#0D0E12; --surface:#181A20; --ink:#ECEEF4; --muted:#9BA1B0; --rule:#292D38; --sh:0 0 0 1px rgb(255 255 255 / .06); --focus:#F5A93B; --ok:#52CC88; --bad:#FF8A7A;
   --panel:#121419; --panel-ink:#ECEEF2; --panel-muted:#A0A6B1; --panel-track:#2A2E36;
   --acc-teal:#2DD4BF; --acc-blue:#5C9BFF; --acc-violet:#A987FA; --acc-graphite:#E3E6EA;
+  --tile-bg:#000000; --tile-rim:rgb(255 255 255 / .09); --line-lift:30%;
   color-scheme:dark;
 }
 /* Fade between the home screen and an app instead of a hard page flash. */
@@ -103,9 +106,11 @@ main{flex:1;padding-top:1rem;padding-bottom:1.5rem}
 .tile{display:flex;justify-content:center}
 .tile-open{display:flex;flex-direction:column;align-items:center;gap:.5rem;width:100%;max-width:6.5rem;
   text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent}
-.tile-icon{display:block;width:min(4.25rem, 100%);height:auto;aspect-ratio:1;border-radius:22.5%;
-  background:var(--tile);box-shadow:0 1px 2px rgb(20 24 44 / .12), 0 6px 14px -6px rgb(20 24 44 / .28);
+.tile-icon{display:grid;place-items:center;width:min(4.25rem, 100%);height:auto;aspect-ratio:1;border-radius:22.5%;
+  background:var(--tile-bg);color:var(--line);color:color-mix(in oklab, var(--line), #fff var(--line-lift));
+  box-shadow:0 0 0 1px var(--tile-rim), 0 1px 2px rgb(20 24 44 / .08), 0 6px 14px -8px rgb(20 24 44 / .22);
   transition:transform .12s ease-out}
+.tile-icon svg{display:block;width:58%;height:58%}
 @media (min-width:46rem){ .tile-icon{width:5rem} }
 .tile-open:active .tile-icon{transform:scale(.92)}
 .tile-open:focus-visible{outline:none}
@@ -240,6 +245,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 </dialog>
 
 <script src="apps.js"></script>
+<script src="shared/icons.js"></script>
 <script src="shared/ai.js"></script>
 <script src="shared/assistant.js"></script>
 <script src="shared/account.js"></script>
@@ -275,9 +281,9 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
       const li = el("li", "tile");
       const open = el("a", "tile-open");
       open.href = app.id + "/";
-      const img = el(app.icon ? "img" : "span", "tile-icon");
-      img.style.setProperty("--tile", app.color || "#2A2F36");
-      if (app.icon) { img.src = app.id + "/" + app.icon; img.alt = ""; img.width = 68; img.height = 68; img.decoding = "async"; }
+      const img = el("span", "tile-icon");
+      img.style.setProperty("--line", app.color || "#2A2F36");
+      img.innerHTML = window.MusicIcons ? MusicIcons.svg(app.id) : "";
       open.appendChild(img);
       open.appendChild(el("span", "tile-name", app.name));
       li.appendChild(open);
