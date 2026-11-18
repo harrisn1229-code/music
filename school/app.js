@@ -32,6 +32,12 @@ const ROUTE_KEY = BRIDGE ? 'hms.route.bridge' : LIBMODE ? 'hms.route.lib' : 'hms
    short form (often nothing) here. */
 function lite(full, short) { return LOCAL ? short : full; }
 const FILES = LOCAL ? (window.MSFiles || null) : null;
+/* PATCH-161 (Nate, 2026-11-17: track time and what was done without having to think about it) —
+   School reports to Music's practice log (shared/log.js, `window.MusicLog`): playing(key, on, {text})
+   for sound and video, count(key, text, {unit, ok}) for things done again and again, event(key, text)
+   for one thing that happened. App only: the artifact page is not LOCAL and does nothing here. Every
+   call is wrapped, so a log that is missing or broken can never throw into the code that called it. */
+const SLOG = (fn, ...a) => { if (!LOCAL || !window.MusicLog) return; try { window.MusicLog[fn](...a); } catch (e) {} };
 const LS_KEY = 'school:progress', LS_AT = 'school:savedAt';
 const C = JSON.parse(document.getElementById('curriculum').textContent);
 let P = JSON.parse(document.getElementById('progress').textContent);
@@ -218,7 +224,8 @@ const homeworkOn = () => Object.fromEntries(Object.entries(P.homework).filter(([
 const akey = (cid, n) => `${cid}:${n}`;
 const as = (cid, n) => Object.assign({}, D_ASSIGN, P.assignments[akey(cid, n)] || {});
 const turnedIn = (cid, n) => as(cid, n).status === 'turned_in';
-function turnIn(cid, n)   { P.assignments[akey(cid, n)] = {status:'turned_in', turned_in: TODAY}; dirty(); }
+function turnIn(cid, n)   { P.assignments[akey(cid, n)] = {status:'turned_in', turned_in: TODAY}; dirty();
+  SLOG('event', 'homework', `Turned in ${slogShort(cid)} lesson ${n}`); }   // PATCH-161
 /* Undo DELETES the entry rather than writing `{status:"open"}`. Delta-only is the whole file's
    rule, and an entry holding nothing but defaults is omitted entirely — writing the default
    back would leave a row in the vault that means the same as no row at all. */
@@ -253,6 +260,9 @@ function logPractice(key, target, entry) {
            .concat(drillLog(key)).slice(0, 40),
   });
   LOCAL ? practiceSaved() : dirty();
+  // PATCH-161 — a drill session logged: what, how fast, how long.
+  if (LOCAL) SLOG('event', 'drill', [slogDrillTitle(key), tempo && tempo + ' bpm', entry.mins && entry.mins + ' min']
+    .filter(Boolean).join(' · '));
 }
 
 /* PATCH-160 — a row's undo IS its delete: no confirm, no toast-undo. Delta-only is the file's
@@ -1516,9 +1526,12 @@ function enrollCourse(id, days) {
   const k = c.class_id;
   if (k && ks(k).status === 'available') setK(k, {status:'enrolled'});
   // PATCH-048 — a course is started, paused and resumed; only a CLASS is enrolled.
+  SLOG('event', 'course', (resuming ? 'Resumed ' : 'Started ') + (c.title || id));   // PATCH-161
   toast(resuming ? `Resumed — back in progress.` : `Started — lesson 1's quizzes are assigned.`);
 }
-const unenrollCourse = id => { setO(id, {status:'available'}); toast('Paused. Progress kept.'); };
+const unenrollCourse = id => { setO(id, {status:'available'});
+  SLOG('event', 'course', 'Paused ' + ((COURSES[id] || {}).title || id));   // PATCH-161
+  toast('Paused. Progress kept.'); };
 /* PATCH-081 — STOP is not PAUSE, and the difference is the whole point of having both.
    Pausing keeps everything and takes the course out of rotation (PATCH-071); stopping puts it
    back to never-started. That means THREE things go, not one: the course's own row, every one
@@ -1527,6 +1540,7 @@ const unenrollCourse = id => { setO(id, {status:'available'}); toast('Paused. Pr
    reset — it is a pause wearing a different label. Deleting the keys outright is what restores
    the documented defaults: an absent entry IS "not started" in this file's shape. */
 function resetCourse(id) {
+  SLOG('event', 'course', 'Stopped ' + ((COURSES[id] || {}).title || id));   // PATCH-161
   delete P.courses[id];
   courseConcepts(id).forEach(k => { delete P.concepts[k]; });
   /* PATCH-137 (F5) — and its retakes. A reset wipes the course row, its concepts' SR state and its
@@ -1624,6 +1638,7 @@ function recallUndo(at) {
 function completeLesson(id, n) {
   const c = COURSES[id];
   setO(id, {lessons_complete: Math.max(os(id).lessons_complete, n)});
+  SLOG('event', 'lesson', `${c.short || c.title || id} · Lesson ${n} done`);   // PATCH-161
   if (n + 1 <= c.lessons.length) reconcileReleases();   // PATCH-138 (I-4) — see enrollCourse
   // spec-172 — "Course final next" is the wrong close on a reps course (19–26): its final is
   // a performance check the reader sits at the instrument, not an exam the school hands out.
@@ -4044,6 +4059,7 @@ function pageRange(ns) {
 function fillBook(det) {
   if (!det || det.dataset.filled) return;
   const bk = BOOKPAGES[det.dataset.bid];
+  if (LOCAL && bk) slogBook(det.dataset.bid, bk);   // PATCH-161
   const body = det.classList.contains('bk-b') ? det : det.querySelector('.bk-b');
   if (!bk || !body) return;
   if (bk.byo) return fillByoBook(det, body, bk);    // app build: the reader's own PDF of the book
@@ -6552,7 +6568,7 @@ function watchView(id) {
       ${w.channel ? `<span class="pill">${esc(w.channel)}</span>` : ''}
       ${durShort(w.duration) ? `<span class="pill">${durShort(w.duration)}</span>` : ''}</div>
     <h2 class="vh">${esc(w.title)}</h2>
-    ${LOCAL && vid ? `<div class="ytbox"><iframe src="https://www.youtube-nocookie.com/embed/${vid}" title="${esc(w.title)}"
+    ${LOCAL && vid ? `<div class="ytbox"><iframe src="https://www.youtube-nocookie.com/embed/${vid}?enablejsapi=1&origin=${encodeURIComponent(location.origin)}" data-ytlog="1" title="${esc(w.title)}"
         loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe></div>` : ''}
     ${w.url ? `<div><a class="btn ${LOCAL && vid ? 'btn-quiet' : 'btn-go'}" href="${esc(w.url)}" target="_blank" rel="noopener noreferrer">&#9654; ${
@@ -6717,7 +6733,7 @@ function mountView(box, ref) {
     }).catch(() => { box.innerHTML = `<p class="byo-m">${esc(ref.name)} could not be opened as a PDF.</p>${rm}`; });
   } else if (kind === 'video' || kind === 'audio') {
     box.innerHTML = `<${kind} class="byo-media" controls preload="metadata"></${kind}>${rm}`;
-    src().then(u => { const m = box.querySelector(kind); if (m && u) m.src = u; });
+    src().then(u => { const m = box.querySelector(kind); if (m && u) { m.src = u; if (LOCAL) m.dataset.slog = ref.name; } });   // PATCH-161: the name for the log
   } else if (kind === 'text' && ref.key) {
     box.innerHTML = `<pre class="chartbody"></pre>${rm}`;
     FILES.text(ref.key).then(t => { const pre = box.querySelector('pre'); if (pre) pre.textContent = t; });
@@ -7479,6 +7495,11 @@ function applyPaperResult(name, grades, answers) {
     const k = Object.keys(CLASSES).find(id => (CLASSES[id].courses || []).includes(course.id));
     if (k && CLASSES[k].courses.every(id => os(id).status === 'completed')) setK(k, {status: 'completed'});
   }
+  // PATCH-161 — the sitting, and the course if this final closed it.
+  SLOG('event', 'test', [course ? (course.short || course.title) : 'Exam',
+    paper.kind === 'lesson' ? `Lesson ${paper.lesson} test` : paper.kind === 'final' ? 'Final' : (paper.title || name),
+    pct + '%', pass ? 'passed' : 'not passed'].join(' · '));
+  if (paper.kind === 'final' && course && pass) SLOG('event', 'course', 'Finished ' + (course.title || course.id));
   // Every question short of full marks becomes a retake card, and its concept goes back to learning.
   const missed = new Set();
   grades.filter(g => g.score < 1).forEach(g => {
@@ -7602,12 +7623,131 @@ if (LOCAL) {
   });
 }
 
+/* PATCH-161 — what School reports to the practice log (see SLOG, top of file). All of it is app only.
+   Quizzes: one count per rating, Automatic and Solid are right, Rusty and Forgot are misses. */
+function slogShort(cid) { const c = COURSES[cid]; return c ? (c.short || c.title || cid) : String(cid); }
+function slogRated(cur, r) {
+  try {
+    const miss = isMiss(cur), m = miss ? (P.misses[missKey(cur)] || {}) : null;
+    const c = CONCEPTS[miss ? m.concept : cur] || {};
+    SLOG('count', 'quiz', 'Quizzes', {unit: 'rated', ok: r === 'automatic' || r === 'solid'});
+    SLOG('event', 'quiz', `${miss ? 'Retake: ' : ''}${c.short || c.id || 'Quiz'} · ${r.charAt(0).toUpperCase() + r.slice(1)}`);
+  } catch (e) {}
+}
+/* A homework tick: the course and lesson come from the task's own id, the label from the lesson. */
+function slogHomework(task) {
+  try {
+    const c = COURSES[String(task).split(':')[0]];
+    let n = 0, label = '';
+    if (c) c.lessons.some(u => { const t = doTasksOf(u).find(x => x.id === task);
+      if (t) { n = u.n; label = String(t.html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 70); }
+      return !!t; });
+    SLOG('event', 'homework', `${c && n ? `${c.short || c.title} L${n}` : 'Homework'} · ${label || 'homework item'}`);
+  } catch (e) {}
+}
+/* A drill's title from its key (technique and routine ids, the watch and method lists), else the key made readable. */
+function slogDrillTitle(key) {
+  try {
+    const DR = C.drills || {};
+    const all = [].concat(...Object.values(DR).map(v => Array.isArray(v) ? v : (v && typeof v === 'object') ? [].concat(...Object.values(v)) : []));
+    const d = all.find(x => x && x.id === key && x.title);
+    if (d) return d.title;
+  } catch (e) {}
+  return String(key).replace(/[-_:]+/g, ' ').trim();
+}
+/* A book left open for 30 s counts as reading it: once per opening, whatever re-renders happen. */
+const slogBooks = {};
+function slogBook(bid, bk) {
+  if (!LOCAL || slogBooks[bid]) return;
+  slogBooks[bid] = setTimeout(() => {
+    delete slogBooks[bid];
+    try {
+      const open = [...document.querySelectorAll('details[data-book][open]')].some(x => x.dataset.bid === bid);
+      if (open) SLOG('event', 'book', 'Reading ' + String(bk.label || bid).split(' · ')[0]);
+    } catch (e) {}
+  }, 30000);
+}
+/* Media. A capture listener on the document sees every <audio>/<video> the page makes (shelf files,
+   a test's audio) without touching the code that builds them; the play-along YouTube frame is told
+   apart by data-ytlog and reports through the player's own postMessage events. One thing sounds at
+   a time here: `slogOn` is whichever element or frame is counting right now. */
+let slogOn = null, slogOnText = '';
+function slogSound(src, on, text) {
+  if (!on) { if (slogOn === src) { slogOn = null; SLOG('playing', 'media', false); } return; }
+  if (slogOn === src && slogOnText === text) return;
+  slogOn = src; slogOnText = text;
+  SLOG('playing', 'media', true, {text});
+}
+if (LOCAL) {
+  ['play', 'pause', 'ended'].forEach(t => document.addEventListener(t, e => {
+    const m = e.target;
+    if (!m || !/^(AUDIO|VIDEO)$/.test(m.tagName)) return;
+    if (t !== 'play') return slogSound(m, false);
+    let name = m.dataset.slog || '';
+    if (!name) { try { name = decodeURIComponent((m.getAttribute('src') || '').split('?')[0].split('/').pop()); } catch (x) {} }
+    name = (name || 'recording').replace(/\.[a-z0-9]{2,4}$/i, '');
+    slogSound(m, true, (m.tagName === 'VIDEO' ? 'Watching ' : 'Listening · ') + name);
+  }, true));
+  // A frame that is told to listen answers with its state: 1 playing, 2 paused, 0 ended.
+  const YT = ['https://www.youtube.com', 'https://www.youtube-nocookie.com'];
+  const ytListen = fr => { try { fr.contentWindow.postMessage(JSON.stringify({event: 'listening', id: 1, channel: 'widget'}),
+    'https://www.youtube-nocookie.com'); } catch (x) {} };
+  document.addEventListener('load', e => {
+    const fr = e.target;
+    if (!fr || fr.tagName !== 'IFRAME' || !fr.dataset.ytlog) return;
+    ytListen(fr); setTimeout(() => ytListen(fr), 1000); setTimeout(() => ytListen(fr), 3000);
+  }, true);
+  window.addEventListener('message', e => {
+    if (YT.indexOf(e.origin) < 0) return;
+    const fr = [...document.querySelectorAll('iframe[data-ytlog]')].find(f => f.contentWindow === e.source);
+    if (!fr) return;
+    let d = e.data;
+    if (typeof d === 'string') { try { d = JSON.parse(d); } catch (x) { return; } }
+    const st = d && (d.event === 'onStateChange' ? d.info : d.event === 'infoDelivery' && d.info ? d.info.playerState : undefined);
+    if (typeof st !== 'number') return;
+    if (st === 1) slogSound(fr, true, 'Play-along · ' + (fr.title || 'video'));
+    else if (st === 0 || st === 2) slogSound(fr, false);
+  });
+  // A re-render or a page change that throws the player away does not always say so: look every few seconds.
+  setInterval(() => {
+    if (slogOn && (!slogOn.isConnected || (slogOn.tagName !== 'IFRAME' && slogOn.paused))) slogSound(slogOn, false);
+  }, 3000);
+}
+/* What is on screen: a route's human title, for the pages that are one thing (not the lists and the
+   overview). Still there after 30 s, it is logged once; moving on cancels it. */
+function slogRouteTitle(r) {
+  const [h, a, b] = String(r).split(':'), DR = C.drills || {};
+  const flat = v => [].concat(...Object.values(v || {}));
+  const find = (list, id) => (list || []).find(x => x && x.id === id);
+  try {
+    if (h === 'course') return COURSES[a] ? 'Course · ' + COURSES[a].title : '';
+    if (h === 'class') return CLASSES[a] ? 'Class · ' + CLASSES[a].title : '';
+    if (h === 'concept') return CONCEPTS[a] ? 'Quiz card · ' + (CONCEPTS[a].short || a) : '';
+    if (h === 'paper') return PAPERS[a] ? 'Test · ' + PAPERS[a].title : '';
+    if (h === 'homework') return a && a !== 'ext' && COURSES[a] && lessonOf(a, b) ? `Homework · ${slogShort(a)} lesson ${b}` : '';
+    if (h === 'source') return SONGS[a] ? 'Song · ' + SONGS[a].title : SOURCES[a] ? 'Note · ' + SOURCES[a].title : '';
+    if (h === 'technique') { const d = find(flat(DR.technique), a); return d ? 'Drill · ' + d.title : ''; }
+    if (h === 'routine') { const d = find(DR.routines, a); return d ? 'Routine · ' + d.title : ''; }
+    if (h === 'watch') { const d = find(DR.watch, a); return d ? 'Video · ' + d.title : ''; }
+    if (h === 'method') { const d = find(DR.methodology, a); return d ? 'Method · ' + d.title : ''; }
+  } catch (e) {}
+  return '';
+}
+let slogViewRoute = null, slogViewTimer = 0;
+function slogView() {
+  if (!LOCAL || slogViewRoute === route) return;
+  clearTimeout(slogViewTimer); slogViewRoute = route;
+  const at = route, title = slogRouteTitle(at);
+  if (title) slogViewTimer = setTimeout(() => { if (route === at && !document.hidden) SLOG('event', 'view', title); }, 30000);
+}
+
 /* Back and forward. The single-file page lives in a frame with no history of its own; the app is
    a real page, and on a phone the system Back gesture would otherwise close it outright. Each
    change of route is one history entry, pushed by render(). */
 let histRoute = null;
 function trackRoute() {
   if (BRIDGE) return;
+  slogView();   // PATCH-161
   try { sessionStorage.setItem(ROUTE_KEY, route); } catch (e) {}
   if (histRoute === route) return;
   try { histRoute === null ? history.replaceState({r: route}, '') : history.pushState({r: route}, ''); } catch (e) {}
@@ -7819,7 +7959,9 @@ app.addEventListener('click', e => {
      the button away mid-click. Nothing here touches P, which is why none of it is gated on
      `readonly` — there is no progress to fail to save. */
   if (d.earPlay) { const c = EAR.find(x => x.id === d.earPlay);
-    if (!playClip(c)) toast('This browser will not play audio here.'); return; }
+    if (!playClip(c)) toast('This browser will not play audio here.');
+    else SLOG('count', 'ear', 'Ear training clips', {unit: 'played'});   // PATCH-161
+    return; }
   if (d.earShow) { if (!earSeen(d.earShow)) { ear.seen = ear.seen.concat([d.earShow]); earSave(); }
     return render(); }
   if (d.earNext) { earGo(earAt() + 1); return render(); }
@@ -7928,6 +8070,7 @@ app.addEventListener('click', e => {
   if (d.classToggle) {
     const on = ks(d.classToggle).status === 'enrolled';
     if (!on) { confirmAct = null; setK(d.classToggle, {status: 'enrolled'});
+      SLOG('event', 'course', 'Joined ' + ((CLASSES[d.classToggle] || {}).title || d.classToggle));   // PATCH-161
       /* PATCH-129 — enrolling a class now STARTS ITS FIRST COURSE. This is the defect that created
          spec-157: on 2026-08-12 Nate enrolled a class, nothing observable happened, and it was
          correct per spec every time it was checked. Nate, 2026-08-24: "enrolling in a class should
@@ -7997,6 +8140,7 @@ app.addEventListener('click', e => {
   if (d.drillScope === 'assigned') return startDrill(assignedList());
   if (d.rate) { const cur = drill.queue[drill.i];
     // PATCH-112 — two card kinds share one rate control, and only the store differs.
+    slogRated(cur, d.rate);   // PATCH-161 — before rating: a retake's card is gone once it is rated
     if (isMiss(cur)) rateMiss(missKey(cur), d.rate); else rate(cur, d.rate);
     drill.i++; drill.shown = false;
     if (!sessionLive()) flushSave();              // PATCH-138 (I-6) — last card: save now
@@ -8049,6 +8193,7 @@ app.addEventListener('change', e => {
   if (task) {
     if (readonly) { e.target.checked = !e.target.checked; return; }
     P.homework[task] = e.target.checked; dirty();
+    if (e.target.checked) slogHomework(task);   // PATCH-161
     e.target.closest('li').classList.toggle('on', e.target.checked);
     /* The block's "N/M done" counter was added with the label but never updated on a tick —
        it sat stale until something else forced a render. Recount in place rather than

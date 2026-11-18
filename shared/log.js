@@ -209,59 +209,6 @@
     });
   }
 
-  /* ---- things noticed without the tool saying anything ---- */
-  // Drill tempos logged in Library or School's Hanon lessons (library:practice, written by School).
-  (function watchPractice() {
-    if (!tracked) return;
-    var PK = "library:practice";
-    function heads() {
-      var out = {};
-      try {
-        var v = JSON.parse(lsGet(PK) || "null"), dr = (v && v.drills) || {};
-        Object.keys(dr).forEach(function (k) { var l = dr[k] && dr[k].log; out[k] = Array.isArray(l) && l[0] ? JSON.stringify(l[0]) + "|" + l.length : ""; });
-      } catch (e) {}
-      return out;
-    }
-    var before = heads();
-    var proto = Storage.prototype, orig = proto.setItem;
-    proto.setItem = function (k, v) {
-      var r = orig.apply(this, arguments);
-      if (k === PK && this === localStorage) {
-        try {
-          var after = heads(), drills = (JSON.parse(v) || {}).drills || {};
-          Object.keys(after).forEach(function (id) {
-            if (after[id] && after[id] !== before[id]) {
-              var top = drills[id].log[0] || {};
-              var name = String(drills[id].title || id).replace(/^.*\//, "").replace(/[-_]+/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-              var bits = [name]; if (top.tempo) bits.push(top.tempo + " bpm"); if (top.mins) bits.push(top.mins + " min");
-              event("drill", bits.join(" · "));
-            }
-          });
-          before = after;
-        } catch (e) {}
-      }
-      return r;
-    };
-  })();
-  // School: the lesson, quiz or homework on screen, once it has been open for half a minute.
-  (function watchSchool() {
-    if (!tracked || location.pathname.indexOf(root + "school/") !== 0) return;
-    var timer = null, SKIP = /^(overview|school|music school|my classes|classes)$/i;
-    function look() {
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        var h = document.querySelector("#app h2.vh, #app h1");
-        if (!h) return;
-        var title = (h.textContent || "").trim(), eye = h.parentNode && h.parentNode.querySelector(".eyebrow");
-        var lead = eye && eye !== h ? (eye.textContent || "").trim() : "";
-        if (!title || SKIP.test(title)) return;
-        event("view", lead && !SKIP.test(lead) ? lead + ": " + title : title);
-      }, 30e3);
-    }
-    window.addEventListener("hashchange", look);
-    window.addEventListener("load", look);
-  })();
-
   /* ---- account sync (used by the Practice Log tool) ---- */
   function merge(a, b) {
     a = clean(a); b = clean(b);
