@@ -5,7 +5,8 @@
    (dark theme). The home screen puts these inline; each app's icon.svg is the
    same drawing.
 
-   MusicIcons.svg(id)   the <svg> markup for one app ("" if there is none) */
+   MusicIcons.svg(id)            the <svg> markup for one app ("" if there is none)
+   MusicIcons.svg(id, "shelf")   the same for one of Library's shelves */
 (function () {
   "use strict";
   var P = {
@@ -35,11 +36,31 @@
     circle: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M7.5 4.2l1.25 2.17M15.25 17.63l1.25 2.17M4.2 7.5l2.17 1.25M17.63 15.25l2.17 1.25M4.2 16.5l2.17-1.25M17.63 8.75l2.17-1.25M7.5 19.8l1.25-2.17M15.25 6.37 16.5 4.2"/>'
   };
 
-  function svg(id) {
-    var d = P[id];
+  // Library's shelves
+  var S = {
+    // Modes: a scale climbing step by step
+    modes: '<path d="M3 20h4v-3.5h4V13h4V9.5h4V6h3"/>',
+    // Chords: three notes stacked on one stem
+    chords: '<ellipse cx="9" cy="18" rx="2.6" ry="2"/><ellipse cx="9" cy="13" rx="2.6" ry="2"/><ellipse cx="9" cy="8" rx="2.6" ry="2"/><path d="M11.6 18V3"/><path d="M15 6h5M15 11h5M15 16h5"/>',
+    // Arpeggios: the same notes, one after another
+    arps: '<circle cx="6" cy="18" r="2"/><circle cx="12" cy="14" r="2"/><circle cx="18" cy="10" r="2"/><path d="M8 18V7M14 14V5.5M20 10V4M8 7l12-3"/>',
+    // Production chains: plugins wired one into the next
+    chains: '<rect x="2.5" y="7" width="5" height="10" rx="1.2"/><rect x="9.5" y="7" width="5" height="10" rx="1.2"/><rect x="16.5" y="7" width="5" height="10" rx="1.2"/><path d="M7.5 12h2M14.5 12h2M5 10v1.5M12 13v1.5M19 10.5v2"/>',
+    // Covers: a record
+    covers: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 10.5a6 6 0 0 1 4-4M17.5 13.5a6 6 0 0 1-4 4"/>',
+    // Drills: a dumbbell
+    drills: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',
+    // Originals: same as the Originals app
+    originals: P.originals,
+    // My files: a folder
+    files: '<path d="M3 7.5A2 2 0 0 1 5 5.5h4l2 2.5h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/>'
+  };
+
+  function svg(id, set) {
+    var d = (set === "shelf" ? S : P)[id];
     if (!d) return "";
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
   }
 
-  self.MusicIcons = { paths: P, svg: svg };
+  self.MusicIcons = { paths: P, shelves: S, svg: svg };
 })();
