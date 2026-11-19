@@ -15,12 +15,12 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.32.0",
+  version: "1.32.1",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
   sections: [
-    { id: "practice", name: "Practice" },
+    { id: "practice", name: "Tools" },
     { id: "learn", name: "Learn" },
     { id: "songs", name: "Songs" },
     { id: "write", name: "Write" },
