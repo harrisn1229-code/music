@@ -2164,7 +2164,12 @@ function introHTML(c) {                        // folding walks the DOM; cache p
   return introCache[k];
 }
 
-const coversPage = () => LIBMODE && (route === 'songs' || route.startsWith('song:') || (route.startsWith('source:') && !!SONGS[route.slice(7)]));
+/* Library's shelves are tiles of their own on Music's home screen (Nate, 2026-11-18): Covers, Drills,
+   My files and Tools. Each page carries only the bar: home, and the name of the tile it belongs to. */
+const LIB_APPS = { covers: 'Covers', drills: 'Drills', files: 'My files', tools: 'Tools' };
+const libApp = () => !LIBMODE ? null
+  : (route === 'songs' || route.startsWith('song:') || (route.startsWith('source:') && !!SONGS[route.slice(7)])) ? 'covers'
+  : headOf(route) === 'files' ? 'files' : headOf(route) === 'tools' ? 'tools' : 'drills';
 function rail() {
   const due = quizzesOwed();   // PATCH-112/113 — retakes and blocked quizzes are owed too
   const item = (id, label, n) => `<button data-nav="${id}"${route === id || route.startsWith(id+':') ?
@@ -2187,9 +2192,8 @@ function rail() {
   const chipState = (cap === null && !readonly) ? ['wait', 'checking\u2026']
                   : readonly ? ['ro', 'read-only \u2014 nothing is saved']
                   : pending ? ['dirty', 'unsaved'] : ['saved', LOCAL ? 'saved on this device' : 'saved'];
-  /* The header every Music tool opens with: a round button (home; in the Library shelves, back to
-     Library's front page), the tool's icon and its name. The second round button opens and closes
-     the menu. Styled by app-shell/music-skin.css. */
+  /* The header every Music tool opens with: a round button (home), the tool's icon and its name. The
+     second round button opens and closes the menu. Styled by app-shell/music-skin.css. */
   const ICO = {
     home: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.2 10 3.6l6.5 5.6"/><path d="M5.2 8.2v7.6h9.6V8.2"/></svg>',
     back: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5"/></svg>',
@@ -2202,7 +2206,10 @@ function rail() {
   const LOGO = {
     library: ['mll1', '#9F2D3F', '#BC6C79', '<path d="M3 20.5h18"/><rect x="4.5" y="5" width="3.5" height="15.5" rx=".5"/><rect x="8" y="3.5" width="3.5" height="17" rx=".5"/><path d="M8 7.5h3.5M8 16.5h3.5"/><path d="m13.6 6.4 3.4-.9 3.9 14.6-3.4.9z"/>'],
     school: ['mll2', '#33449E', '#707CBB', '<path d="m12 4.5 10 4.5-10 4.5L2 9z"/><path d="M6.5 11v4.5c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3V11"/><path d="M22 9v5.5"/>'],
-    covers: ['mll3', '#2C7BD6', '#6BA3E2', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 10.5a6 6 0 0 1 4-4M17.5 13.5a6 6 0 0 1-4 4"/>']
+    covers: ['mll3', '#2C7BD6', '#6BA3E2', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 10.5a6 6 0 0 1 4-4M17.5 13.5a6 6 0 0 1-4 4"/>'],
+    drills: ['mll4', '#C26A06', '#DE9A4C', '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>'],
+    files: ['mll5', '#4B5563', '#8B95A5', '<path d="M3 7.5A2 2 0 0 1 5 5.5h4l2 2.5h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/>'],
+    tools: ['mll6', '#0E7490', '#4FA6BE', '<path d="M14.7 6.3a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3z"/><path d="m5 5 4 4M3.5 6.5l3-3"/>']
   };
   const logoSvg = id => { const [c, lt, dk, d] = LOGO[id];
     return `<svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.${c}{stroke:${lt}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .${c}{stroke:${dk}}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .${c}{stroke:${dk}}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="${c}" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</g></svg>`; };
@@ -2215,22 +2222,9 @@ function rail() {
   const foot = `<div class="rail-foot">
       <div class="savechip" data-s="${chipState[0]}"><b></b><span> ${esc(chipState[1])}</span></div>
     </div>`;
-  /* The Library tool's shelves (LIBMODE): the same views, their own menu. */
-  if (LIBMODE) {
-    /* Covers has its own tile on Music's home screen: its pages carry only the bar, home and Covers. */
-    if (coversPage())
-      return `<aside class="rail covers-rail">${bar('Covers', 'covers', '../', 'Music home, all apps', ICO.home, true)}</aside>`;
-    return `<aside class="rail${open ? '' : ' shut'}">
-    ${bar('Library', 'library', '../library/', 'Back to Library', ICO.back)}
-    <nav>
-      ${item('drills','Drills')}
-      ${TOOLS.length ? item('tools','Tools') : ''}
-      ${item('files','My files')}
-      <a class="navlink" href="../library/#/modes">Modes</a>
-      <a class="navlink" href="../library/#/chords">Chords</a>
-      <a class="navlink" href="../library/#/arps">Arpeggios</a>
-    </nav>${foot}</aside>`;
-  }
+  /* The Library shelves (LIBMODE): each is its own tile on Music's home screen, so no menu between them. */
+  if (LIBMODE) { const a = libApp();
+    return `<aside class="rail covers-rail">${bar(LIB_APPS[a], a, '../', 'Music home, all apps', ICO.home, true)}</aside>`; }
   /* School inside Music: the curriculum and your progress, nothing else. The shelves are the
      Library tool's (see SHELF_HEADS). */
   if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">
@@ -7800,7 +7794,7 @@ function render() {
     : head === 'files' && LOCAL ? filesView()  // app build — the reader's own books, charts, art
     : head === 'paper' && LOCAL ? paperView(arg) // app build — a test, sat and marked on the page
     : head === 'tests' ? testsView() : overview();
-  app.style.setProperty('--rail', (railOpen() || coversPage()) ? (LOCAL ? '15rem' : '236px') : (LOCAL ? '3.5rem' : '56px'));
+  app.style.setProperty('--rail', (railOpen() || LIBMODE) ? (LOCAL ? '15rem' : '236px') : (LOCAL ? '3.5rem' : '56px'));
   // PATCH-144 — the one pass that makes every [[vault note]] the school assigns a live link,
   // wherever it appears. Deliberately here and not in the view functions: a dead span turns up
   // on Read lines, in **The material** bullets, inside pulled reading and on a source page

@@ -12,7 +12,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords, plus scale degrees, intervals and progressions on the neck |
-| Library | `library/` | Covers, drills, tools, My files, Originals and production chains, plus every mode, chord, arpeggio and voicing in any key |
+| Library | `library/` | No home tile of its own: its shelves (Modes, Chords, Arpeggios, Production chains, Drills, My files) are each a tile in Reference |
 | School | `school/` | The curriculum and your progress: classes, lessons, quizzes and tests |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
@@ -112,8 +112,9 @@ the `practice` document in the account, merged drill by drill. School's Hanon le
 it too; School's own progress (`school:progress`) no longer holds it, and any copy found there (an
 older device, an old backup) is folded in on load.
 
-Library opens on its shelves: Modes and chords (`library/#/theory`, the mode, chord and voicing
-lookup), Production chains, Songs, Drills, Originals (a link to the Originals tool) and My files. All of them, and School, share one look — School's
+Library has no front page: each shelf is its own tile in the home screen's Reference section (`shortcuts`
+in `apps.js`): Modes, Chords and Arpeggios (`library/#/modes` etc.), Production chains, Drills and My files.
+Each page's bar shows that shelf's name and icon, with Home. All of them, and School, share one look — School's
 is `school/music-skin.css`, written from the `music-school` repo.
 
 ### Production chains

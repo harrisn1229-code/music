@@ -351,8 +351,8 @@ button.node{cursor:zoom-in}
 <header class="bar">
   <div class="bar-in wrap">
     <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"></a>
-    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:#9F2D3F}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:#BC6C79}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:#BC6C79}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18"/><rect x="4.5" y="5" width="3.5" height="15.5" rx=".5"/><rect x="8" y="3.5" width="3.5" height="17" rx=".5"/><path d="M8 7.5h3.5M8 16.5h3.5"/><path d="m13.6 6.4 3.4-.9 3.9 14.6-3.4.9z"/></g></svg>
-    <h1 class="brand">Library</h1>
+    <svg class="logo" id="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:var(--lc,#9F2D3F)}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:var(--lcd,#BC6C79)}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:var(--lcd,#BC6C79)}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" id="logo-g" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18"/><rect x="4.5" y="5" width="3.5" height="15.5" rx=".5"/><rect x="8" y="3.5" width="3.5" height="17" rx=".5"/><path d="M8 7.5h3.5M8 16.5h3.5"/><path d="m13.6 6.4 3.4-.9 3.9 14.6-3.4.9z"/></g></svg>
+    <h1 class="brand" id="brand">Library</h1>
     <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
   </div>
 </header>
@@ -367,7 +367,7 @@ button.node{cursor:zoom-in}
 <script>
 /* Library reads the same theory as Note Cards (../shared/theory.js) and lays it out
    for looking things up. Addresses:
-     #/                      the front page: a tile for each shelf
+     #/                      no front page: goes to Music home (each shelf is a home-screen tile)
      #/modes  #/chords  #/arps   a shelf: search, key picker, every entry in that key (#/theory = #/modes)
      #/mode/<key>/<mode>     one mode        (key is 0-11, C = 0)
      #/chord/<key>/<quality> one chord: spelling, inversions and voicings
@@ -751,18 +751,6 @@ button.node{cursor:zoom-in}
     const sevs = SEVENTHS.filter((q) => shown(q.id)).map((q) => chordRow(pc, q));
     return section("Triads", TRIADS.filter((q) => shown(q.id)).map((q) => chordRow(pc, q))) + (sevs.length ? section("7th chords", sevs, link) : '<section class="sec"><ul class="rows">' + link + "</ul></section>");
   }
-  /* ---------- the front page: Library's shelves, as tiles ----------
-     Modes, Chords and Arpeggios are this page's own lookups. Covers and Originals live on the Music home screen
-     (Songs), not here. Drills and My files came over from School and open as their own pages (../school/library.html), built from the same notes as School and
-     sharing its saved progress, so a drill's tempo log or a song's status is the same everywhere. */
-  function renderShelves() {
-    const ic = (id) => '<span class="tile-ic" aria-hidden="true">' + (window.MusicIcons ? MusicIcons.svg(id, "shelf") : "") + "</span>";
-    const tile = (href, name, id) => '<li><a class="tile" href="' + href + '">' + ic(id) + "<span>" + name + "</span></a></li>";
-    view.innerHTML = '<ul class="tiles">' +
-      tile("#/modes", "Modes", "modes") + tile("#/chords", "Chords", "chords") + tile("#/arps", "Arpeggios", "arps") + tile("#/chains", "Production chains", "chains") +
-      tile("../school/library.html#drills", "Drills", "drills") + tile("../school/library.html#files", "My files", "files") + "</ul>";
-    current = { play: {} };
-  }
   /* ---------- a shelf: modes, chords or arpeggios ---------- */
   function renderShelf(kind) {
     const S = SHELF[kind], rec = recents().filter((x) => x.h.indexOf(S.pref) === 0), q = queries[kind];
@@ -1099,8 +1087,9 @@ button.node{cursor:zoom-in}
   function routeChains(r, from) {
     const hash = location.hash;
     current = { play: {} };
-    setNav(r.view === "chains" ? "#/" : "#/chains", ICON.back, r.view === "chains" ? "Back to Library" : "Back to production chains");
-    document.title = r.view === "chains" ? "Production chains – Library" : r.view === "chainsys" ? "How the chains fit together – Library" : "Library";
+    setBrand("chains");
+    if (r.view === "chains") setNav("../", ICON.home, "Music home, all apps"); else setNav("#/chains", ICON.back, "Back to production chains");
+    document.title = r.view === "chains" ? "Production chains" : r.view === "chainsys" ? "How the chains fit together" : "Production chains";
     view.innerHTML = r.view === "chains" ? CHAIN_HEAD : "";
     window.scrollTo(0, 0);
     loadChains().then((d) => {
@@ -1114,7 +1103,7 @@ button.node{cursor:zoom-in}
       const c = d.byId[r.id];
       if (!c) { location.replace("#/chains"); return; }
       renderChain(d, c);
-      document.title = c.title + " – Library";
+      document.title = c.title + " – Production chains";
       remember("#/chain/" + c.id, c.title);
       window.scrollTo(0, 0);
     }, () => {
@@ -1142,6 +1131,17 @@ button.node{cursor:zoom-in}
     if (SHELF_KIND[p[0]]) return { view: "shelf", kind: SHELF_KIND[p[0]] };
     return { view: "shelves" };
   }
+  /* The bar carries the shelf's own name and icon, the same as its tile on Music's home screen. */
+  const BRAND = {
+    modes: ["Modes", "#1E8A5A", "#5FB58C"], chords: ["Chords", "#0D9488", "#4FB8AF"],
+    arps: ["Arpeggios", "#C2417A", "#DB7DA4"], chains: ["Production chains", "#9F2D3F", "#BC6C79"]
+  };
+  function setBrand(kind) {
+    const b = BRAND[kind]; if (!b) return;
+    $("brand").textContent = b[0];
+    $("logo").style.setProperty("--lc", b[1]); $("logo").style.setProperty("--lcd", b[2]);
+    if (window.MusicIcons && MusicIcons.shelves[kind]) $("logo-g").innerHTML = MusicIcons.shelves[kind];
+  }
   function setNav(href, icon, label) {
     const nav = $("nav");
     nav.href = href; nav.innerHTML = icon; nav.setAttribute("aria-label", label);
@@ -1152,29 +1152,26 @@ button.node{cursor:zoom-in}
     if (curShelf) shelfScroll[curShelf] = window.scrollY;
     curShelf = r.view === "shelf" ? r.kind : r.view === "chains" ? "chains" : null;
     prevView = r.view;
-    if (r.view === "shelves") {
-      setNav("../", ICON.home, "Music home, all apps");
-      document.title = "Library";
-      renderShelves();
-      window.scrollTo(0, 0);
-      return;
-    }
+    // No front page any more: each shelf is its own tile on Music's home screen.
+    if (r.view === "shelves") { location.replace("../"); return; }
     if (r.view === "shelf") {
-      setNav("#/", ICON.back, "Back to Library");
-      document.title = SHELF[r.kind].title + " – Library";
+      setBrand(r.kind);
+      setNav("../", ICON.home, "Music home, all apps");
+      document.title = SHELF[r.kind].title;
       renderShelf(r.kind);
       window.scrollTo(0, ["mode", "chord", "arp", "guide"].includes(from) ? shelfScroll[r.kind] : 0);
       return;
     }
     if (r.view === "chains" || r.view === "chainsys" || r.view === "chain") { routeChains(r, from); return; }
     const back = r.view === "mode" ? ["modes", "Back to modes"] : r.view === "arp" ? ["arps", "Back to arpeggios"] : ["chords", "Back to chords"];
+    setBrand(back[0]);
     setNav("#/" + back[0], ICON.back, back[1]);
     if (r.view === "mode") renderMode(r.pc, MODE[r.id]);
     else if (r.view === "chord") renderChord(r.pc, QUAL[r.id]);
     else if (r.view === "arp") renderArp(r.pc, ARPQ[r.id]);
     else renderGuide();
     const title = view.querySelector(".title").textContent;
-    document.title = title + " – Library";
+    document.title = title + " – " + BRAND[back[0]][0];
     if (r.view !== "guide") { prefs.pc = r.pc; savePrefs(); remember("#/" + r.view + "/" + r.pc + "/" + r.id, title); }
     window.scrollTo(0, 0);
   }
@@ -1290,9 +1287,9 @@ button.node{cursor:zoom-in}
   if (window.MusicAssistant) MusicAssistant.mount({
     app: "library", button: $("ai-btn"),
     context: () => {
-      const r = parse(), t = document.title.replace(/ – Library$/, "");
-      if (r.view === "chains") return "In Library, on the Production chains shelf.";
-      if (r.view === "chainsys") return "In Library, reading how the production chains fit together.";
+      const r = parse(), t = document.title.replace(/ – (Modes|Chords|Arpeggios)$/, "");
+      if (r.view === "chains") return "In Production chains, on the list.";
+      if (r.view === "chainsys") return "In Production chains, reading how the chains fit together.";
       const pc = r.view === "chain" && chainData && chainData.byId[r.id];
       if (pc) {
         const sig = (pc.uad || []).concat(pc.plugins || []);
