@@ -69,6 +69,9 @@ img{max-width:100%}
   --k-triads:#F0941A;   --w-triads:#FDEDD6;   --tt-triads:#975400;
   --k-sevenths:#8A5CF5; --w-sevenths:#EEE7FE; --tt-sevenths:#6439D0;
   --k-feelings:#D9468F; --w-feelings:#FBE3EF; --tt-feelings:#A8266B;
+  --k-degrees:#0E9AA7;  --w-degrees:#D9F2F4;  --tt-degrees:#0A6D77;
+  --k-intervals:#E0533A; --w-intervals:#FCE6E0; --tt-intervals:#B03A24;
+  --k-progs:#4F5BD5;    --w-progs:#E4E7FB;    --tt-progs:#3541B5;
   --shadow:22 26 52;
   --sh:0 0 0 1px rgb(20 24 44 / .07),0 1px 2px rgb(22 26 52 / .05);
   --sh-1:var(--sh);
@@ -96,6 +99,9 @@ img{max-width:100%}
     --k-triads:#EF9420; --w-triads:#33250F; --tt-triads:#FFC46B;
     --k-sevenths:#8E62F6; --w-sevenths:#251E42; --tt-sevenths:#C0A9FF;
     --k-feelings:#DB4A93; --w-feelings:#35172A; --tt-feelings:#FFA6D2;
+    --k-degrees:#17ADBA; --w-degrees:#0F2F33; --tt-degrees:#6FDDE6;
+    --k-intervals:#E8624A; --w-intervals:#38201B; --tt-intervals:#FFA796;
+    --k-progs:#6470E3; --w-progs:#1B1F42; --tt-progs:#B3BAFF;
     --shadow:0 0 0;
     --sh:0 0 0 1px rgb(255 255 255 / .06);
     color-scheme:dark;
@@ -115,6 +121,9 @@ img{max-width:100%}
   --k-triads:#EF9420; --w-triads:#33250F; --tt-triads:#FFC46B;
   --k-sevenths:#8E62F6; --w-sevenths:#251E42; --tt-sevenths:#C0A9FF;
   --k-feelings:#DB4A93; --w-feelings:#35172A; --tt-feelings:#FFA6D2;
+  --k-degrees:#17ADBA; --w-degrees:#0F2F33; --tt-degrees:#6FDDE6;
+  --k-intervals:#E8624A; --w-intervals:#38201B; --tt-intervals:#FFA796;
+  --k-progs:#6470E3; --w-progs:#1B1F42; --tt-progs:#B3BAFF;
   --shadow:0 0 0;
   --sh:0 0 0 1px rgb(255 255 255 / .06);
   color-scheme:dark;
@@ -191,6 +200,9 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 .deck[data-deck="triads"],.icard[data-deck="triads"]{--k:var(--k-triads);--w:var(--w-triads);--tt:var(--tt-triads)}
 .deck[data-deck="sevenths"],.icard[data-deck="sevenths"]{--k:var(--k-sevenths);--w:var(--w-sevenths);--tt:var(--tt-sevenths)}
 .deck[data-deck="feelings"],.icard[data-deck="feelings"]{--k:var(--k-feelings);--w:var(--w-feelings);--tt:var(--tt-feelings)}
+.deck[data-deck="degrees"],.icard[data-deck="degrees"]{--k:var(--k-degrees);--w:var(--w-degrees);--tt:var(--tt-degrees)}
+.deck[data-deck="intervals"],.icard[data-deck="intervals"]{--k:var(--k-intervals);--w:var(--w-intervals);--tt:var(--tt-intervals)}
+.deck[data-deck="progs"],.icard[data-deck="progs"]{--k:var(--k-progs);--w:var(--w-progs);--tt:var(--tt-progs)}
 .deck-row{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem .7rem .7rem}
 .deck-main{flex:1;min-width:0;display:flex;align-items:center;gap:.85rem;border:0;background:none;padding:.2rem;margin:0;text-align:left;cursor:pointer;border-radius:var(--r-sm)}
 .dicon{width:3rem;height:3rem;border-radius:14px;display:grid;place-items:center;background:var(--k);color:#fff;flex:none;
@@ -449,6 +461,21 @@ button{font:inherit;color:inherit;-webkit-user-select:none;user-select:none;touc
 .fr,.fnum,.sn{font-size:10px;font-weight:700;fill:var(--muted)}
 .fnum,.sn{text-anchor:middle;dominant-baseline:central}
 .fr{text-anchor:end;dominant-baseline:central}
+.neck .win{fill:var(--w);stroke:var(--k);stroke-opacity:.45;stroke-width:1}
+.neck .faint{opacity:.28}
+.hit{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem}
+.hit b{font-size:clamp(2rem, 1.5rem + 2.2vw, 2.75rem);font-weight:800;line-height:1;letter-spacing:-.02em}
+.hit svg{width:1.6rem;height:.8rem;color:var(--muted)}
+.hit small{font-size:.9375rem;font-weight:600;color:var(--muted)}
+.voices.pick{flex-wrap:wrap;justify-content:space-around;gap:.5rem .6rem}
+.v.dim{opacity:.5}
+.chords{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.25rem,1fr));gap:.4rem}
+.chord{border:0;border-radius:var(--r-sm);background:var(--surface-2);padding:.5rem .3rem .45rem;display:grid;gap:.1rem;justify-items:center;cursor:pointer;min-width:0;transition:background-color .12s,box-shadow .12s}
+.chord b{font-size:clamp(1.05rem, .95rem + .5vw, 1.3rem);font-weight:800;line-height:1.15}
+.chord small{font-size:.75rem;font-weight:700;color:var(--muted)}
+.chord[aria-pressed="true"]{background:var(--w);box-shadow:inset 0 0 0 2px var(--k)}
+.chord.playing{background:var(--k);color:#fff}
+.chord.playing small{color:inherit;opacity:.85}
 .kb{width:100%;max-width:calc(var(--n) * 2.75rem)}
 .kb svg{display:block;width:100%;height:auto}
 .wk{fill:var(--key-w);stroke:var(--key-edge);stroke-width:1}
@@ -651,12 +678,25 @@ const FEEL_CARDS = MusicFeelings.list.map(d => ({
   key: 'feel-' + d.semitone, deck: 'feelings', tags: { g: FEEL_GROUP_OF(d.semitone), deg: String(d.semitone) },
   title: d.label, sub: d.name, lines: [], notes: [], gaps: [],
 }));
-const CARDS = buildCards().concat(FEEL_CARDS);
+// Degrees, intervals and progressions: the card is the thing to learn; the key, scale and neck position are dealt
+// at random each time it comes up (see makeDeal), so ratings belong to the card and not to the key.
+const DEG_LABELS = ['1','♭2','2','♭3','3','4','♯4','5','♭6','6','♭7','7'];
+const DEG_CARDS = DEG_LABELS.map((l, semi) => ({ key: 'deg-' + semi, deck: 'degrees', tags: { semi }, title: l, sub: '', lines: [], notes: [], gaps: [] }));
+const INT_CARDS = INTERVALS.flatMap(iv => ['up', 'down'].map(dir => ({
+  key: 'int-' + iv.id + '-' + dir, deck: 'intervals', tags: { iv: iv.id, dir },
+  title: (dir === 'up' ? 'Up ' : 'Down ') + (/^[aeiou]/.test(iv.name) ? 'an ' : 'a ') + iv.name, sub: '', lines: [], notes: [], gaps: [] })));
+const PROG_CARDS = PROGRESSIONS.flatMap(p => ['tri', 'sev'].map(t => ({
+  key: 'prog-' + p.id + '-' + t, deck: 'progs', tags: { id: p.id, style: p.style, t },
+  title: progTitle(p), sub: '', lines: p.nick && p.nick !== progTitle(p) ? [p.nick] : [], notes: [], gaps: [] })));
+const CARDS = buildCards().concat(FEEL_CARDS, DEG_CARDS, INT_CARDS, PROG_CARDS);
 const BY_KEY = Object.fromEntries(CARDS.map(c => [c.key, c]));
 const TRIAD_VOICINGS = VOICINGS.filter(v => !(v.minVoices > 3));
 const TRIAD_INV = INVERSIONS.slice(0, 3);
 const KEY_ITEMS = KEY_LABELS.map((label, pc) => ({ id: String(pc), label }));
 const fmt = n => n.toLocaleString('en-US');
+// Neck positions (fret windows) for the degree, interval and progression decks. They never filter cards: one is dealt with each card.
+const POSITIONS = [{id:'p0',label:'Open',lo:0,hi:4},{id:'p3',label:'3rd fret',lo:3,hi:7},{id:'p5',label:'5th fret',lo:5,hi:9},{id:'p7',label:'7th fret',lo:7,hi:11},{id:'p10',label:'10th fret',lo:10,hi:14},{id:'p12',label:'12th fret',lo:12,hi:16}];
+const POS_ITEMS = POSITIONS.map(p => ({ id:p.id, label:p.label }));
 const isLine = c => c.deck === 'modes' || c.deck === 'arps'; // played one note at a time
 
 // Progress: how you last rated each card. Cards you haven't rated count as new.
@@ -709,6 +749,32 @@ const DECKS = [
       { key:'feelDeg', label:'Degrees', items:[{ id:'major', label:'Major scale' }, { id:'minor', label:'Minor degrees' }, { id:'chromatic', label:'Chromatic' }] },
     ],
     match:(c, s) => s.feelDeg.includes(c.tags.g) },
+  { id:'degrees', label:'Scale degrees', tag:'Degrees',
+    blurb:'Find a scale degree on the neck, in a key and position picked for you.',
+    groups:[
+      { key:'degKeys',   label:'Key',      items: KEY_ITEMS },
+      { key:'degScales', label:'Scale',    items: SCALES.map(sc => ({ id:sc.id, label:sc.name })) },
+      { key:'degPos',    label:'Position', items: POS_ITEMS },
+    ],
+    match:(c, s) => s.degKeys.length > 0 && SCALES.some(sc => s.degScales.includes(sc.id) && sc.semis.includes(c.tags.semi)) },
+  { id:'intervals', label:'Intervals', tag:'Intervals',
+    blurb:'Play an interval up or down from a note, around a neck position.',
+    groups:[
+      { key:'intIv',   label:'Interval',   items: INTERVALS.map(iv => ({ id:iv.id, label:iv.id })) },
+      { key:'intDir',  label:'Direction',  items:[{ id:'up', label:'Up' }, { id:'down', label:'Down' }] },
+      { key:'intKeys', label:'Start note', items: KEY_ITEMS },
+      { key:'intPos',  label:'Position',   items: POS_ITEMS },
+    ],
+    match:(c, s) => s.intKeys.length > 0 && s.intIv.includes(c.tags.iv) && s.intDir.includes(c.tags.dir) },
+  { id:'progs', label:'Progressions', tag:'Progressions',
+    blurb:'Play common chord progressions as notes in the key, around a neck position.',
+    groups:[
+      { key:'progKeys',  label:'Key',      items: KEY_ITEMS },
+      { key:'progStyle', label:'Style',    items:[{ id:'pop', label:'Pop & rock' }, { id:'jazz', label:'Jazz' }, { id:'minor', label:'Minor' }, { id:'blues', label:'Blues & modal' }] },
+      { key:'progT',     label:'Chords',   items:[{ id:'tri', label:'Triads' }, { id:'sev', label:'7th chords' }] },
+      { key:'progPos',   label:'Position', items: POS_ITEMS },
+    ],
+    match:(c, s) => s.progKeys.length > 0 && s.progStyle.includes(c.tags.style) && s.progT.includes(c.tags.t) },
 ];
 const DECK = Object.fromEntries(DECKS.map(d => [d.id, d]));
 const TIMERS = [0, 5, 10, 15, 30];
@@ -717,9 +783,9 @@ const TIMERS = [0, 5, 10, 15, 30];
 const STORE = 'shed-deck:v1'; // storage keys keep the old name so saved settings and ratings carry over
 const OPTIONS = { status: STATUS_GROUP.items.map(it => it.id) };
 DECKS.forEach(d => d.groups.forEach(g => { OPTIONS[g.key] = g.items.map(it => it.id); }));
-const DEFAULTS = Object.assign({}, OPTIONS, { triadQ: ['maj','min','aug','dim'], sevInv: ['root'], arpStart: ['s1'] });
+const DEFAULTS = Object.assign({}, OPTIONS, { triadQ: ['maj','min','aug','dim'], sevInv: ['root'], arpStart: ['s1'], degScales: ['ionian'], intDir: ['up'] });
 function load() {
-  const st = { on: { modes:true, arps:true, triads:true, sevenths:true, feelings:true }, timer: 0, show: { guitar:true, piano:true } };
+  const st = { on: { modes:true, arps:true, triads:true, sevenths:true, feelings:true, degrees:true, intervals:true, progs:true }, timer: 0, show: { guitar:true, piano:true } };
   for (const k in OPTIONS) st[k] = DEFAULTS[k].slice();
   try {
     const s = JSON.parse(localStorage.getItem(STORE) || 'null');
@@ -1021,6 +1087,9 @@ const DECK_ICON = {
   feelings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3.5V16.5H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7.5 10.5c1.3-2.2 2.7-2.2 4 0s2.7 2.2 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   sevenths: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="19.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="14.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="9.5" rx="3.8" ry="2.7" fill="currentColor"/><ellipse cx="12" cy="4.5" rx="3.8" ry="2.7" fill="currentColor"/></svg>',
 };
+DECK_ICON.degrees = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/><circle cx="12" cy="12" r="4.4" fill="currentColor"/></svg>';
+DECK_ICON.intervals = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 17.5C5.5 10 11 6.5 18.5 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/><circle cx="5.5" cy="17.5" r="3" fill="currentColor"/><circle cx="18.5" cy="6.5" r="3" fill="currentColor"/></svg>';
+DECK_ICON.progs = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="3.5" width="5.5" height="9" rx="1.6" fill="currentColor"/><rect x="9.25" y="3.5" width="5.5" height="9" rx="1.6" fill="currentColor"/><rect x="16" y="3.5" width="5.5" height="9" rx="1.6" fill="currentColor"/><path d="M3.5 18.5h16M15.5 14.8l4 3.7-4 3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const openDecks = new Set();
 function groupHTML(g, off) {
   return `
@@ -1355,7 +1424,7 @@ function startSession() {
   $('next').focus({ preventScroll: true });
 }
 function back() {
-  stopTimer();
+  stopTimer(); stopProg();
   showView('library');
   updateCounts();
 }
@@ -1389,6 +1458,12 @@ function nextCard() {
 // Practice log: deck label, plus the key (and mode) when the filter narrows to exactly one.
 function logRating(c, id) {
   const d = DECK[c.deck], one = g => { const a = state[g]; return a && a.length === 1 && OPTIONS[g].length > 1 ? a[0] : null; };
+  if (deal && DEALT[c.deck]) {
+    const x = deal;
+    MusicLog.count('cards', d.tag + ' · ' + (c.deck === 'degrees' ? x.hit.deg + ' · ' + scaleName(x.sc, x.root) : c.deck === 'intervals' ? (x.up ? 'up ' : 'down ') + x.iv.id + ' · from ' + x.start
+      : progTitle(x.prog) + ' · ' + rootName(x.tonic) + (x.prog.minor ? ' minor' : ' major')), { unit: 'cards', ok: id !== 'rusty' });
+    return;
+  }
   let text = d.label;
   const k = one(({ modes:'modeKeys', arps:'arpKeys', triads:'triadKeys', sevenths:'sevKeys' })[c.deck] || '');
   if (k != null) text += ' · ' + KEY_LABELS[Number(k)];
@@ -1446,15 +1521,16 @@ const SPEAKER = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6h2.5
 const CHEV_L = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const CHEV_R = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const isWhite = m => [0,2,4,5,7,9,11].includes(((m % 12) + 12) % 12);
-const badge = nt => `<span class="deg ${degClass(nt.deg)}${nt.tone ? ' ct' : ''}">${esc(nt.deg)}</span>`;
+const badge = nt => `<span class="deg ${nt.cls || degClass(nt.deg)}${nt.tone ? ' ct' : ''}">${esc(nt.deg)}</span>`;
 const diamond = (cx, cy, r) => `<path class="ctmark" d="M${cx} ${cy - r}L${cx + r} ${cy}L${cx} ${cy + r}L${cx - r} ${cy}Z"/>`;
 // A note marker on a fretboard: a circle, or a diamond for a color tone.
-function marker(cx, cy, nt, r, small) {
-  const dc = degClass(nt.deg), s = r * 1.62;
+function marker(cx, cy, nt, r, small, faint) {
+  const dc = nt.cls || degClass(nt.deg), s = r * 1.62;
   const shape = nt.tone
     ? `<rect class="dot ${dc} ct" x="${cx - s / 2}" y="${cy - s / 2}" width="${s}" height="${s}" rx="1.5" transform="rotate(45 ${cx} ${cy})"/>`
     : `<circle class="dot ${dc}" cx="${cx}" cy="${cy}" r="${r}"/>`;
-  return shape + `<text class="dl${small ? ' sm' : ''} ${dc}" x="${cx}" y="${cy}">${esc(nt.deg)}</text>`;
+  const out = shape + `<text class="dl${small ? ' sm' : ''} ${dc}" x="${cx}" y="${cy}">${esc(nt.deg)}</text>`;
+  return faint ? `<g class="faint">${out}</g>` : out;
 }
 
 // ---------- piano ----------
@@ -1476,7 +1552,7 @@ function keyboard(lo, hi, notes) {
   notes.forEach(nt => { if (!hits.has(nt.midi)) hits.set(nt.midi, nt); });
   let wk = '', bk = '', marks = '', labels = '';
   for (let m = lo; m <= hi; m++) {
-    const h = hits.get(m), cls = h ? ' ' + degClass(h.deg) : '';
+    const h = hits.get(m), cls = h ? ' ' + (h.cls || degClass(h.deg)) : '';
     if (isWhite(m)) {
       wk += `<rect class="wk${cls}" x="${x[m] + .5}" y=".5" width="${W - 1}" height="${H - 1}" rx="2.5"/>`;
       if (h && h.tone) marks += diamond(x[m] + W / 2, H - 14, 6);
@@ -1534,6 +1610,25 @@ function neckMap(c) {
   });
   return `<svg class="neck" viewBox="0 0 ${W} ${H}" role="img" aria-label="Guitar neck, frets 0 to 12, with every ${esc(c.title)} note marked">${g}</svg>`;
 }
+// A neck from the open strings to fret 15 for any set of pitch classes. marks: pitch class -> { deg, name, faint, cls };
+// faint marks are drawn dim, win = { lo, hi } shades the frets of a position.
+function neckFor({ marks, win, label }) {
+  const N = 15, SN = 14, OW = 24, FW = 24, SH = 19, TOP = 13;
+  const X0 = SN + OW, W = X0 + N * FW + 6, H = TOP + 5 * SH + 30;
+  const rows = [64, 59, 55, 50, 45, 40], names = ['E','B','G','D','A','E'];
+  let g = '';
+  if (win) { const x0 = win.lo === 0 ? SN : X0 + (win.lo - 1) * FW, x1 = X0 + Math.min(win.hi, N) * FW; g += `<rect class="win" x="${x0}" y="${TOP - 9}" width="${x1 - x0}" height="${5 * SH + 18}" rx="7"/>`; }
+  for (let j = 0; j <= N; j++) { const x = X0 + j * FW; g += `<line class="${j === 0 ? 'nut' : 'fret'}" x1="${x}" x2="${x}" y1="${TOP}" y2="${TOP + 5 * SH}"/>`; }
+  rows.forEach((_, r) => { const y = TOP + r * SH; g += `<line class="str" x1="${X0}" x2="${X0 + N * FW}" y1="${y}" y2="${y}"/><text class="sn" x="${SN / 2}" y="${y}">${names[r]}</text>`; });
+  [3, 5, 7, 9, 12, 15].forEach(f => { g += `<text class="fnum" x="${X0 + (f - .5) * FW}" y="${TOP + 5 * SH + 18}">${f}</text>`; });
+  rows.forEach((open, r) => {
+    for (let f = 0; f <= N; f++) {
+      const nt = marks.get((open + f) % 12);
+      if (nt) g += marker(f === 0 ? SN + OW / 2 : X0 + (f - .5) * FW, TOP + r * SH, nt, 8.5, true, nt.faint);
+    }
+  });
+  return `<svg class="neck" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}</svg>`;
+}
 function guitarHTML(c) {
   if (isLine(c)) return `<div class="neck-wrap">${neckMap(c)}</div>`;
   const { shapes, stretch } = guitarOf(c);
@@ -1565,8 +1660,87 @@ function feelingHTML(c) {
     </dl>
     <a class="fedit" href="../ear/#/feelings/${d.slug}">Edit</a>`;
 }
+// ---------- deals: degrees, intervals and progressions pick their key, scale and neck position when dealt ----------
+const DEALT = { degrees:'degPos', intervals:'intPos', progs:'progPos' }; // deck -> its position group
+const choose = a => a[Math.floor(Math.random() * a.length)];
+const mod12 = n => ((n % 12) + 12) % 12;
+const posLine = p => p.id === 'p0' ? 'Open position' : 'Around the ' + p.label;
+const scaleName = (sc, root) => rootName(root) + ' ' + (sc.id === 'ionian' ? 'major' : sc.id === 'aeolian' ? 'minor' : sc.name);
+let deal = null; // rebuilt in renderCard only, so toggles and chord taps keep the same key and position
+function makeDeal(c) {
+  const pos = choose(POSITIONS.filter(p => state[DEALT[c.deck]].includes(p.id)));
+  if (c.deck === 'degrees') {
+    const semi = c.tags.semi, pc = Number(choose(state.degKeys));
+    const sc = choose(SCALES.filter(x => state.degScales.includes(x.id) && x.semis.includes(semi))) || choose(SCALES.filter(x => x.semis.includes(semi)));
+    const root = scaleRoot(pc, sc), base = (pc <= 5 ? 60 : 48) + pc;
+    const notes = sc.semis.map((se, j) => ({ name: spell(root, sc.steps[j], se), deg: degLabel(sc.steps[j], se), midi: base + se }));
+    return { pos, pc, sc, root, base, semi, notes, hit: notes[sc.semis.indexOf(semi)] };
+  }
+  if (c.deck === 'intervals') {
+    const iv = INTERVALS.find(x => x.id === c.tags.iv), up = c.tags.dir === 'up', sg = up ? 1 : -1, pc = Number(choose(state.intKeys));
+    // The preferred spelling of the start note, unless it would need a double sharp or flat on the way.
+    const root = PC_ROOTS[pc].find((r, i) => Math.abs(accOf(r, sg * iv.steps, sg * iv.semis)) <= 1 || i === PC_ROOTS[pc].length - 1);
+    const m0 = 60 + pc - (pc > 6 ? 12 : 0) + (up ? 0 : 12);
+    return { pos, pc, iv, up, start: rootName(root), target: spell(root, sg * iv.steps, sg * iv.semis), tpc: mod12(pc + sg * iv.semis), m0, m1: m0 + sg * iv.semis,
+      cls: degClass(String(iv.steps + 1)) };
+  }
+  const prog = PROGRESSIONS.find(x => x.id === c.tags.id), sev = c.tags.t === 'sev', pc = Number(choose(state.progKeys));
+  return { pos, pc, prog, sev, ...progKey(prog, pc, sev), sel: 0 };
+}
+function dealFront(c) {
+  const d = deal, pl = d.pos ? [posLine(d.pos)] : [];
+  if (c.deck === 'degrees') return { title: d.hit.deg, sub: scaleName(d.sc, d.root), lines: pl };
+  if (c.deck === 'intervals') return { title: c.title, sub: 'from ' + d.start, lines: pl };
+  return { title: c.title, sub: 'in ' + rootName(d.tonic) + (d.prog.minor ? ' minor' : ' major'), lines: c.lines.concat(d.sev ? ['7th chords'] : [], pl) };
+}
+const dealHead = label => `
+    <div class="ahead">
+      <span class="alabel">${label}</span>
+      <div class="atools">
+        <button class="chip chip-sm" type="button" id="show-guitar" data-show="guitar" aria-pressed="${state.show.guitar}">Guitar</button>
+        <button class="chip chip-sm" type="button" id="show-piano" data-show="piano" aria-pressed="${state.show.piano}">Piano</button>
+        <button class="ghost small play" type="button" id="play" data-play>${SPEAKER}<span>Play</span></button>
+      </div>
+    </div>`;
+const dealDiagrams = (neck, kb) => `
+    <div class="diagrams stacked">
+      <div class="gslot" id="gslot"${state.show.guitar ? '' : ' hidden'}><div class="neck-wrap">${neck}</div></div>
+      <div class="pslot" id="pslot"${state.show.piano ? '' : ' hidden'}>${kb}</div>
+    </div>`;
+function degreesHTML() {
+  const d = deal, root = d.notes[0], hit = d.hit;
+  const marks = new Map(d.notes.map(n => [mod12(n.midi), { deg: n.deg, name: n.name, faint: true }]));
+  [root, hit].forEach(n => marks.set(mod12(n.midi), { deg: n.deg, name: n.name }));
+  return dealHead('In the scale') + `
+    <div class="hit"><b>${esc(hit.name)}</b>${badge(hit)}</div>
+    <div class="voices scale pick">${d.notes.map(n => `<span class="v${n === hit ? '' : ' dim'}"><b>${esc(n.name)}</b>${badge(n)}</span>`).join('')}</div>` +
+    dealDiagrams(neckFor({ marks, win: d.pos, label: 'Guitar neck, frets 0 to 15, with the ' + hit.deg + ' of ' + scaleName(d.sc, d.root) + ' and the root marked and the rest of the scale dim' }),
+      keyboard(d.base - 1, d.base + 13, [{ name: root.name, deg: root.deg, midi: root.midi }, { name: hit.name, deg: hit.deg, midi: hit.midi }]));
+}
+function intervalsHTML() {
+  const d = deal, a = { name: d.start, deg: 'R' }, b = { name: d.target, deg: d.iv.id, cls: d.cls };
+  const marks = new Map([[d.tpc, b], [d.pc, a]]);
+  return dealHead('Interval') + `
+    <div class="hit"><b>${esc(d.start)}</b>${ARROW}<b>${esc(d.target)}</b>${badge(b)}<small>${d.iv.name} ${d.up ? 'up' : 'down'}</small></div>` +
+    dealDiagrams(neckFor({ marks, win: d.pos, label: 'Guitar neck, frets 0 to 15, with ' + d.start + ' and ' + d.target + ' marked' }),
+      keyboard(Math.min(d.m0, d.m1) - 2, Math.max(d.m0, d.m1) + 2, [{ ...a, midi: d.m0 }, { ...b, midi: d.m1 }]));
+}
+function progsHTML() {
+  const d = deal, ch = d.chords[d.sel], sc = SCALE_BY[d.prog.minor ? 'aeolian' : 'ionian'];
+  const marks = new Map(sc.semis.map((se, i) => [mod12(d.pc + se), { deg: degLabel(i, se), name: spell(d.tonic, i, se), faint: true }]));
+  ch.tones.forEach(t => marks.set(mod12(t.midi), { deg: t.keyDeg, name: t.name }));
+  return dealHead('Tap a chord') + `
+    <div class="chords" role="group" aria-label="Chords">${d.chords.map((x, i) =>
+      `<button class="chord${i === progPlay ? ' playing' : ''}" type="button" id="chord-${i}" data-chord="${i}" aria-pressed="${i === d.sel}" aria-label="${esc(x.sym + ', ' + x.numeral)}"><b>${esc(x.sym)}</b><small>${esc(x.numeral)}</small></button>`).join('')}</div>
+    <div class="voices scale pick">${ch.tones.map(t => `<span class="v"><b>${esc(t.name)}</b>${badge({ deg: t.keyDeg })}</span>`).join('')}</div>` +
+    dealDiagrams(neckFor({ marks, win: d.pos, label: 'Guitar neck, frets 0 to 15, with the notes of ' + ch.sym + ' marked and the rest of the key dim' }),
+      keyboard(...kbRange(ch.tones.map(t => t.midi)), ch.tones.map(t => ({ name: t.name, deg: t.keyDeg, midi: t.midi }))));
+}
 function answerHTML(c) {
   if (c.deck === 'feelings') return feelingHTML(c);
+  if (c.deck === 'degrees') return degreesHTML();
+  if (c.deck === 'intervals') return intervalsHTML();
+  if (c.deck === 'progs') return progsHTML();
   const line = isLine(c);
   const voices = c.notes.map((nt, i) =>
     (i ? `<span class="gap"><i>${esc(c.gaps[i - 1])}</i></span>` : '') +
@@ -1602,11 +1776,14 @@ function renderCard() {
   $('tag').textContent = DECK[c.deck].tag;
   $('count').textContent = fmt(session.pos + 1) + ' of ' + fmt(session.order.length);
   $('round').textContent = session.round > 1 ? 'Round ' + session.round : 'Practice';
-  $('ptitle').textContent = c.title;
-  $('ptitle').className = 'ptitle' + (c.deck === 'feelings' ? ' ' + degClass(c.title) : '');
-  $('psub').textContent = c.sub;
-  $('psub').hidden = !c.sub;
-  $('plines').innerHTML = c.lines.map(l => `<p class="pline">${esc(l)}</p>`).join('');
+  stopProg();
+  let front = c;
+  if (DEALT[c.deck]) { deal = makeDeal(c); front = dealFront(c); } else deal = null;
+  $('ptitle').textContent = front.title;
+  $('ptitle').className = 'ptitle' + (c.deck === 'feelings' || c.deck === 'degrees' ? ' ' + degClass(front.title) : '');
+  $('psub').textContent = front.sub;
+  $('psub').hidden = !front.sub;
+  $('plines').innerHTML = front.lines.map(l => `<p class="pline">${esc(l)}</p>`).join('');
   $('answer').innerHTML = answerHTML(c);
   $('stampmark').className = 'stampmark';
   renderStatus();
@@ -1629,7 +1806,7 @@ function toggleReveal() {
 }
 function cycleShape(dir) {
   const c = current();
-  if (!c || c.deck === 'feelings' || isLine(c) || guitarOf(c).shapes.length < 2) return;
+  if (!c || c.deck === 'feelings' || DEALT[c.deck] || isLine(c) || guitarOf(c).shapes.length < 2) return;
   shapeIdx += dir;
   const focusId = document.activeElement && document.activeElement.id;
   $('gslot').innerHTML = guitarHTML(c);
@@ -1678,32 +1855,61 @@ function audio() {
     return actx;
   } catch (e) { return null; }
 }
+// One synth note: a triangle plus a quiet octave sine through a low-pass filter, a quick attack and a decay to `stop`.
+function voice(a, out, midi, t, stop) {
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const o1 = a.createOscillator(), o2 = a.createOscillator(), g2 = a.createGain(), lp = a.createBiquadFilter(), g = a.createGain();
+  o1.type = 'triangle'; o1.frequency.value = f;
+  o2.type = 'sine'; o2.frequency.value = f * 2; g2.gain.value = .14;
+  lp.type = 'lowpass'; lp.frequency.value = Math.min(5200, f * 5);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(1, t + .012);
+  g.gain.exponentialRampToValueAtTime(.4, t + .3);
+  g.gain.exponentialRampToValueAtTime(.0001, stop);
+  o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(out);
+  o1.start(t); o2.start(t); o1.stop(stop + .05); o2.stop(stop + .05);
+}
+// Progressions play as blocks, one chord every `step` seconds. `first` is the index of chords[0] among the chord buttons
+// (they light up as they sound), or -1 to play without lighting them.
+let progOut = null, progTimers = [], progPlay = -1;
+function setPlaying(i) {
+  progPlay = i;
+  document.querySelectorAll('#answer .chord').forEach((b, j) => b.classList.toggle('playing', j === i));
+}
+function stopProg() {
+  progTimers.forEach(clearTimeout); progTimers = [];
+  if (progOut) { try { progOut.disconnect(); } catch (e) {} progOut = null; }
+  if (progPlay >= 0) setPlaying(-1);
+}
+function playBlocks(a, chords, step, first) {
+  stopProg();
+  const t0 = a.currentTime + .04, out = a.createGain();
+  out.gain.value = .42 / Math.sqrt(Math.max(...chords.map(ch => ch.tones.length)));
+  out.connect(a.destination); progOut = out;
+  chords.forEach((ch, i) => {
+    const t = t0 + i * step;
+    ch.tones.forEach(tn => voice(a, out, tn.midi, t, t + step + .25));
+    if (first >= 0) progTimers.push(setTimeout(() => setPlaying(first + i), i * step * 1000 + 40));
+  });
+  if (first >= 0) progTimers.push(setTimeout(() => setPlaying(-1), chords.length * step * 1000 + 40));
+}
 // Scales and arpeggios play up and back down, one note at a time; chords roll up and ring.
-// A feeling plays the tonic (C), then the degree above it (the octave for 1).
+// A feeling plays the tonic (C), then the degree above it (the octave for 1). A degree plays its root, then the degree;
+// an interval plays its two notes; a progression plays each chord.
 function play(c) {
   const a = c && audio();
   if (!a) return;
-  const feel = c.deck === 'feelings', line = feel || isLine(c);
-  const up = feel ? [60, 60 + (Number(c.tags.deg) || 12)] : c.notes.map(n => n.midi);
-  const midis = line && !feel ? up.concat(up.slice(0, -1).reverse()) : up;
-  const t0 = a.currentTime + .04, step = feel ? .8 : line ? .24 : .11;
+  if (c.deck === 'progs') { playBlocks(a, deal.chords, deal.chords.length >= 8 ? .45 : .8, 0); return; }
+  const feel = c.deck === 'feelings', pair = feel || c.deck === 'degrees' || c.deck === 'intervals', line = pair || isLine(c);
+  const up = feel ? [60, 60 + (Number(c.tags.deg) || 12)] : c.deck === 'degrees' ? [deal.base, deal.base + (deal.semi || 12)]
+    : c.deck === 'intervals' ? [deal.m0, deal.m1] : c.notes.map(n => n.midi);
+  const midis = line && !pair ? up.concat(up.slice(0, -1).reverse()) : up;
+  const t0 = a.currentTime + .04, step = pair ? .8 : line ? .24 : .11;
   const end = t0 + step * (midis.length - 1) + (line ? .6 : 1.9);
   const out = a.createGain();
   out.gain.value = line ? .3 : .45 / Math.sqrt(midis.length);
   out.connect(a.destination);
-  midis.forEach((m, i) => {
-    const f = 440 * Math.pow(2, (m - 69) / 12), t = t0 + i * step, stop = feel ? t + .9 : line ? t + .5 : end;
-    const o1 = a.createOscillator(), o2 = a.createOscillator(), g2 = a.createGain(), lp = a.createBiquadFilter(), g = a.createGain();
-    o1.type = 'triangle'; o1.frequency.value = f;
-    o2.type = 'sine'; o2.frequency.value = f * 2; g2.gain.value = .14;
-    lp.type = 'lowpass'; lp.frequency.value = Math.min(5200, f * 5);
-    g.gain.setValueAtTime(.0001, t);
-    g.gain.exponentialRampToValueAtTime(1, t + .012);
-    g.gain.exponentialRampToValueAtTime(.4, t + .3);
-    g.gain.exponentialRampToValueAtTime(.0001, stop);
-    o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(out);
-    o1.start(t); o2.start(t); o1.stop(stop + .05); o2.stop(stop + .05);
-  });
+  midis.forEach((m, i) => { const t = t0 + i * step; voice(a, out, m, t, pair ? t + .9 : line ? t + .5 : end); });
 }
 
 // ---------- feeling words are Ear Training's: re-read them when they may have changed ----------
@@ -1733,6 +1939,16 @@ $('reveal').addEventListener('click', toggleReveal);
 $('front').addEventListener('click', toggleReveal);
 $('answer').addEventListener('click', e => {
   if (e.target.closest('[data-play]')) { play(current()); return; }
+  const ch = e.target.closest('[data-chord]');
+  if (ch && deal && deal.chords) {
+    const a = audio(), i = Number(ch.dataset.chord);
+    deal.sel = i;
+    stopProg();
+    $('answer').innerHTML = answerHTML(current());
+    $('chord-' + i).focus({ preventScroll: true });
+    if (a) playBlocks(a, [deal.chords[i]], 1.5, -1);
+    return;
+  }
   const sh = e.target.closest('[data-shape]');
   if (sh) { cycleShape(Number(sh.dataset.shape)); return; }
   const tg = e.target.closest('[data-show]');

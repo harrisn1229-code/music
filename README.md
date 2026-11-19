@@ -11,7 +11,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
-| Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords |
+| Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords, plus scale degrees, intervals and progressions on the neck |
 | Library | `library/` | Covers, drills, tools, My files, Originals and production chains, plus every mode, chord, arpeggio and voicing in any key |
 | School | `school/` | The curriculum and your progress: classes, lessons, quizzes and tests |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |

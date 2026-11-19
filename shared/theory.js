@@ -109,6 +109,114 @@ const MODES = [
   { id:'locrian',    name:'Locrian',    semis:[0,1,3,5,6,8,10], color:4 },
 ];
 
+// Scales for the degree drills: letter step and semitones for each note, from the root.
+const SCALES = [
+  ...MODES.map(m => ({ id:m.id, name:m.name, semis:m.semis, steps:[0,1,2,3,4,5,6] })),
+  { id:'majpent',  name:'Major pentatonic', semis:[0,2,4,7,9],        steps:[0,1,2,4,5] },
+  { id:'minpent',  name:'Minor pentatonic', semis:[0,3,5,7,10],       steps:[0,2,3,4,6] },
+  { id:'blues',    name:'Blues',            semis:[0,3,5,6,7,10],     steps:[0,2,3,4,4,6] },
+  { id:'harmmin',  name:'Harmonic minor',   semis:[0,2,3,5,7,8,11],   steps:[0,1,2,3,4,5,6] },
+  { id:'melmin',   name:'Melodic minor',    semis:[0,2,3,5,7,9,11],   steps:[0,1,2,3,4,5,6] },
+];
+const SCALE_BY = Object.fromEntries(SCALES.map(s => [s.id, s]));
+const scaleIvs = sc => sc.semis.map((s, i) => [sc.steps[i], s]);
+// Tonic spelling for a scale in pitch class `pc`: fewest accidentals, ties to the simpler tonic triad.
+const scaleRoot = (pc, sc) => { const ivs = scaleIvs(sc); return pickRoot(pc, ivs, ivs.filter(iv => iv[0] === 0 || iv[0] === 2 || iv[0] === 4)); };
+
+const INTERVALS = [
+  { id:'m2', steps:1, semis:1,  name:'minor 2nd' },
+  { id:'M2', steps:1, semis:2,  name:'major 2nd' },
+  { id:'m3', steps:2, semis:3,  name:'minor 3rd' },
+  { id:'M3', steps:2, semis:4,  name:'major 3rd' },
+  { id:'P4', steps:3, semis:5,  name:'perfect 4th' },
+  { id:'TT', steps:3, semis:6,  name:'tritone' },
+  { id:'P5', steps:4, semis:7,  name:'perfect 5th' },
+  { id:'m6', steps:5, semis:8,  name:'minor 6th' },
+  { id:'M6', steps:5, semis:9,  name:'major 6th' },
+  { id:'m7', steps:6, semis:10, name:'minor 7th' },
+  { id:'M7', steps:6, semis:11, name:'major 7th' },
+  { id:'P8', steps:7, semis:12, name:'octave' },
+];
+
+// Common progressions. Numerals are relative to the major scale of the tonic (so minor keys use ♭III, ♭VI, ♭VII).
+// tri = as triads, sev = as 7th chords. Keys (ids) are how Note Cards stores ratings: do not rename.
+const nums = s => s.split(' ');
+const dom7 = s => nums(s).map(n => n + '7');
+const PROGRESSIONS = [
+  { id:'I-IV-V', style:'pop', minor:false, tri:nums('I IV V'), sev:nums('Imaj7 IVmaj7 V7') },
+  { id:'I-V-vi-IV', nick:'Axis', style:'pop', minor:false, tri:nums('I V vi IV'), sev:nums('Imaj7 V7 vi7 IVmaj7') },
+  { id:'vi-IV-I-V', style:'pop', minor:false, tri:nums('vi IV I V'), sev:nums('vi7 IVmaj7 Imaj7 V7') },
+  { id:'I-vi-IV-V', nick:"'50s", style:'pop', minor:false, tri:nums('I vi IV V'), sev:nums('Imaj7 vi7 IVmaj7 V7') },
+  { id:'I-IV-vi-V', style:'pop', minor:false, tri:nums('I IV vi V'), sev:nums('Imaj7 IVmaj7 vi7 V7') },
+  { id:'IV-V-iii-vi', nick:'Royal road', style:'pop', minor:false, tri:nums('IV V iii vi'), sev:nums('IVmaj7 V7 iii7 vi7') },
+  { id:'canon', nick:'Canon', style:'pop', minor:false, tri:nums('I V vi iii IV I IV V'), sev:nums('Imaj7 V7 vi7 iii7 IVmaj7 Imaj7 IVmaj7 V7') },
+  { id:'I-bVII-IV', nick:'Mixolydian rock', style:'pop', minor:false, tri:nums('I ♭VII IV'), sev:nums('I7 ♭VIImaj7 IVmaj7') },
+  { id:'I-IV-iv-I', nick:'Minor plagal', style:'pop', minor:false, tri:nums('I IV iv I'), sev:nums('Imaj7 IVmaj7 iv7 Imaj7') },
+  { id:'I-iii-IV-iv', style:'pop', minor:false, tri:nums('I iii IV iv'), sev:nums('Imaj7 iii7 IVmaj7 iv7') },
+
+  { id:'ii-V-I', style:'jazz', minor:false, tri:nums('ii V I'), sev:nums('ii7 V7 Imaj7') },
+  { id:'I-vi-ii-V', nick:'Turnaround', style:'jazz', minor:false, tri:nums('I vi ii V'), sev:nums('Imaj7 vi7 ii7 V7') },
+  { id:'iii-vi-ii-V-I', style:'jazz', minor:false, tri:nums('iii vi ii V I'), sev:nums('iii7 vi7 ii7 V7 Imaj7') },
+  { id:'ii-bII-I', nick:'Tritone sub', style:'jazz', minor:false, tri:nums('ii ♭II I'), sev:nums('ii7 ♭II7 Imaj7') },
+  { id:'iv-bVII-I', nick:'Backdoor', style:'jazz', minor:false, tri:nums('iv ♭VII I'), sev:nums('iv7 ♭VII7 Imaj7') },
+  { id:'I-#i-ii-V', style:'jazz', minor:false, tri:nums('I ♯i° ii V'), sev:nums('Imaj7 ♯i°7 ii7 V7') },
+  { id:'minor-ii-V-i', name:'iiø–V–i', style:'jazz', minor:true, tri:nums('ii° V i'), sev:nums('iiø7 V7 i7') },
+
+  { id:'i-iv-v', style:'minor', minor:true, tri:nums('i iv v'), sev:nums('i7 iv7 v7') },
+  { id:'i-iv-V', style:'minor', minor:true, tri:nums('i iv V'), sev:nums('i7 iv7 V7') },
+  { id:'andalusian', nick:'Andalusian', style:'minor', minor:true, tri:nums('i ♭VII ♭VI V'), sev:nums('i7 ♭VII7 ♭VImaj7 V7') },
+  { id:'i-bVI-bIII-bVII', style:'minor', minor:true, tri:nums('i ♭VI ♭III ♭VII'), sev:nums('i7 ♭VImaj7 ♭IIImaj7 ♭VII7') },
+  { id:'i-bVI-bVII', nick:'Aeolian', style:'minor', minor:true, tri:nums('i ♭VI ♭VII'), sev:nums('i7 ♭VImaj7 ♭VII7') },
+  { id:'i-bIII-bVII-IV', nick:'Dorian', style:'minor', minor:true, tri:nums('i ♭III ♭VII IV'), sev:nums('i7 ♭IIImaj7 ♭VII7 IV7') },
+  { id:'i-IV', nick:'Dorian vamp', style:'minor', minor:true, tri:nums('i IV'), sev:nums('i7 IV7') },
+
+  { id:'12-bar', nick:'12-bar blues', style:'blues', minor:false, tri:nums('I I I I IV IV I I V IV I V'), sev:dom7('I I I I IV IV I I V IV I V') },
+  { id:'12-bar-quick', nick:'12-bar quick change', style:'blues', minor:false, tri:nums('I IV I I IV IV I I V IV I V'), sev:dom7('I IV I I IV IV I I V IV I V') },
+  { id:'12-bar-minor', nick:'Minor 12-bar blues', style:'blues', minor:true, tri:nums('i i i i iv iv i i ♭VI V i V'), sev:dom7('i i i i iv iv i i ♭VI V i V') },
+  { id:'I-II', nick:'Lydian', style:'blues', minor:false, tri:nums('I II'), sev:nums('Imaj7 II7') },
+  { id:'I-bII', nick:'Phrygian', style:'blues', minor:false, tri:nums('I ♭II'), sev:nums('Imaj7 ♭IImaj7') },
+];
+// Title on a card: the name, else the numerals; long ones (the canon, the 12-bars) use their nickname.
+const progTitle = p => p.name || (p.tri.length > 6 && p.nick) || p.tri.join('–');
+
+// "♭VII7" -> { step: 6, semis: 10, q: 'dom7' }. Uppercase = major-based, lowercase = minor-based.
+const ROMANS = ['I','II','III','IV','V','VI','VII'];
+const NUMERAL_Q = { '':['maj','min'], '°':['dim','dim'], '+':['aug','aug'], '7':['dom7','m7'], 'maj7':['maj7','maj7'], 'ø7':['m7b5','m7b5'], '°7':['dim7','dim7'] };
+function parseNumeral(str) {
+  const m = /^([♭♯]?)([ivIV]+)(maj7|ø7|°7|°|\+|7)?$/.exec(str), step = m ? ROMANS.indexOf(m[2].toUpperCase()) : -1;
+  if (step < 0) throw new Error('Bad numeral ' + str);
+  const upper = m[2] === m[2].toUpperCase();
+  return { step, semis: MAJOR[step] + (m[1] === '♭' ? -1 : m[1] === '♯' ? 1 : 0), q: NUMERAL_Q[m[3] || ''][upper ? 0 : 1] };
+}
+// The chords of a progression in the key with tonic pitch class `pc`, spelled and voiced in close root position near middle C.
+// tones[].keyDeg is the tone's degree in the key (♭3, 5, ...); chordDeg is its degree in the chord (R, 3, ♭7, ...).
+function progChordsFrom(prog, pc, useSev, tonic) {
+  return (useSev ? prog.sev : prog.tri).map(numeral => {
+    const { step, semis, q } = parseNumeral(numeral);
+    const quality = TRIADS.find(t => t.id === q) || SEVENTHS.find(t => t.id === q);
+    const root = { l: (tonic.l + step) % 7, a: accOf(tonic, step, semis) };
+    const rootPc = (((pc + semis) % 12) + 12) % 12, rootMidi = 52 + ((rootPc - 52) % 12 + 12) % 12;
+    const sym = rootName(root) + (useSev ? quality.sym : ({ maj:'', min:'m', dim:'°', aug:'+' })[q]);
+    const tones = quality.tones.map(([st, se]) => {
+      const up = Math.floor((step + st) / 7);
+      return { name: spell(root, st, se), keyDeg: degLabel((step + st) % 7, semis + se - 12 * up), chordDeg: st === 0 && se === 0 ? 'R' : degLabel(st, se), midi: rootMidi + se };
+    });
+    return { numeral, sym, root, tones };
+  });
+}
+// The key's tonic is spelled for its scale (pickRoot); the other spelling wins only when it avoids double sharps/flats in the chords.
+function progKey(prog, pc, useSev) {
+  const def = scaleRoot(pc, SCALE_BY[prog.minor ? 'aeolian' : 'ionian']);
+  const doubles = cs => cs.reduce((n, c) => n + c.tones.filter(t => /[♯♭]{2}/.test(t.name)).length, 0);
+  let best = null;
+  [def, ...PC_ROOTS[pc].filter(r => r !== def)].forEach(tonic => {
+    const chords = progChordsFrom(prog, pc, useSev, tonic), d = doubles(chords);
+    if (!best || d < best.d) best = { tonic, chords, d };
+  });
+  return { tonic: best.tonic, chords: best.chords };
+}
+const progChords = (prog, pc, useSev) => progKey(prog, pc, useSev).chords;
+
 // Find the close voicing that, after the drops, puts `bass` (tone index) on the bottom.
 function buildVoicing(tones, bass, voicing) {
   const n = tones.length;

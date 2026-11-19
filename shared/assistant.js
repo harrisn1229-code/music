@@ -337,14 +337,14 @@
   function getTheory() {
     if (theoryP) return theoryP;
     if (typeof buildCards === "function" && typeof MODES !== "undefined" && typeof TRIADS !== "undefined" && typeof SEVENTHS !== "undefined" && typeof ARP_QUALITIES !== "undefined") {
-      theoryP = Promise.resolve({ MODES: MODES, TRIADS: TRIADS, SEVENTHS: SEVENTHS, ARP_QUALITIES: ARP_QUALITIES, KEY_LABELS: KEY_LABELS, buildCards: buildCards });
+      theoryP = Promise.resolve({ MODES: MODES, TRIADS: TRIADS, SEVENTHS: SEVENTHS, ARP_QUALITIES: ARP_QUALITIES, KEY_LABELS: KEY_LABELS, PROGRESSIONS: typeof PROGRESSIONS !== "undefined" ? PROGRESSIONS : null, buildCards: buildCards });
       return theoryP;
     }
     theoryP = fetch(ROOT + "shared/theory.js").then(function (r) {
       if (!r.ok) throw new Error("theory.js " + r.status);
       return r.text();
     }).then(function (src) {
-      return new Function(src + "\n;return { MODES: MODES, TRIADS: TRIADS, SEVENTHS: SEVENTHS, ARP_QUALITIES: ARP_QUALITIES, KEY_LABELS: KEY_LABELS, buildCards: buildCards };")();
+      return new Function(src + "\n;return { MODES: MODES, TRIADS: TRIADS, SEVENTHS: SEVENTHS, ARP_QUALITIES: ARP_QUALITIES, KEY_LABELS: KEY_LABELS, PROGRESSIONS: PROGRESSIONS, buildCards: buildCards };")();
     });
     theoryP.catch(function () { theoryP = null; });
     return theoryP;
@@ -495,12 +495,13 @@
   }
   async function cardsStats() {
     var prog = lsJson("shed-deck:progress:v1");
-    var decks = { modes: "modes", arps: "arps", triads: "triads", sevenths: "sevenths", feel: "feelings" };
+    var decks = { modes: "modes", arps: "arps", triads: "triads", sevenths: "sevenths", feel: "feelings", deg: "degrees", int: "intervals", prog: "progs" };
     var out = {}, wk = Date.now() - 7 * 864e5, totals = {};
     try {
       var C = await getCards();
       Object.keys(C.cards).forEach(function (k) { var d = decks[k.split("-")[0]]; if (d) totals[d] = (totals[d] || 0) + 1; });
       totals.feelings = (totals.feelings || 0) + 12;
+      totals.degrees = 12; totals.intervals = 24; totals.progs = C.th.PROGRESSIONS ? C.th.PROGRESSIONS.length * 2 : null;
     } catch (e) { totals = null; }
     Object.keys(decks).forEach(function (pre) {
       var d = decks[pre];
