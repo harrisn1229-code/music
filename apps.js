@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.33.0",
+  version: "1.33.1",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
@@ -34,7 +34,7 @@ self.MUSIC = {
     { id: "modes", name: "Modes", href: "library/#/modes", section: "reference", color: "#1E8A5A", icon: "modes" },
     { id: "chords", name: "Chords", href: "library/#/chords", section: "reference", color: "#0D9488", icon: "chords" },
     { id: "arps", name: "Arpeggios", href: "library/#/arps", section: "reference", color: "#C2417A", icon: "arps" },
-    { id: "chains", name: "Production chains", href: "library/#/chains", section: "reference", color: "#9F2D3F", icon: "chains" },
+    { id: "chains", name: "Chains", href: "library/#/chains", section: "reference", color: "#9F2D3F", icon: "chains" },
     { id: "drills", name: "Drills", href: "school/library.html#drills", section: "reference", color: "#C26A06", icon: "drills" },
     { id: "files", name: "My files", href: "school/library.html#files", section: "reference", color: "#4B5563", icon: "files" }
   ],
