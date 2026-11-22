@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Metronome</title>
-<meta name="description" content="A metronome with subdivisions, swing, speed trainer and gap click. Works offline.">
+<meta name="description" content="A metronome with subdivisions, swing, speed trainer, gap click and Library's drills. Works offline.">
 <meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
@@ -36,6 +36,7 @@
 <main class="wrap" id="main">
 
   <section class="card hero" aria-label="Tempo">
+    <button class="drill-strip" id="drill-strip" type="button" hidden><span class="ds-t" id="strip-t"></span><span class="ds-n" id="strip-n"></span></button>
     <div class="tempo-row">
       <button class="step" id="bpm-dec" type="button" aria-label="Slower"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
       <div class="tempo-mid">
@@ -120,6 +121,18 @@
   <section class="card" aria-label="Practice">
     <button class="card-toggle" id="prac-toggle" type="button" aria-expanded="false" aria-controls="prac-body"><h2>Practice</h2><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></button>
     <div class="prac" id="prac-body" hidden>
+      <div class="tool" id="drill-tool">
+        <div class="sw-row"><h3>Drill</h3><button class="btn" id="drill-pick" type="button">Choose</button></div>
+        <div class="drill" id="drill-box" hidden>
+          <div class="drill-head"><b id="drill-title"></b><button class="x-btn" id="drill-clear" type="button" aria-label="Stop using this drill"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+          <div class="dstats" id="drill-stats"></div>
+          <div class="drill-acts">
+            <button class="btn" id="drill-how" type="button" aria-expanded="false" aria-controls="drill-read">How to run it</button>
+            <a class="btn" id="drill-open" href="../school/library.html#drills">Open in Drills</a>
+          </div>
+          <div class="prose" id="drill-read" hidden></div>
+        </div>
+      </div>
       <div class="tool">
         <div class="sw-row"><h3 id="l-trainer">Speed trainer</h3><button class="sw" id="sw-trainer" type="button" role="switch" aria-checked="false" aria-labelledby="l-trainer"></button></div>
         <div class="fields" id="f-trainer" hidden>
@@ -168,9 +181,19 @@
 
 </main>
 
+<div class="scrim" id="dr-scrim" hidden>
+  <div class="sheet" id="dr-sheet" role="dialog" aria-modal="true" aria-labelledby="dr-h" tabindex="-1">
+    <div class="sheet-head"><h2 id="dr-h">Drills</h2><button class="x-btn" id="dr-close" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+    <div class="seg" id="dr-inst" role="radiogroup" aria-label="Instrument"></div>
+    <ul class="dlist" id="dr-list"></ul>
+    <p class="dmsg" id="dr-msg" hidden></p>
+  </div>
+</div>
+
 <noscript><p class="wrap">Metronome needs JavaScript turned on.</p></noscript>
 <script src="../shared/ai.js"></script>
 <script src="../shared/assistant.js"></script>
+<script src="drills.js"></script>
 <script src="app.js"></script>
 <script>
   /* offline: Music's shared service worker, one folder up */

@@ -16,7 +16,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | School | `school/` | The curriculum and your progress: classes, lessons, quizzes and tests |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
-| Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click and presets |
+| Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click, presets, and Library's drills to practise with it |
 | Voice Memos | `memos/` | Record yourself playing and listen back: waveform, slow-down, loop, share |
 | Circle of Fifths | `circle/` | The circle with key signatures, scales, diatonic chords and common progressions in any key |
 
@@ -48,7 +48,7 @@ note-cards/            Note Cards (reads shared/theory.js)
 library/               Library (reads shared/theory.js; chains.json is built from the vault)
 ear/                   Ear Training (index.html, app.js, app.css; synthesizes all its sound)
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
-metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler)
+metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler; drills.js reads Library's drills)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
@@ -202,6 +202,23 @@ School included) loads it. Nothing has to be started:
 
 Saved under `log:v1`; with an account Practice Log merges it with the `log` document (sessions by
 id, deletions kept). The assistant reads it with `practice_log`.
+
+## Metronome drills
+
+The Metronome's Practice section has a Drill row: choose any technique drill or practice routine
+from Library's Drills shelf and the metronome is set up for it (its tempo ladder on the speed
+trainer, its length on the timer). Whatever is changed while a drill is in use is remembered as
+that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as it was left.
+
+- The list is read from School's curriculum (`school/data/curriculum.json`, School's saved copy
+  first), so a drill added to School shows up here with nothing to do; only the drills are kept,
+  under `metronome:drills:v1`, and re-read when School's copy changes.
+- Every run of 30 seconds or more (count-in not included) is logged into Library's practice history
+  (`library:practice`, the same record the drill's page shows): its time, and the fastest bar played
+  right through as the tempo. Runs of one drill on one day add up into one entry (`by: "metronome"`).
+  Signed in, it is merged into the account's `practice` document the way School does it.
+- `metronome/#drill=<id>` opens the Metronome with that drill loaded (for a "Practise with the
+  metronome" link on a drill's page, which belongs in the `music-school` build).
 
 ## Voice Memos
 

@@ -29,7 +29,10 @@
     trainer: { on: false, start: 80, target: 120, step: 4, bars: 4 },
     gap: { on: false, play: 3, mute: 1 },
     timer: { on: false, mode: "min", value: 5 },
-    countIn: 0, open: false, presets: []
+    countIn: 0, open: false, presets: [],
+    // A drill from Library's Drills shelf being practised (a copy of what the page needs to show it),
+    // the setup each drill was last used with, and the instrument the drill list was last showing.
+    drill: null, drillSetups: {}, drillInst: "guitar"
   };
   const S = normalize(lsGet(KEY) || {});
 
@@ -53,7 +56,20 @@
     const nb = o.dotted && o.den === 8 && o.num % 3 === 0 ? o.num / 3 : o.num;
     o.levels = Array.isArray(p.levels) && p.levels.length === nb ? p.levels.map((x) => toInt(x, 1, 0, 2)) : defaultLevels(o.num, o.den, o.dotted);
     o.presets = Array.isArray(p.presets) ? p.presets.filter((x) => x && typeof x.name === "string" && x.setup).slice(0, 60) : [];
+    o.drill = drillSnap(p.drill);
+    o.drillSetups = {};
+    if (p.drillSetups && typeof p.drillSetups === "object") {
+      Object.keys(p.drillSetups).slice(-80).forEach((k) => { const v = p.drillSetups[k]; if (v && typeof v === "object") o.drillSetups[k] = v; });
+    }
+    o.drillInst = typeof p.drillInst === "string" && p.drillInst ? p.drillInst.slice(0, 20) : "guitar";
     return o;
+  }
+  // The few facts about a drill the page shows without the drill list loaded.
+  function drillSnap(d) {
+    if (!d || typeof d !== "object" || typeof d.id !== "string" || !d.id) return null;
+    const n = (v) => toInt(v, 0, 0, BPM_MAX);
+    return { id: d.id.slice(0, 300), kind: d.kind === "routine" ? "routine" : "technique", title: String(d.title || d.id).slice(0, 200),
+      inst: String(d.inst || "").slice(0, 20), start: n(d.start), target: n(d.target), mins: toInt(d.mins, 0, 0, 600) };
   }
   function dottedOk(num, den) { return den === 8 && num % 3 === 0; }
   const isDotted = () => S.dotted && dottedOk(S.num, S.den);
@@ -65,13 +81,19 @@
     if (ok && !dot) for (let i = 3; i < nb; i += 3) lv[i] = 2;   // eighth beats in 6/8, 9/8, 12/8: accent each group of three
     return lv;
   }
-  const save = () => { lsSet(KEY, S); logSync(); };
+  // With a drill in use, every change is also remembered as that drill's setup, so it comes back as left.
+  const DRILL_KEYS = ["bpm", "num", "den", "dotted", "levels", "sub", "swing", "trainer", "gap", "timer", "countIn"];
+  function drillSetup() { const o = {}; DRILL_KEYS.forEach((k) => { o[k] = JSON.parse(JSON.stringify(S[k])); }); return o; }
+  const save = () => {
+    if (S.drill) { delete S.drillSetups[S.drill.id]; S.drillSetups[S.drill.id] = drillSetup(); }
+    lsSet(KEY, S); logSync();
+  };
   // Practice log: what is sounding. The speed trainer is one stretch (its auto steps never re-log).
   let logText = "", logTimer = 0;
   function logDesc() {
     const tr = S.trainer.on ? "Speed trainer " + S.trainer.start + "\u2192" + S.trainer.target : S.bpm + " bpm";
     const sub = S.sub === "eighth" ? (S.swing > 50 ? "swung eighths" : "eighths") : S.sub === "triplet" ? "triplets" : S.sub === "sixteenth" ? "sixteenths" : S.sub !== "none" ? S.sub : "";
-    return tr + " \u00b7 " + S.num + "/" + S.den + (isDotted() ? " dotted" : "") + (sub ? " \u00b7 " + sub : "");
+    return (S.drill ? S.drill.title + " \u00b7 " : "") + tr + " \u00b7 " + S.num + "/" + S.den + (isDotted() ? " dotted" : "") + (sub ? " \u00b7 " + sub : "");
   }
   function logSync() {
     clearTimeout(logTimer);
@@ -154,6 +176,8 @@
 
   /* ---------- scheduler ---------- */
   let running = false, run = null, worker = null, ivl = null, queue = [], runGain = null, starting = false;
+  let runLog = null;                                   // the drill run being played: {drill, held, barBpm, done}
+  const MIN_RUN = 30;                                  // seconds of playing before a run counts as practice
   const subCount = () => {
     const d = isDotted();
     return S.sub === "eighth" ? (d ? 3 : 2) : S.sub === "triplet" ? 3 : S.sub === "sixteenth" ? (d ? 6 : 4) : 1;
@@ -258,6 +282,7 @@
     runGain.connect(master);
     running = true; T.running = true;
     logText = logDesc(); MusicLog.playing("click", true, { text: logText });
+    runLog = S.drill ? { drill: S.drill, held: 0, barBpm: 0, done: 0 } : null;
     queue = []; T.ticks.length = 0;
     const t0 = ctx.currentTime + 0.1;
     run = { nextT: t0, beatStart: t0, beatDur: 0, bar: 0, beat: 0, sub: 0, subN: 1, swing: 50, cinBars: S.countIn, musicT0: t0, ended: false, info: null, t0: t0 };
@@ -273,6 +298,7 @@
     if (!running && !starting) return;
     running = false; T.running = false; starting = false;
     clearTimeout(logTimer); logText = ""; MusicLog.playing("click", false);
+    flushRun(); runLog = null;
     timerStop();
     if (runGain) {
       const g = runGain; runGain = null;
@@ -283,6 +309,18 @@
     releaseScreen();
     showIdle();
   }
+  /* A drill run goes into Library's practice history: how long it played (count-in not included)
+     and the fastest bar played through. Written when it stops, and also when the page is put away
+     mid-run so a closed app loses nothing; each write adds only the time since the last one. */
+  function flushRun() {
+    if (!runLog || !run || !ctx || !window.MetroDrills) return;
+    const played = run.bar >= run.cinBars ? Math.max(0, ctx.currentTime - run.musicT0) : 0;
+    if (played < MIN_RUN || played - runLog.done < 1) return;
+    MetroDrills.logRun(runLog.drill, { tempo: runLog.held, secs: played - runLog.done });
+    runLog.done = played;
+  }
+  window.addEventListener("pagehide", () => { if (running) flushRun(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && running) flushRun(); });
 
   /* ---------- visuals: drain the queue of scheduled events ---------- */
   let curBeat = -1, rafId = 0, lastInfo = null, flashT = 0;
@@ -293,7 +331,9 @@
     let last = null;
     while (queue.length && queue[0].time <= now) {
       const q = queue.shift();
-      if (q.end) { stop(); return; }
+      if (q.end) { if (runLog) runLog.held = Math.max(runLog.held, runLog.barBpm); stop(); return; }
+      // A drill run's tempo is the fastest bar played right through (a bar is through when the next one starts).
+      if (runLog && q.sub === 0 && q.beat === 0 && q.info.mb >= 0) { runLog.held = Math.max(runLog.held, runLog.barBpm); runLog.barBpm = q.bpm; }
       if (q.info.bpmChange && q.sub === 0 && q.beat === 0) setBpm(q.bpm, { engine: true });
       if (q.sub === 0 && now - q.time < 0.15 && q.kind !== "mute" && q.kind !== "gap") {
         if (S.vibrate && navigator.vibrate && !document.hidden) { try { navigator.vibrate(q.beat === 0 ? 30 : 15); } catch (e) {} }
@@ -433,7 +473,7 @@
   }
   const isTyping = (t) => t && (t.tagName === "TEXTAREA" || t.tagName === "SELECT" || (t.tagName === "INPUT" && t.type !== "range" && t.type !== "checkbox"));
   document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || sheetOpen) return;
     const t = e.target;
     if (isTyping(t)) return;
     if (e.key === " " || e.code === "Space") {
@@ -610,6 +650,115 @@
     save(); renderAll();
   }
 
+  /* ---------- drills (Library's Drills shelf, practised here) ---------- */
+  const D = window.MetroDrills || null;
+  const escH = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const INSTS = [["guitar", "Guitar"], ["bass", "Bass"], ["piano", "Piano"], ["theory", "Theory"]];
+  const instName = (k) => (INSTS.find((x) => x[0] === k) || [k, k.charAt(0).toUpperCase() + k.slice(1)])[1];
+  const span = (d) => d.start && d.target && d.target !== d.start ? d.start + "\u2192" + d.target + " BPM" : d.target || d.start ? (d.target || d.start) + " BPM" : "";
+
+  // A drill's first setup: its tempo ladder on the speed trainer, its length on the timer.
+  function freshSetup(d) {
+    const cur = D ? D.state(d.id).tempo : 0, tr = Object.assign({}, S.trainer), o = { trainer: tr, gap: Object.assign({}, S.gap, { on: false }) };
+    if (d.start && d.target && d.target > d.start) {
+      tr.on = true; tr.start = d.start; tr.target = d.target; o.bpm = d.start;
+    } else {
+      tr.on = false; o.bpm = cur || d.start || S.bpm;
+      if (d.target) { tr.start = o.bpm; tr.target = d.target; }
+    }
+    o.timer = d.mins ? { on: true, mode: "min", value: d.mins } : Object.assign({}, S.timer, { on: false });
+    return o;
+  }
+  function applySetup(setup) {
+    const n = normalize(Object.assign({}, S, setup, { presets: [] }));
+    DRILL_KEYS.forEach((k) => { S[k] = n[k]; });
+  }
+  function pickDrill(d) {
+    if (!d) return;
+    if (running || starting) stop();
+    S.drill = drillSnap(d);
+    applySetup(S.drillSetups[d.id] || freshSetup(d));
+    S.open = true; readOpen = false;
+    save(); renderAll();
+  }
+  function clearDrill() {
+    if (running || starting) stop();
+    S.drill = null; readOpen = false; save(); renderAll();
+  }
+
+  let readOpen = false;
+  function renderDrill() {
+    const d = S.drill, strip = $("drill-strip"), box = $("drill-box");
+    $("drill-pick").textContent = d ? "Change" : "Choose";
+    strip.hidden = box.hidden = !d;
+    if (!d) return;
+    const st = D ? D.state(d.id) : { tempo: 0, todayMins: 0 };
+    $("strip-t").textContent = d.title;
+    $("strip-n").textContent = st.tempo ? st.tempo + (d.target ? " / " + d.target : "") : d.target ? "\u2192 " + d.target : "";
+    $("drill-title").textContent = d.title;
+    const stat = (k, v) => '<div class="dstat"><span class="dk">' + k + '</span><span class="dv">' + v + "</span></div>";
+    $("drill-stats").innerHTML = stat("Current BPM", st.tempo || "\u2014") + stat("Target BPM", d.target || "\u2014") + stat("Today", st.todayMins ? st.todayMins + " min" : "\u2014");
+    $("drill-open").href = D ? D.href(d) : "../school/library.html#drills";
+    const full = D && D.find(d.id), how = full && full.how;
+    $("drill-how").hidden = !how;
+    $("drill-how").setAttribute("aria-expanded", String(readOpen && !!how));
+    const rd = $("drill-read");
+    rd.hidden = !(readOpen && how);
+    if (readOpen && how && rd.dataset.id !== d.id) { rd.innerHTML = D.clean(how); rd.dataset.id = d.id; }
+  }
+  $("drill-how").addEventListener("click", () => { readOpen = !readOpen; renderDrill(); });
+  $("drill-clear").addEventListener("click", clearDrill);
+  $("drill-strip").addEventListener("click", () => {
+    if (!S.open) { S.open = true; save(); renderPractice(); }
+    $("drill-tool").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  });
+
+  /* the list of drills, in a sheet */
+  const scrim = $("dr-scrim"), sheet = $("dr-sheet"), listEl2 = $("dr-list"), msgEl = $("dr-msg");
+  let sheetOpen = false, sheetMsg = "";
+  function renderPicker() {
+    const cat = D && D.cached(), all = cat ? cat.drills : [];
+    const have = INSTS.map((x) => x[0]).concat(all.map((x) => x.inst)).filter((k, i, a) => a.indexOf(k) === i && all.some((x) => x.inst === k));
+    if (have.length && have.indexOf(S.drillInst) < 0) S.drillInst = have[0];
+    $("dr-inst").hidden = have.length < 2;
+    $("dr-inst").innerHTML = have.map((k) => '<button class="chip" type="button" role="radio" data-inst="' + escH(k) + '" aria-checked="' + (k === S.drillInst) + '">' + escH(instName(k)) + "</button>").join("");
+    const shown = all.filter((x) => x.inst === S.drillInst);
+    listEl2.innerHTML = shown.map((x) => {
+      const st = D.state(x.id), meta = [span(x), x.mins ? x.mins + " min" : ""].filter(Boolean).join(" · ");
+      return '<li><button class="drow" type="button" data-id="' + escH(x.id) + '"' + (S.drill && S.drill.id === x.id ? ' aria-current="true"' : "") + ">" +
+        '<span class="dr-b"><span class="dr-t">' + escH(x.title) + "</span>" + (meta ? '<span class="dr-m">' + escH(meta) + "</span>" : "") + "</span>" +
+        (st.tempo ? '<span class="dr-c">' + st.tempo + "</span>" : "") + "</button></li>";
+    }).join("");
+    msgEl.hidden = !sheetMsg && !!shown.length;
+    msgEl.textContent = sheetMsg || (cat ? "No drills here yet." : "");
+  }
+  function openPicker() {
+    sheetOpen = true; scrim.hidden = false; document.body.classList.add("locked");
+    sheetMsg = D && D.cached() ? "" : "Loading…";
+    renderPicker(); sheet.focus({ preventScroll: true });
+    if (!D) { sheetMsg = "Drills couldn't be loaded."; renderPicker(); return; }
+    D.refresh().then(() => { sheetMsg = ""; if (sheetOpen) renderPicker(); renderDrill(); }, () => {
+      if (!D.cached()) { sheetMsg = "Couldn't load the drills. Open Drills once with a connection, then try again."; if (sheetOpen) renderPicker(); }
+    });
+    D.sync().catch(() => {});
+  }
+  function closePicker() {
+    if (!sheetOpen) return;
+    sheetOpen = false; scrim.hidden = true; document.body.classList.remove("locked");
+    $("drill-pick").focus({ preventScroll: true });
+  }
+  $("drill-pick").addEventListener("click", openPicker);
+  $("dr-close").addEventListener("click", closePicker);
+  scrim.addEventListener("click", (e) => { if (e.target === scrim) closePicker(); });
+  sheet.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); closePicker(); } });
+  $("dr-inst").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { S.drillInst = b.dataset.inst; lsSet(KEY, S); renderPicker(); } });
+  listEl2.addEventListener("click", (e) => {
+    const b = e.target.closest(".drow"); if (!b || !D) return;
+    const d = D.find(b.dataset.id); if (!d) return;
+    closePicker(); pickDrill(d);
+  });
+  if (D) D.onChange(() => { renderDrill(); if (sheetOpen) renderPicker(); });
+
   /* ---------- assistant ---------- */
   if (window.MusicAssistant) MusicAssistant.mount({
     app: "metronome", button: $("ai-btn"),
@@ -619,6 +768,10 @@
       if (S.trainer.on) bits.push("speed trainer " + S.trainer.start + " to " + S.trainer.target + " by " + S.trainer.step + " every " + S.trainer.bars + " bars");
       if (S.gap.on) bits.push("gap click " + S.gap.play + " bars on, " + S.gap.mute + " off");
       if (S.timer.on) bits.push("timer " + S.timer.value + (S.timer.mode === "bars" ? " bars" : " min"));
+      if (S.drill) {
+        const st = D ? D.state(S.drill.id) : { tempo: 0 };
+        bits.push("practising the drill \"" + S.drill.title + "\" (" + (st.tempo ? "last logged " + st.tempo + " BPM" : "nothing logged yet") + (S.drill.target ? ", target " + S.drill.target + " BPM" : "") + "; runs are logged to its practice history in Library)");
+      }
       return bits.join(", ") + ".";
     }
   });
@@ -629,7 +782,21 @@
     radios($("sound-seg"), "sound", S.sound);
     $("vol").value = S.vol; $("vol-out").textContent = S.vol + "%";
     setSwitch("sw-flash", S.flash); setSwitch("sw-vib", S.vibrate);
-    renderSig(); renderBeats(); renderPractice(); renderPresets();
+    renderSig(); renderBeats(); renderPractice(); renderPresets(); renderDrill();
   }
   renderAll();
+  // A link straight to a drill (metronome/#drill=<id>, e.g. from a drill's page in Library) loads it.
+  function linkedDrill() {
+    const m = /^#drill=(.+)$/.exec(location.hash); if (!m) return "";
+    try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e) {}
+    try { return decodeURIComponent(m[1]); } catch (e) { return ""; }
+  }
+  function openLinked(id) {
+    if (!D) return;
+    D.refresh().then(() => { if (id && D.find(id)) pickDrill(D.find(id)); else renderDrill(); }, () => {});
+    D.sync().catch(() => {});
+  }
+  const linked = linkedDrill();
+  if (S.drill || linked) openLinked(linked);
+  window.addEventListener("hashchange", () => { const id = linkedDrill(); if (id) openLinked(id); });
 })();
