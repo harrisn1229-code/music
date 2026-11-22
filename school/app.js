@@ -6085,6 +6085,13 @@ function drillPage(d, kind) {
                  ? ` · ${log.reduce((s, e) => s + (+e.mins || 0), 0)} min` : ''}` : 'never')}
     </div>
 
+    ${/* Nate, 2026-11-22: drills are "ways I'd be practicing stuff with the metronome". Music's
+          Metronome loads a drill from its address (`#drill=<id>`): its ladder on the speed
+          trainer, its length on the timer, and every run of 30 s or more logged back into this
+          page's practice log. App only; the artifact page has no metronome to open. */''}
+    ${LOCAL ? `<div class="row"><a class="btn btn-go dmetro" href="../metronome/#drill=${
+      esc(encodeURIComponent(d.id))}">Practise with metronome</a></div>` : ''}
+
     ${practiceLog({drill: d.id, tempo_target: d.tempo_target || 0, minutes: d.minutes || 0})}
 
     ${chips.length ? `<div><p class="eyebrow">Reinforces</p><div class="dchips">${

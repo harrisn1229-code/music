@@ -217,8 +217,8 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
   (`library:practice`, the same record the drill's page shows): its time, and the fastest bar played
   right through as the tempo. Runs of one drill on one day add up into one entry (`by: "metronome"`).
   Signed in, it is merged into the account's `practice` document the way School does it.
-- `metronome/#drill=<id>` opens the Metronome with that drill loaded (for a "Practise with the
-  metronome" link on a drill's page, which belongs in the `music-school` build).
+- `metronome/#drill=<id>` opens the Metronome with that drill loaded. Every drill's page in Library
+  has a "Practise with metronome" button that links there (built from `music-school`).
 
 ## Voice Memos
 
