@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Timer</title>
+<meta name="description" content="Pomodoro, timer and stopwatch that log their time to the Practice Log. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Timer is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:#5B7F12}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:#8CA559}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:#8CA559}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3h13M5.5 21h13"/><path d="M7.5 3c0 4.2 4.5 5.6 4.5 9s-4.5 4.8-4.5 9M16.5 3c0 4.2-4.5 5.6-4.5 9s4.5 4.8 4.5 9"/><path d="M9.6 7.6h4.8M8.6 18.4h6.8M12 13.6v2.4"/></g></svg>
+    <h1 class="brand">Timer</h1>
+    <button class="icon-btn" id="set-btn" type="button" aria-label="Timer settings" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h8M15 6h2M3 14h2M9 14h8"/><circle cx="13" cy="6" r="2"/><circle cx="7" cy="14" r="2"/></svg></button>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="col">
+    <div class="modes" id="modes" role="group" aria-label="Mode">
+      <button class="mode" type="button" data-mode="pomodoro">Pomodoro</button>
+      <button class="mode" type="button" data-mode="countdown">Timer</button>
+      <button class="mode" type="button" data-mode="stopwatch">Stopwatch</button>
+    </div>
+
+    <section class="dial-card" id="dial-card">
+      <div class="dial">
+        <svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="46"/><circle class="prog" id="prog" cx="50" cy="50" r="46"/></svg>
+        <div class="dial-mid">
+          <span class="phase" id="phase"></span>
+          <button class="time" id="time" type="button" role="timer" aria-live="off"></button>
+          <input class="time-in" id="time-in" type="number" inputmode="numeric" min="1" max="600" aria-label="Minutes" hidden>
+          <span class="dots" id="dots" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="presets" id="presets" role="group" aria-label="Minutes"></div>
+      <div class="ctl">
+        <button class="side" id="stop" type="button" aria-label="Stop and log"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="5" width="10" height="10" rx="2" fill="currentColor"/></svg></button>
+        <button class="go" id="go" type="button" aria-label="Start"></button>
+        <button class="side" id="skip" type="button" aria-label="Skip to the next phase"><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4.5 4.8v10.4a.6.6 0 0 0 .9.5l7.6-5.2a.6.6 0 0 0 0-1L5.4 4.3a.6.6 0 0 0-.9.5z"/><rect x="14" y="4.5" width="2.2" height="11" rx="1"/></svg></button>
+      </div>
+    </section>
+
+    <div class="tags" id="tags" role="group" aria-label="Activity"></div>
+
+    <section class="card today" id="today" hidden></section>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+<noscript><p class="wrap">Timer needs JavaScript turned on.</p></noscript>
+
+<script src="../apps.js"></script>
+<script src="../shared/log.js"></script>
+<script src="../shared/timer.js"></script>
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  /* ---------- assistant ---------- */
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "timer", button: document.getElementById("ai-btn"),
+    context: function () { return window.__timerContext ? window.__timerContext() : "In Timer."; }
+  });
+
+  /* ---------- offline: Music's shared service worker, one folder up ---------- */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>

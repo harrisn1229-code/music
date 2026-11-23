@@ -8,6 +8,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Tool | Folder | What it does |
 | --- | --- | --- |
 | Practice Log | `log/` | Time spent in each tool and what was done, recorded on its own (no timers to start) |
+| Timer | `timer/` | Pomodoro, timer and stopwatch for time outside the other tools (production sessions); logs to Practice Log by activity |
 | Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
@@ -39,6 +40,7 @@ shared/account.js      The one GitHub connection every tool syncs with
 shared/ai.js           The one Claude connection (your Anthropic API key) every tool uses
 shared/assistant.js    The one AI assistant: a sheet opened from the home screen and every tool's top bar
 shared/log.js          The practice log: loaded by settings.js on every page, counts time and records what was done
+shared/timer.js        The Timer's clock: loaded by settings.js on every page, so a running timer shows and finishes anywhere
 shared/cloud.js        The one email account: sign-in, saved data, private files
 shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
 shared/vendor/         The Supabase browser library, and marked (Markdown for Library's chain notes)
@@ -49,6 +51,7 @@ library/               Library (reads shared/theory.js; chains.json is built fro
 ear/                   Ear Training (index.html, app.js, app.css; synthesizes all its sound)
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler; drills.js reads Library's drills)
+timer/                 Timer (index.html, app.js, app.css; the timing itself is shared/timer.js)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
@@ -202,6 +205,31 @@ School included) loads it. Nothing has to be started:
 
 Saved under `log:v1`; with an account Practice Log merges it with the `log` document (sessions by
 id, deletions kept). The assistant reads it with `practice_log`.
+
+## Timer
+
+For time the other tools can't see: a production session in the DAW, practice away from the
+phone, or a pomodoro around work in other tools. Three modes: Pomodoro (focus, break, a long break
+every few rounds), Timer (a countdown) and Stopwatch. Each block is for an activity (Production,
+Mixing, Songwriting, Guitar, Bass, Piano, or your own), picked from a row of chips.
+
+- `shared/timer.js` does the timing, and `settings.js` loads it on every page. The run is saved as
+  timestamps under `timer:run`, so it keeps time with the phone locked or the page closed. A running
+  timer shows as a pill in every tool's top bar (on the home screen, on the Timer tile), and
+  whichever page is open when a block runs out finishes it: a chime, a notification if turned on, the
+  block logged, the pomodoro on to its break. A worker ticks once a second so a background tab on a
+  computer finishes on time.
+- Focus time is logged, breaks are not. A block goes into the log with `MusicLog.record` as one line
+  ("Production · Pomodoro", 25m) with its activity in `tag`. Time other tools counted while it ran is
+  left out of the Timer's share of the session (`covered`), so nothing is counted twice; the Practice
+  Log's "Timed" card shows whole blocks by activity. Stretches under a minute are not logged.
+- A block that ran out while nobody was looking is logged with the time it really ended, without a
+  late chime, and a pomodoro never starts its next focus block on its own unless someone is there.
+- After logging: Undo or Edit (minutes, activity, a note). Today's blocks are listed under the dial
+  and can be edited or deleted. A stopwatch stopped after more than 3 hours asks how much to log.
+- Settings (`timer:prefs:v1`): pomodoro lengths and rounds, starting breaks / focus on their own,
+  sound, keep the screen on (on by default, so a phone on the stand chimes), notifications, and the
+  activity list. Tapping the time when stopped types its minutes.
 
 ## Metronome drills
 

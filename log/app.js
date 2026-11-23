@@ -101,6 +101,23 @@
     return '<section class="card"><div class="row"><span class="lbl">By tool</span><div class="seg-tabs">' + tabs + '</div></div><div class="tools">' + rows + "</div></section>";
   }
 
+  // What the Timer's blocks were for (Production, Guitar...): the whole block, including any time
+  // spent in other tools during it, so this is a view of its own rather than a share of "By tool".
+  function tagColor(t) { return window.MusicTimer ? MusicTimer.color(t) : "#5B7F12"; }
+  function activityCard(D) {
+    var today = startOfDay(Date.now()), from = view.range === "week" ? weekStart(today) : view.range === "month" ? addDays(today, -29) : 0;
+    var by = {}, max = 0;
+    D.sessions.forEach(function (s) {
+      (s.events || []).forEach(function (e) { if (e.app === "timer" && e.secs && e.end >= from) { var t = e.tag || "Timer"; by[t] = (by[t] || 0) + e.secs; } });
+    });
+    var ids = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
+    if (!ids.length) return "";
+    ids.forEach(function (a) { max = Math.max(max, by[a]); });
+    return '<section class="card"><div class="row"><span class="lbl">Timed</span></div><div class="tools">' + ids.map(function (a) {
+      return '<div class="tool"><span class="n">' + esc(a) + '</span><span class="bar2"><i style="width:' + (100 * by[a] / max).toFixed(1) + "%;background:" + tagColor(a) + '"></i></span><span class="t">' + dur(by[a]) + "</span></div>";
+    }).join("") + "</div></section>";
+  }
+
   function evRight(e) {
     var bits = [];
     if (e.n != null) bits.push(e.n + " " + (e.unit || ""));
@@ -115,7 +132,7 @@
     }).join("");
     var list = open ? evs : evs.slice(-5), hidden = evs.length - list.length;
     var lines = list.slice().reverse().map(function (e) {
-      return '<li class="ev"><span class="dot" style="--c:' + color(e.app) + '"></span><span class="x">' + esc(e.text) + '</span><span class="r">' + esc(evRight(e)) + "</span></li>";
+      return '<li class="ev"><span class="dot" style="--c:' + (e.app === "timer" && e.tag ? tagColor(e.tag) : color(e.app)) + '"></span><span class="x">' + esc(e.text) + '</span><span class="r">' + esc(evRight(e)) + "</span></li>";
     }).join("") + (hidden ? '<li class="ev more"><span></span><span>+' + hidden + " more</span><span></span></li>" : "");
     return '<article class="card sess" data-sess="' + esc(s.id) + '">' +
       '<button class="sess-top" type="button" data-toggle="' + esc(s.id) + '" aria-expanded="' + open + '"><span class="when">' + clock(s.start) + "–" + clock(s.end) + '</span><span class="len">' + dur(secs) + "</span></button>" +
@@ -137,7 +154,7 @@
 
   function render() {
     var D = data(), y = window.scrollY;
-    main.innerHTML = statsCard(D) + heatCard(D) + toolsCard(D) + daysList(D);
+    main.innerHTML = statsCard(D) + heatCard(D) + toolsCard(D) + activityCard(D) + daysList(D);
     window.scrollTo(0, y);
   }
 

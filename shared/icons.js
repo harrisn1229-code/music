@@ -12,6 +12,8 @@
   var P = {
     // Practice Log: a stopwatch
     log: '<circle cx="12" cy="13.5" r="7"/><path d="M10 3h4M12 3v3.5M12 13.5V9.5M12 13.5l2.75 2M18.2 6.8l1.3-1.3"/>',
+    // Timer: an hourglass
+    timer: '<path d="M5.5 3h13M5.5 21h13"/><path d="M7.5 3c0 4.2 4.5 5.6 4.5 9s-4.5 4.8-4.5 9M16.5 3c0 4.2-4.5 5.6-4.5 9s4.5 4.8 4.5 9"/><path d="M9.6 7.6h4.8M8.6 18.4h6.8M12 13.6v2.4"/>',
     // Scratchpad: a notepad and pencil
     scratchpad: '<path d="M14.5 4H6a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 6 20h10a1.5 1.5 0 0 0 1.5-1.5V12"/><path d="M8 9h4M8 12.5h3M8 16h6"/><path d="M19.6 3.4a1.4 1.4 0 0 1 2 2L14 13l-2.6.6.6-2.6z"/>',
     // Originals: a music note with a spark

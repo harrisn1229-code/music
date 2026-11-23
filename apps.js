@@ -15,9 +15,9 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.34.0",
+  version: "1.35.0",
   // Files more than one app uses. Kept available offline like everything else.
-  shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
+  shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
   sections: [
     { id: "practice", name: "Tools" },
@@ -47,6 +47,15 @@ self.MUSIC = {
       color: "#0B7FA6",
       icon: "icon-192.png",
       sync: { at: "log:syncedAt" },
+      files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
+    },
+    {
+      id: "timer",
+      section: "practice",
+      name: "Timer",
+      about: "Pomodoro, timer and stopwatch that log their time to the Practice Log",
+      color: "#5B7F12",
+      icon: "icon-192.png",
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
     },
     {

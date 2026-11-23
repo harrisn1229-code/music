@@ -28,6 +28,18 @@
      MusicLog.event(key, text)             one thing that happened ("Opened Autumn Leaves").
                                            The same line twice in a row is kept once.
 
+   Timed blocks (the Timer tool: pomodoros, timers, a stopwatch for production sessions)
+     MusicLog.record(app, {secs, end, covered, text, tag, kind, note, rid})
+                                           a stretch of time that ended at end, logged as it is
+                                           rather than by the clock (the phone may have been locked
+                                           the whole time). covered is how much of it other tools
+                                           already counted, so the day's total never counts a minute
+                                           twice. rid makes it safe to call twice. Returns the event.
+     MusicLog.unrecord(rid)                take a timed block back out (Undo).
+     MusicLog.amend(rid, {secs, text, tag, note})   change one afterwards.
+   The Timer's own page never runs the clock: its time is what it records. While a timer is
+   running (timer:run), every other tool's counted time is added to its "covered".
+
    Saved on the device under "log:v1"; with a Music account the Practice Log tool merges it with
    the account's "log" document. */
 (function () {
@@ -63,6 +75,9 @@
   try { embedded = self !== self.top; } catch (e) { embedded = true; }
   if (/[?&]bridge=1/.test(location.search)) embedded = true;
   var tracked = !!app && app !== "log" && !embedded;
+  // The Timer logs exactly what is on its clock (MusicLog.record), so its page never counts on its own.
+  var clockless = app === "timer";
+  var RUN = "timer:run";
 
   /* ---- writing: every change reads the saved copy fresh, so two pages never undo each other ---- */
   var listeners = [];
@@ -104,7 +119,7 @@
   var playing = {};   // key -> {text, start, app}
   function anyPlaying() { for (var k in playing) return true; return false; }
   function counting() {
-    if (!tracked) return false;
+    if (!tracked || clockless) return false;
     if (anyPlaying()) return true;
     return document.visibilityState === "visible" && now() - lastInput < IDLE;
   }
@@ -125,6 +140,16 @@
       s.apps[app] = (s.apps[app] || 0) + secs;
       s.end = Math.max(s.end, now());
     });
+    cover(secs);
+  }
+  // A timer is running while this tool counted: that time is already in the log, so the timer
+  // will leave it out when it records its block.
+  function cover(secs) {
+    var r;
+    try { r = JSON.parse(lsGet(RUN) || "null"); } catch (e) { return; }
+    if (!r || !r.resumedAt || r.waiting || r.phase !== "focus") return;
+    r.covered = (r.covered || 0) + secs * 1000;
+    lsSet(RUN, JSON.stringify(r));
   }
   function input() {
     var t = now();
@@ -209,6 +234,76 @@
     });
   }
 
+  /* ---- timed blocks (the Timer) ---- */
+  function findRid(d, rid) {
+    for (var i = d.sessions.length - 1; i >= 0; i--) {
+      var ev = d.sessions[i].events || [];
+      for (var j = ev.length - 1; j >= 0; j--) if (ev[j].rid === rid) return { s: d.sessions[i], e: ev[j], i: j };
+    }
+    return null;
+  }
+  function setText(e, p) {
+    if (p.text != null) e.text = String(p.text).slice(0, 160);
+    if (p.tag != null) { if (p.tag) e.tag = String(p.tag).slice(0, 40); else delete e.tag; }
+    if (p.note != null) { if (p.note) e.note = String(p.note).slice(0, 120); else delete e.note; }
+  }
+  function record(appId, o) {
+    if (embedded) return null;
+    o = o || {};
+    var secs = Math.round(+o.secs || 0);
+    if (!(secs > 0)) return null;
+    var end = +o.end || now(), start = end - secs * 1000;
+    var add = secs - Math.max(0, Math.min(secs, Math.round(+o.covered || 0)));
+    appId = String(appId || app || "timer");
+    return write(function (d) {
+      if (o.rid && findRid(d, String(o.rid))) return null;
+      var s = current(d, start, start);
+      if (add) s.apps[appId] = (s.apps[appId] || 0) + add;
+      var e = { t: start, end: end, app: appId, key: String(o.key || appId), text: "", secs: secs, add: add };
+      if (o.rid) e.rid = String(o.rid);
+      if (o.kind) e.kind = String(o.kind);
+      setText(e, o);
+      addEvent(s, e);
+      s.end = Math.max(s.end, end);
+      return JSON.parse(JSON.stringify(e));
+    });
+  }
+  function unrecord(rid) {
+    if (!rid) return false;
+    return write(function (d) {
+      var f = findRid(d, String(rid));
+      if (!f) return false;
+      var s = f.s, e = f.e;
+      s.events.splice(f.i, 1);
+      if (e.add) { s.apps[e.app] = Math.max(0, (s.apps[e.app] || 0) - e.add); if (!s.apps[e.app]) delete s.apps[e.app]; }
+      var left = 0;
+      for (var k in s.apps) left += s.apps[k] || 0;
+      if (!s.events.length && !left) { d.gone[s.id] = now(); d.sessions = d.sessions.filter(function (x) { return x !== s; }); }
+      else s.end += 1;   // the copy with the later end wins when the account merges, so this sticks
+      return true;
+    });
+  }
+  function amend(rid, p) {
+    if (!rid) return null;
+    p = p || {};
+    return write(function (d) {
+      var f = findRid(d, String(rid));
+      if (!f) return null;
+      var s = f.s, e = f.e;
+      if (p.secs != null && +p.secs > 0) {
+        var secs = Math.round(+p.secs);
+        var cov = Math.min(secs, Math.max(0, (e.secs || 0) - (e.add || 0))), add = secs - cov;
+        s.apps[e.app] = Math.max(0, (s.apps[e.app] || 0) - (e.add || 0) + add);
+        if (!s.apps[e.app]) delete s.apps[e.app];
+        e.secs = secs; e.add = add; e.t = e.end - secs * 1000;
+        if (e.t < s.start) s.start = e.t;
+      }
+      setText(e, p);
+      s.end += 1;
+      return JSON.parse(JSON.stringify(e));
+    });
+  }
+
   /* ---- account sync (used by the Practice Log tool) ---- */
   function merge(a, b) {
     a = clean(a); b = clean(b);
@@ -261,6 +356,9 @@
     playing: setPlaying,
     count: count,
     event: event,
+    record: record,
+    unrecord: unrecord,
+    amend: amend,
     read: function () { flush(); return read(); },
     remove: remove,
     sync: sync,

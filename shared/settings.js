@@ -70,17 +70,22 @@
 
   /* The practice log (shared/log.js) runs on every page that loads this file. Until it has
      loaded, calls to MusicLog wait in a queue, so a tool can call it at any time. */
+  var me = document.currentScript && document.currentScript.src;
+  function inject(file) {
+    if (!me) return;
+    var s = document.createElement("script");
+    s.src = me.slice(0, me.lastIndexOf("/") + 1) + file;
+    (document.head || document.documentElement).appendChild(s);
+  }
   if (!self.MusicLog) {
     var q = [];
     self.MusicLog = { _q: q };
-    ["playing", "count", "event"].forEach(function (m) { self.MusicLog[m] = function () { q.push([m, arguments]); }; });
-    var me = document.currentScript && document.currentScript.src;
-    if (me) {
-      var s = document.createElement("script");
-      s.src = me.slice(0, me.lastIndexOf("/") + 1) + "log.js";
-      (document.head || document.documentElement).appendChild(s);
-    }
+    ["playing", "count", "event", "record", "unrecord", "amend"].forEach(function (m) { self.MusicLog[m] = function () { q.push([m, arguments]); }; });
+    inject("log.js");
   }
+  /* The Timer (shared/timer.js) runs everywhere too: a running pomodoro shows its time in every
+     tool's top bar, and finishes (chime, logged) wherever the musician is when it runs out. */
+  if (!self.MusicTimer) inject("timer.js");
 
   self.MusicSettings = {
     KEY: KEY,
