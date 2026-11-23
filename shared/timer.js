@@ -20,6 +20,7 @@
    MusicTimer.start(mode)      "pomodoro" | "countdown" | "stopwatch", with the saved settings
    MusicTimer.pause() / resume() / skip() / next()
    MusicTimer.stop(opts)       end the run; logs what was timed. opts: {secs, note, discard}
+   MusicTimer.add({secs, start, tag, note})   time entered by hand (away from the phone)
    MusicTimer.run()            the current run or null; elapsed(run) / remaining(run) in ms
    MusicTimer.prefs() / setPrefs(patch)
    MusicTimer.on(fn)           fn({type: "change" | "logged" | "phase", ...}) */
@@ -117,8 +118,8 @@
   }
 
   /* ---- logging ---- */
-  var KIND = { pomodoro: "Pomodoro", countdown: "Timer", stopwatch: "Stopwatch" };
-  function text(tag, mode, note) { return [tag || "Timer", note || KIND[mode] || "Timer"].join(" · "); }
+  var KIND = { pomodoro: "Pomodoro", countdown: "Timer", stopwatch: "Stopwatch", manual: "" };
+  function text(tag, mode, note) { return [tag || "Timer", note || KIND[mode]].filter(Boolean).join(" · "); }
   function logBlock(r, secs, end, note) {
     secs = Math.round(secs);
     if (!(secs >= MIN_LOG) || !self.MusicLog || !self.MusicLog.record) return null;
@@ -130,6 +131,16 @@
   }
   // Time other tools counted shows up in "covered" when they flush (every 15 s); catch the last bit first.
   function settle() { try { if (self.MusicLog && self.MusicLog.read && !self.MusicLog._q) MusicLog.read(); } catch (e) {} }
+
+  // Time entered by hand, for when the phone wasn't there: {secs, start, tag, note}.
+  function add(o) {
+    o = o || {};
+    var secs = Math.round(+o.secs || 0), start = +o.start;
+    if (!(secs > 0) || !isFinite(start) || !self.MusicLog || !self.MusicLog.record) return null;
+    var tag = o.tag || prefs().tag, rid = "add-" + uid();
+    MusicLog.record("timer", { secs: secs, end: start + secs * 1000, covered: 0, rid: rid, kind: "manual", tag: tag, note: o.note || "", text: text(tag, "manual", o.note) });
+    return { rid: rid, secs: secs, tag: tag, mode: "manual", start: start, end: start + secs * 1000 };
+  }
 
   /* ---- actions ---- */
   function start(mode) {
@@ -470,6 +481,7 @@
     setTag: setTag,
     setMinutes: setMinutes,
     start: start, pause: pause, resume: resume, next: next, stop: stop, skip: skip,
+    add: add,
     tick: tick,
     prime: prime,
     chime: chime,

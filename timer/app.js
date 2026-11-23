@@ -247,6 +247,27 @@
     body.classList.remove("locked");
     $("sheet").innerHTML = "";
     ui.sheet = null;
+    if (ui.back) goBack();
+  }
+  /* Practice Log links here to add time (#add) or change a block (#edit=<id>), with back=log so
+     closing the sheet goes straight back there. */
+  function route() {
+    var h = location.hash.slice(1);
+    if (!h) return;
+    var q = {};
+    h.split("&").forEach(function (kv) { var i = kv.indexOf("="); q[i < 0 ? kv : kv.slice(0, i)] = i < 0 ? "1" : decodeURIComponent(kv.slice(i + 1)); });
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    ui.back = q.back === "log" ? "log" : null;
+    if (q.add) openEntry(null);
+    else if (q.edit && find(q.edit)) openEntry(find(q.edit));
+    else if (ui.back) goBack();
+  }
+  function goBack() {
+    ui.back = null;
+    var ref = "";
+    try { ref = new URL(document.referrer).pathname; } catch (e) {}
+    if (/\/log\/(index\.html)?$/.test(ref) && history.length > 1) history.back();
+    else location.replace("../log/");
   }
   $("scrim").addEventListener("click", function (e) { if (e.target === $("scrim")) closeSheet(); });
   function closeBtn() { return '<button class="icon-btn" type="button" data-close aria-label="Close">' + ICON.x + "</button>"; }
@@ -271,24 +292,92 @@
       '<div class="sec"><h3>Note</h3><input class="in" id="f-note" type="text" maxlength="120" value="' + esc(note || "") + '" placeholder="What you worked on" enterkeyhint="done"></div>';
   }
 
-  // A logged block: change its length, activity or note, or delete it.
-  function openEdit(rid) {
-    var e = find(rid);
-    if (!e) return;
-    var tag = e.tag || T.prefs().tag;
-    openSheet('<div class="sheet-head"><h2>' + esc(clock(e.t) + "–" + clock(e.end)) + "</h2>" + closeBtn() + "</div>" + entryForm(Math.max(1, Math.round(e.secs / 60)), tag, e.note) +
-      '<div class="acts"><button class="btn warn" type="button" id="f-del">Delete</button><span class="sp"></span><button class="btn solid" type="button" id="f-save">Save</button></div>', function (sh) {
+  /* ---------- add time by hand, or change a logged block ---------- */
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function ymd(t) { var d = new Date(t); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function hm(t) { var d = new Date(t); return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function parseAt(day, at) {
+    var a = String(day || "").split("-"), b = String(at || "").split(":");
+    if (a.length < 3 || b.length < 2) return NaN;
+    return new Date(+a[0], +a[1] - 1, +a[2], +b[0], +b[1], 0, 0).getTime();
+  }
+  function dayWord(t) {
+    var d = new Date(t); d.setHours(0, 0, 0, 0);
+    var diff = Math.round((today() - d.getTime()) / 864e5);
+    return diff === 0 ? "" : diff === 1 ? "yesterday" : new Date(t).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  }
+  var QUICK = [15, 30, 45, 60, 90, 120];
+  function qlabel(m) { return m < 60 ? m + "m" : Math.floor(m / 60) + "h" + (m % 60 ? " " + (m % 60) + "m" : ""); }
+
+  // e: a logged block to change, or null to add time.
+  function openEntry(e) {
+    var isNew = !e, p = T.prefs(), r = T.run();
+    var tag = e ? e.tag || p.tag : r ? r.tag : p.tag;
+    var secs0 = e ? e.secs : 1800, end = e ? e.end : Date.now();
+    var timeSet = false, durSet = false;
+    // Changing the length of time added by hand keeps when it started; a timer block keeps when it ended.
+    var keepStart = !isNew && e.kind === "manual";
+    var m0 = Math.round(secs0 / 60);
+    openSheet('<div class="sheet-head"><h2>' + (isNew ? "Add time" : "Edit") + "</h2>" + closeBtn() + "</div>" +
+      '<div class="sec"><div class="fields two">' +
+        '<label class="field"><span>Hours</span><input id="f-h" type="number" inputmode="numeric" min="0" max="24" value="' + Math.floor(m0 / 60) + '"></label>' +
+        '<label class="field"><span>Minutes</span><input id="f-m" type="number" inputmode="numeric" min="0" max="600" value="' + (m0 % 60) + '"></label></div>' +
+        '<div class="seg" id="f-quick">' + QUICK.map(function (m) { return '<button class="chip" type="button" data-q="' + m + '" aria-pressed="' + (m === m0) + '">' + qlabel(m) + "</button>"; }).join("") + "</div></div>" +
+      '<div class="sec"><div class="fields two">' +
+        '<label class="field"><span>Day</span><input id="f-day" type="date" max="' + ymd(Date.now()) + '"></label>' +
+        '<label class="field"><span>Started</span><input id="f-at" type="time"></label></div></div>' +
+      '<div class="sec"><h3>Activity</h3>' + tagSeg(tag) + "</div>" +
+      '<div class="sec"><h3>Note</h3><input class="in" id="f-note" type="text" maxlength="120" value="' + esc((e && e.note) || "") + '" placeholder="What you worked on" enterkeyhint="done"></div>' +
+      '<p class="err" id="f-err" role="alert" hidden></p>' +
+      '<div class="acts">' + (isNew ? "" : '<button class="btn warn" type="button" id="f-del">Delete</button>') + '<span class="sp"></span><button class="btn solid" type="button" id="f-save">' + (isNew ? "Add" : "Save") + "</button></div>", function (sh) {
+      var total = function () { return Math.round((Math.max(0, +$("f-h").value || 0) * 60 + Math.max(0, +$("f-m").value || 0)) * 60); };
+      // Until the start is changed by hand, it follows the length: the block ends now (or where it ended).
+      var follow = function () {
+        if (timeSet) return;
+        var st = keepStart ? e.t : end - (durSet ? total() : secs0) * 1000;
+        $("f-day").value = ymd(st); $("f-at").value = hm(st);
+      };
+      var marks = function () {
+        var m = Math.round(total() / 60);
+        Array.prototype.forEach.call(sh.querySelectorAll("[data-q]"), function (b) { b.setAttribute("aria-pressed", String(+b.dataset.q === m)); });
+      };
+      follow();
       bindPick(sh, function (t) { tag = t; });
       sh.querySelector("[data-close]").onclick = closeSheet;
-      $("f-del").onclick = function () { L.unrecord(rid); closeSheet(); toast("Removed from the log"); render(); };
+      ["f-h", "f-m"].forEach(function (id) { $(id).addEventListener("input", function () { durSet = true; follow(); marks(); }); });
+      ["f-day", "f-at"].forEach(function (id) { $(id).addEventListener("input", function () { timeSet = true; }); });
+      $("f-quick").addEventListener("click", function (ev) {
+        var b = ev.target.closest("[data-q]");
+        if (!b) return;
+        var m = +b.dataset.q;
+        $("f-h").value = Math.floor(m / 60); $("f-m").value = m % 60;
+        durSet = true; follow(); marks();
+      });
+      var fail = function (msg) { $("f-err").textContent = msg; $("f-err").hidden = false; };
+      if (!isNew) $("f-del").onclick = function () { L.unrecord(e.rid); closeSheet(); toast("Removed from the log"); render(); };
       $("f-save").onclick = function () {
-        var min = Math.max(1, Math.min(1440, Math.round(+$("f-min").value || 0) || Math.round(e.secs / 60)));
+        var secs = durSet ? total() : secs0;
+        if (secs < 60) return fail("Add at least a minute.");
+        var start = timeSet ? parseAt($("f-day").value, $("f-at").value) : keepStart ? e.t : end - secs * 1000;
+        if (!isFinite(start)) return fail("Pick a day and a start time.");
+        if (start + secs * 1000 > Date.now() + 60e3) return fail("That would end after now.");
         var note = $("f-note").value.trim();
-        L.amend(rid, { secs: min * 60, tag: tag, note: note, text: T.text(tag, e.kind, note) });
-        closeSheet(); render();
+        if (isNew) {
+          var added = T.add({ secs: secs, start: start, tag: tag, note: note });
+          closeSheet(); render();
+          if (added) { var w = dayWord(start); toast("Added " + dur(secs) + " · " + tag + (w ? " · " + w : ""), [{ label: "Undo", fn: function () { L.unrecord(added.rid); toast("Removed from the log"); render(); } }]); }
+        } else {
+          var patch = { secs: secs, tag: tag, note: note, text: T.text(tag, e.kind, note) };
+          if (timeSet || keepStart) patch.start = start;
+          L.amend(e.rid, patch);
+          closeSheet(); render();
+        }
       };
     });
   }
+  function openEdit(rid) { var e = find(rid); if (e) openEntry(e); }
+  $("add-btn").addEventListener("click", function () { openEntry(null); });
+
   // A stopwatch that ran for hours: probably left on. Ask how much of it to log.
   function openSave(r) {
     var tag = r.tag;
@@ -401,4 +490,6 @@
   };
 
   render();
+  route();
+  window.addEventListener("hashchange", route);
 })();

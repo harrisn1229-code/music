@@ -132,7 +132,10 @@
     }).join("");
     var list = open ? evs : evs.slice(-5), hidden = evs.length - list.length;
     var lines = list.slice().reverse().map(function (e) {
-      return '<li class="ev"><span class="dot" style="--c:' + (e.app === "timer" && e.tag ? tagColor(e.tag) : color(e.app)) + '"></span><span class="x">' + esc(e.text) + '</span><span class="r">' + esc(evRight(e)) + "</span></li>";
+      var inner = '<span class="dot" style="--c:' + (e.app === "timer" && e.tag ? tagColor(e.tag) : color(e.app)) + '"></span><span class="x">' + esc(e.text) + '</span><span class="r">' + esc(evRight(e)) + "</span>";
+      // Timer blocks (and time added by hand) open in the Timer to be changed or deleted.
+      if (e.app === "timer" && e.rid) return '<li><a class="ev link" href="../timer/#edit=' + encodeURIComponent(e.rid) + '&amp;back=log">' + inner + "</a></li>";
+      return '<li class="ev">' + inner + "</li>";
     }).join("") + (hidden ? '<li class="ev more"><span></span><span>+' + hidden + " more</span><span></span></li>" : "");
     return '<article class="card sess" data-sess="' + esc(s.id) + '">' +
       '<button class="sess-top" type="button" data-toggle="' + esc(s.id) + '" aria-expanded="' + open + '"><span class="when">' + clock(s.start) + "–" + clock(s.end) + '</span><span class="len">' + dur(secs) + "</span></button>" +
@@ -144,7 +147,7 @@
   function daysList(D) {
     var keys = Object.keys(D.byDay).sort(function (a, b) { return D.byDay[b].t - D.byDay[a].t; });
     if (view.pick != null) keys = keys.filter(function (k) { return D.byDay[k].t === view.pick; });
-    if (!keys.length) return view.pick != null ? '<p class="empty">Nothing that day</p>' : '<p class="empty">Open any tool and play. Time and what you did show up here.</p>';
+    if (!keys.length) return view.pick != null ? '<p class="empty">Nothing that day</p>' : '<p class="empty">Open any tool and play, or add time with +. Time and what you did show up here.</p>';
     var more = keys.length > view.days;
     return keys.slice(0, view.days).map(function (k) {
       var day = D.byDay[k];
@@ -185,4 +188,6 @@
     MusicLog.sync().then(render, function () {});
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") render(); });
+  // Coming back from the Timer (after adding or changing time) can restore this page as it was.
+  window.addEventListener("pageshow", function (e) { if (e.persisted) render(); });
 })();

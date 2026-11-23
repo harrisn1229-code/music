@@ -150,6 +150,10 @@ body.locked{overflow:hidden}
 .sec h3{font-size:.8125rem;font-weight:700;color:var(--muted)}
 .fields{display:grid;grid-template-columns:repeat(auto-fit, minmax(5.5rem, 1fr));gap:.6rem;align-items:end}
 .fields.four{grid-template-columns:repeat(4, minmax(0, 1fr))}
+.fields.two{grid-template-columns:repeat(2, minmax(0, 1fr))}
+.field input[type="date"],.field input[type="time"]{font-variant-numeric:tabular-nums;min-height:2.75rem;line-height:2.75rem}
+.field input::-webkit-date-and-time-value{text-align:left}
+.err{color:#C23A3A;font-size:.9375rem;font-weight:700}
 .field{display:grid;gap:.3rem;min-width:0}
 .field span{font-size:.8125rem;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .field input,.in{width:100%;min-width:0;height:2.75rem;padding:0 .75rem;border-radius:.75rem;border:0;background:var(--surface-2);color:var(--text);font:inherit;font-weight:700;font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none;-moz-appearance:textfield}

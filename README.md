@@ -8,7 +8,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Tool | Folder | What it does |
 | --- | --- | --- |
 | Practice Log | `log/` | Time spent in each tool and what was done, recorded on its own (no timers to start) |
-| Timer | `timer/` | Pomodoro, timer and stopwatch for time outside the other tools (production sessions); logs to Practice Log by activity |
+| Timer | `timer/` | Pomodoro, timer and stopwatch for time outside the other tools (production sessions), and time added by hand; logs to Practice Log by activity |
 | Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
@@ -225,8 +225,12 @@ Mixing, Songwriting, Guitar, Bass, Piano, or your own), picked from a row of chi
   Log's "Timed" card shows whole blocks by activity. Stretches under a minute are not logged.
 - A block that ran out while nobody was looking is logged with the time it really ended, without a
   late chime, and a pomodoro never starts its next focus block on its own unless someone is there.
-- After logging: Undo or Edit (minutes, activity, a note). Today's blocks are listed under the dial
+- After logging: Undo or Edit (length, when, activity, a note). Today's blocks are listed under the dial
   and can be edited or deleted. A stopwatch stopped after more than 3 hours asks how much to log.
+- Add time (+ in the Timer's bar, or in Practice Log's): time spent away from the phone, entered by
+  hand with its length, day, start time, activity and note (`MusicTimer.add`). It goes into the session
+  it falls in, or one of its own on that day, so it counts toward that day's total and streak. Tapping a
+  Timer line in Practice Log opens it in the Timer to change or delete (`timer/#edit=<id>&back=log`).
 - Settings (`timer:prefs:v1`): pomodoro lengths and rounds, starting breaks / focus on their own,
   sound, keep the screen on (on by default, so a phone on the stand chimes), notifications, and the
   activity list. Tapping the time when stopped types its minutes.

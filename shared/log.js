@@ -36,7 +36,9 @@
                                            already counted, so the day's total never counts a minute
                                            twice. rid makes it safe to call twice. Returns the event.
      MusicLog.unrecord(rid)                take a timed block back out (Undo).
-     MusicLog.amend(rid, {secs, text, tag, note})   change one afterwards.
+     MusicLog.amend(rid, {secs, start, text, tag, note})   change one afterwards.
+   Blocks entered by hand (Add time) are records too, ending whenever they ended, days back if need be;
+   each goes into the session it falls in, or one of its own.
    The Timer's own page never runs the clock: its time is what it records. While a timer is
    running (timer:run), every other tool's counted time is added to its "covered".
 
@@ -247,6 +249,45 @@
     if (p.tag != null) { if (p.tag) e.tag = String(p.tag).slice(0, 40); else delete e.tag; }
     if (p.note != null) { if (p.note) e.note = String(p.note).slice(0, 120); else delete e.note; }
   }
+  // Where a block from start to end belongs: the session of this device it overlaps or comes
+  // within GAP of (the nearest; the later one on a tie), else a session of its own. A timer block
+  // ends now and lands in the current session; time entered by hand can be days back.
+  function place(d, start, end) {
+    var best = null, bestGap = Infinity;
+    d.sessions.forEach(function (s) {
+      if (s.id.indexOf(device + "-") !== 0 || d.gone[s.id]) return;
+      var gap = Math.max(0, s.start - end, start - s.end);
+      if (gap <= GAP && (gap < bestGap || (gap === bestGap && s.end > best.end))) { best = s; bestGap = gap; }
+    });
+    if (best) return best;
+    var id = device + "-" + start.toString(36);
+    while (d.sessions.some(function (x) { return x.id === id; }) || d.gone[id]) id += "x";
+    var s = { id: id, start: start, end: end, apps: {}, events: [] };
+    d.sessions.push(s);
+    return s;
+  }
+  // Put a block into a session, in time order, counting its share (add) toward its tool.
+  function put(s, e) {
+    var before = s.end;
+    if (e.add) s.apps[e.app] = (s.apps[e.app] || 0) + e.add;
+    var i = s.events.length;
+    while (i > 0 && s.events[i - 1].t > e.t) i--;
+    s.events.splice(i, 0, e);
+    if (s.events.length > MAX_EVENTS) s.events.splice(0, s.events.length - MAX_EVENTS);
+    if (e.t < s.start) s.start = e.t;
+    s.end = Math.max(s.end, e.end);
+    if (s.end === before) s.end += 1;   // the copy with the later end wins when the account merges
+  }
+  // Take one out again; a session left with nothing in it goes (and stays gone when merging).
+  function take(d, f) {
+    var s = f.s, e = f.e;
+    s.events.splice(f.i, 1);
+    if (e.add) { s.apps[e.app] = Math.max(0, (s.apps[e.app] || 0) - e.add); if (!s.apps[e.app]) delete s.apps[e.app]; }
+    var left = 0;
+    for (var k in s.apps) left += s.apps[k] || 0;
+    if (!s.events.length && !left) { d.gone[s.id] = now(); d.sessions = d.sessions.filter(function (x) { return x !== s; }); }
+    else s.end += 1;
+  }
   function record(appId, o) {
     if (embedded) return null;
     o = o || {};
@@ -257,14 +298,11 @@
     appId = String(appId || app || "timer");
     return write(function (d) {
       if (o.rid && findRid(d, String(o.rid))) return null;
-      var s = current(d, start, start);
-      if (add) s.apps[appId] = (s.apps[appId] || 0) + add;
       var e = { t: start, end: end, app: appId, key: String(o.key || appId), text: "", secs: secs, add: add };
       if (o.rid) e.rid = String(o.rid);
       if (o.kind) e.kind = String(o.kind);
       setText(e, o);
-      addEvent(s, e);
-      s.end = Math.max(s.end, end);
+      put(place(d, start, end), e);
       return JSON.parse(JSON.stringify(e));
     });
   }
@@ -273,33 +311,26 @@
     return write(function (d) {
       var f = findRid(d, String(rid));
       if (!f) return false;
-      var s = f.s, e = f.e;
-      s.events.splice(f.i, 1);
-      if (e.add) { s.apps[e.app] = Math.max(0, (s.apps[e.app] || 0) - e.add); if (!s.apps[e.app]) delete s.apps[e.app]; }
-      var left = 0;
-      for (var k in s.apps) left += s.apps[k] || 0;
-      if (!s.events.length && !left) { d.gone[s.id] = now(); d.sessions = d.sessions.filter(function (x) { return x !== s; }); }
-      else s.end += 1;   // the copy with the later end wins when the account merges, so this sticks
+      take(d, f);
       return true;
     });
   }
+  // Change a block: its length (secs), when it was (start, or end), its text, activity or note.
+  // A new length with no new time keeps the end where it was.
   function amend(rid, p) {
     if (!rid) return null;
     p = p || {};
     return write(function (d) {
       var f = findRid(d, String(rid));
       if (!f) return null;
-      var s = f.s, e = f.e;
-      if (p.secs != null && +p.secs > 0) {
-        var secs = Math.round(+p.secs);
-        var cov = Math.min(secs, Math.max(0, (e.secs || 0) - (e.add || 0))), add = secs - cov;
-        s.apps[e.app] = Math.max(0, (s.apps[e.app] || 0) - (e.add || 0) + add);
-        if (!s.apps[e.app]) delete s.apps[e.app];
-        e.secs = secs; e.add = add; e.t = e.end - secs * 1000;
-        if (e.t < s.start) s.start = e.t;
-      }
+      var e = f.e;
+      var secs = p.secs != null && +p.secs > 0 ? Math.round(+p.secs) : e.secs;
+      var start = p.start != null ? +p.start : p.end != null ? +p.end - secs * 1000 : e.end - secs * 1000;
+      var cov = Math.min(secs, Math.max(0, (e.secs || 0) - (e.add || 0)));
+      take(d, f);
+      e.secs = secs; e.add = secs - cov; e.t = start; e.end = start + secs * 1000;
       setText(e, p);
-      s.end += 1;
+      put(place(d, e.t, e.end), e);
       return JSON.parse(JSON.stringify(e));
     });
   }
