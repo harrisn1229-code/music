@@ -18,6 +18,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
 | Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click, presets, and Library's drills to practise with it |
+| Play Along | `playalong/` | Photograph sheet music or tab; Claude reads it once, then it plays back with a moving cursor, click, count-in, loop and tempo control |
 | Voice Memos | `memos/` | Record yourself playing and listen back: waveform, slow-down, loop, share |
 | Circle of Fifths | `circle/` | The circle with key signatures, scales, diatonic chords and common progressions in any key |
 
@@ -52,6 +53,7 @@ ear/                   Ear Training (index.html, app.js, app.css; synthesizes al
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler; drills.js reads Library's drills)
 timer/                 Timer (index.html, app.js, app.css; the timing itself is shared/timer.js)
+playalong/             Play Along (index.html, app.js, app.css; photos in IndexedDB, scores in localStorage; synthesizes all its sound)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
@@ -150,7 +152,8 @@ until they are re-shot.
 `shared/ai.js` is the one connection to Claude. The key is the musician's own Anthropic API key,
 saved on the device under `music:aiKey` (never in a backup, never synced), and requests go
 straight from the device to Anthropic. A key added in any tool works in all of them. A tool calls
-`MusicAI.call({ system, messages, tools, tool_choice })`.
+`MusicAI.call({ system, messages, tools, tool_choice })`. For long answers, `stream: true` reads the reply as it is
+written (with `onDelta` as it grows), so a request is never silent for minutes; the result has the same shape.
 
 `shared/assistant.js` is the one assistant for the whole app (`MusicAssistant`). A page mounts it
 with `MusicAssistant.mount({ app, button, context, tools })` and puts the sparkle button in its top
@@ -251,6 +254,24 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
   Signed in, it is merged into the account's `practice` document the way School does it.
 - `metronome/#drill=<id>` opens the Metronome with that drill loaded. Every drill's page in Library
   has a "Practise with metronome" button that links there (built from `music-school`).
+
+## Play Along
+
+Photograph (or pick) pages of sheet music, tab or a PDF; Claude reads them once and the piece then plays
+back from the app itself, with a moving cursor in a Tab view (bass and guitar), a Notes view (abcjs, the copy
+Barline ships) and a Page view of the original photos. Count-in, click, tempo (40-160% of the written tempo),
+bar loops and "speed up each loop" are in the dock and its More panel. Bass and guitar are plucked-string
+models and the piano is Barline's, all synthesized, so playback works offline.
+
+Data stays on the device: scores and player settings in `playalong:v1` (localStorage), the page photos (JPEG,
+long edge 2400) in IndexedDB `music-playalong`. Nothing is synced. Only the transcription request leaves the
+device, through `shared/ai.js` (the musician's own key). PDFs are drawn with School's pdf.js, loaded only when one is picked.
+
+Transcription is one streamed request per page (the dialog shows the bar being read): the whole page and close-ups of its top and bottom halves, with
+`save_transcription` forced as the tool. Answers are normalized (fractions to numbers, bad pitches dropped),
+tab and staff are made to agree (the staff pitch is what sounds), and every bar is checked against the time
+signature. A second request per page, `fix_bars`, re-reads only the bars that don't add up; any still wrong
+get an amber dot and play as written.
 
 ## Voice Memos
 
