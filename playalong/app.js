@@ -454,7 +454,7 @@
             system: SYSTEM,
             messages: [{ role: "user", content: blocks.concat([{ type: "text", text: pageText(k, n, opt.hint, sofar) }]) }],
             tools: [TOOL], tool_choice: { type: "tool", name: "save_transcription" },
-            max_tokens: 24000, effort: "high", signal: opt.signal, stream: true,
+            max_tokens: 48000, effort: "high", signal: opt.signal, stream: true,
             onDelta: function (part) {
               // show the bar being read as the reply streams in
               var m, last = 0, re = /"n"\s*:\s*(\d+)/g;
@@ -514,7 +514,7 @@
           system: SYSTEM,
           messages: [{ role: "user", content: blocks.concat([{ type: "text", text: text }]) }],
           tools: [FIX_TOOL], tool_choice: { type: "tool", name: "fix_bars" },
-          max_tokens: 12000, effort: "high", signal: opt.signal, stream: true
+          max_tokens: 24000, effort: "high", signal: opt.signal, stream: true
         }), opt.signal).then(function (res) {
           var inp = toolInput(res, "fix_bars", "the corrected bars");
           var list = Array.isArray(inp.measures) ? inp.measures : [];

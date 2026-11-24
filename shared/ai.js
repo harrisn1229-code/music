@@ -19,6 +19,12 @@
   var KEY = "music:aiKey", OLD = "barline:aiKey";
   var MODEL = "claude-opus-5-5";
   var noFallback = false;
+  // Some models won't be made to call a tool (tool_choice "tool" / "any"). The first time a model says so,
+  // requests ask for the tool in words instead (tool_choice "auto"), and an answer written as JSON text
+  // is turned back into the tool call the caller expects.
+  var NOFORCE = "music:aiNoForce";   // the models known to refuse, remembered on this device
+  function forceOff(model) { return (" " + get(NOFORCE) + " ").indexOf(" " + model + " ") >= 0; }
+  function setForceOff(model) { try { localStorage.setItem(NOFORCE, (get(NOFORCE) + " " + model).trim()); } catch (e) {} }
 
   function get(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
   function key() { return get(KEY) || get(OLD); }
@@ -31,6 +37,15 @@
 
   function AiError(message) { this.name = "AiError"; this.message = message; }
   AiError.prototype = Object.create(Error.prototype);
+
+  /* The JSON object in an answer written as text (fenced or bare), or null. */
+  function jsonIn(text) {
+    var t = String(text || ""), f = /```(?:json)?\s*([\s\S]*?)```/.exec(t);
+    if (f) t = f[1];
+    var a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if (a < 0 || b <= a) return null;
+    try { var v = JSON.parse(t.slice(a, b + 1)); return v && typeof v === "object" && !Array.isArray(v) ? v : null; } catch (e) { return null; }
+  }
 
   /* Reads a streamed reply (server-sent events) into the same shape a plain reply has.
      onDelta(text) is called as a tool's input or the reply's text grows, with everything so far. */
@@ -87,6 +102,8 @@
      with onDelta(textSoFar) as it grows; the result is the same either way. */
   async function call(opt) {
     if (!key()) throw new AiError("Add your Anthropic API key first.");
+    var model = opt.model || MODEL, noForce = forceOff(model);
+    var tc = opt.tool_choice, forced = tc && (tc.type === "tool" || tc.type === "any") ? tc : null;
     var send = function (withFallback) {
       var headers = {
         "content-type": "application/json",
@@ -95,7 +112,7 @@
         "anthropic-dangerous-direct-browser-access": "true"
       };
       var body = {
-        model: opt.model || MODEL,
+        model: model,
         max_tokens: opt.max_tokens || 16000,
         output_config: { effort: opt.effort || "medium" },
         messages: opt.messages
@@ -103,6 +120,12 @@
       if (opt.system) body.system = opt.system;
       if (opt.tools) body.tools = opt.tools;
       if (opt.tool_choice) body.tool_choice = opt.tool_choice;
+      if (forced && noForce) {
+        body.tool_choice = { type: "auto" };
+        body.system = (opt.system ? opt.system + "\n\n" : "") + (forced.name
+          ? "Give your answer by calling the " + forced.name + " tool, once. Don't answer in text."
+          : "Give your answer by calling one of the tools. Don't answer in text.");
+      }
       if (opt.stream) body.stream = true;
       // If a request is declined by a safety check, let Anthropic retry it on a suitable model.
       if (withFallback) { headers["anthropic-beta"] = "server-side-fallback-2026-07-01"; body.fallbacks = "default"; }
@@ -115,6 +138,7 @@
         var err = await res.clone().json().catch(function () { return null; });
         var m = err && err.error && err.error.message || "";
         if (/fallback|anthropic-beta/i.test(m)) { noFallback = true; res = await send(false); }
+        else if (forced && !noForce && /tool_choice/i.test(m)) { noForce = true; setForceOff(model); res = await send(!noFallback); }
       }
     } catch (e) {
       if (e && e.name === "AbortError") throw e;
@@ -138,6 +162,10 @@
     }
     if (!data || !Array.isArray(data.content)) throw new AiError("Got an empty answer. Try again.");
     if (data.stop_reason === "refusal") throw new AiError("Claude couldn't help with that request.");
+    if (forced && forced.name && !data.content.some(function (b) { return b.type === "tool_use" && b.name === forced.name; })) {
+      var found = jsonIn(data.content.filter(function (b) { return b.type === "text"; }).map(function (b) { return b.text || ""; }).join("\n"));
+      if (found) data.content.push({ type: "tool_use", id: "text_answer", name: forced.name, input: found });
+    }
     return data;
   }
 
