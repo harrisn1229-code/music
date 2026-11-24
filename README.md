@@ -53,7 +53,7 @@ ear/                   Ear Training (index.html, app.js, app.css; synthesizes al
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler; drills.js reads Library's drills)
 timer/                 Timer (index.html, app.js, app.css; the timing itself is shared/timer.js)
-playalong/             Play Along (index.html, app.js, app.css; photos in IndexedDB, scores in localStorage; synthesizes all its sound)
+playalong/             Play Along (index.html, app.css and score/store/engine/transcribe/views/abc/viz/app .js; samples, importer; photos in IndexedDB, scores in localStorage)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
@@ -258,10 +258,22 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
 ## Play Along
 
 Photograph (or pick) pages of sheet music, tab or a PDF; Claude reads them once and the piece then plays
-back from the app itself, with a moving cursor in a Tab view (bass and guitar), a Notes view (abcjs, the copy
-Barline ships) and a Page view of the original photos. Count-in, click, tempo (40-160% of the written tempo),
-bar loops and "speed up each loop" are in the dock and its More panel. Bass and guitar are plucked-string
-models and the piano is Barline's, all synthesized, so playback works offline.
+back from the app itself, as a practice player. Views: Score (notation and tab stacked, one staff per part),
+Notation, Tab, Chords (lead-sheet grid) and Page (the photos, with the current bar boxed). Every bar can carry its own
+time signature, key and tempo, a section name, lyrics, dead notes and a box on the photo; extra staves (drums, piano...)
+are parts. The dock has speed as a percent of the written tempo (25-200%, shown with the bpm), loop, play and a More
+panel (speed presets, click, count-in, speed trainer +2/+5/+10 up to a target, save loop, full screen, keys). Four sheets:
+Mixer (volume, mute, solo, show/hide and sound per part, "Your part", click and master), Display (notation, tab, chord
+names, pitch names, counts, bar numbers, lyrics, expand repeats, wrapped or horizontal layout, zoom 60-200 with pinch,
+focus loop, transpose -12..+12 saved per piece), Sections and a fretboard or keyboard panel that lights the current notes.
+Loops are chosen by dragging over bars (handles to adjust) and can be saved as clips; Space, arrows, L, [ ], M, C, F and ? are shortcuts.
+Sound comes from `samples.js` (the sampled instruments) with the synthesized models as fallback, so playback works offline.
+
+Files: `score.js` (score v2 helpers: per-bar meta, parts, normalisers, checks, transpose), `store.js` (localStorage + IndexedDB),
+`engine.js` (timeline and audio, per-part buses), `transcribe.js` (request and image prep), `views.js` (tab, chords, page, loop
+selection), `abc.js` (notation and Score view), `viz.js` (fretboard/keyboard), `app.js` (UI), plus `samples.js`, `import.js`,
+`media.js`, `listen.js` from earlier phases (the last two are not loaded yet). Other tools can hook in with `PA.on` /
+`PA.emit` (open, leave, play, pause, seek, speed, frame, view, loop, clips, main, rebuild) and `PA.app`.
 
 Data stays on the device: scores and player settings in `playalong:v1` (localStorage), the page photos (JPEG,
 long edge 2400) in IndexedDB `music-playalong`. Nothing is synced. Only the transcription request leaves the
