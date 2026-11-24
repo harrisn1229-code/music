@@ -7,8 +7,10 @@
      views.js       Tab, Chords, Page views, loop overlay and drag-to-select
      abc.js         Notation and Score views (abcjs, with our own tab staff)
      viz.js         fretboard and keyboard
-     samples.js, import.js   phase 1 modules (sounds, file import); media.js and listen.js are for the recordings/wait-mode phase
-   Hooks for later phases: PA.on / PA.emit events (open, leave, play, pause, seek, speed, frame, view, loop, rebuild), PA.app (see the end of this file),
+     samples.js, import.js   phase 1 modules (sounds, file import)
+     media.js, listen.js   phase 1 modules, wired in by rec.js (recordings, sync editor, takes) and wait.js (wait mode)
+   Hooks for later phases: PA.on / PA.emit events (open, leave, play, pause, seek, speed, frame, view, loop, rebuild, session), PA.app (see the end of this file),
+   a "driver" (PA.app.setDriver) that replaces the synth engine as the playback clock: { start(opts)->Promise, stop(soft), seek(pos), pos()->{pos,counting,ci?,speed,seg}, setSpeed(f), finished, onEnd, bpm?(pos) },
    the #dockSlot element above the transport, and PA.app.tools.add() for more icon buttons next to Display / Mixer. */
 (function () {
   "use strict";
@@ -54,13 +56,15 @@
 
   /* ================================================================ state, prefs */
   S.route = "list"; S.piece = null; S.score = null; S.sc = null; S.tl = null; S.prefs = null; S.view = "tab"; S.startPos = 0; S.written = 100;
-  S.loopSel = 0; S.loopPick = null; S.playing = false; S.loc = null; S.vobj = null; S.pageUrls = []; S.raf = 0; S.lastPos = 0; S.dockH = 150; S.drag = null;
+  S.drv = null; S.vidInset = 0; S.loopSel = 0; S.loopPick = null; S.playing = false; S.loc = null; S.vobj = null; S.pageUrls = []; S.raf = 0; S.lastPos = 0; S.dockH = 150; S.drag = null;
 
   function defaultDisplay() { return { notation: true, tab: true, chords: true, pitch: false, counts: false, barNums: true, lyrics: true, expand: false, layout: "wrap", zoom: 100, focus: false }; }
   function defaultPrefs(score) {
     return {
       speed: 1, view: SC.hasTab(score) ? "score" : "notation", loop: null, click: true, countIn: true, speedUp: 0, speedTarget: 100,
-      instVol: 0.8, clickVol: 0.7, transpose: 0, mix: {}, display: defaultDisplay(), viz: { on: false, kind: null, left: false, all: false }
+      instVol: 0.8, clickVol: 0.7, transpose: 0, mix: {}, display: defaultDisplay(), viz: { on: false, kind: null, left: false, all: false },
+      rec: null, recVol: 1, overlay: false, overlayVol: 0.6, vid: { h: 0, hide: false, mirror: false },
+      wait: { on: false, src: "auto", octave: null, backing: false }
     };
   }
   function merge(a, b) { var o = {}, k; for (k in a) o[k] = a[k]; if (b && typeof b === "object") for (k in b) if (b[k] !== undefined && b[k] !== null) o[k] = b[k]; return o; }
@@ -69,6 +73,8 @@
     var score = piece.score, dp = defaultPrefs(score), pr = piece.prefs || {}, P = {}, k;
     for (k in dp) P[k] = pr[k] !== undefined && pr[k] !== null ? pr[k] : dp[k];
     P.display = merge(dp.display, pr.display); P.viz = merge(dp.viz, pr.viz); P.mix = pr.mix && typeof pr.mix === "object" ? pr.mix : {};
+    P.vid = merge(dp.vid, pr.vid); P.wait = merge(dp.wait, pr.wait); P.wait.on = !!P.wait.on;
+    P.recVol = clamp(+P.recVol >= 0 ? +P.recVol : 1, 0, 1); P.overlayVol = clamp(+P.overlayVol >= 0 ? +P.overlayVol : 0.6, 0, 1); P.overlay = !!P.overlay;
     var written = score.tempo || 100;
     if (pr.speed == null && pr.bpm) P.speed = pr.bpm / written;
     P.speed = clamp(Math.round(+P.speed * 100) / 100 || 1, 0.25, 2);
@@ -118,6 +124,11 @@
   }
   function applyMix() { EN.configure(resolveMix()); }
 
+  /* The clock that is playing: the synth engine, or a driver (a recording, wait mode, the sync editor) set with PA.app.setDriver. */
+  function eng() { return S.drv || EN; }
+  function engFinished() { return S.drv ? !!S.drv.finished : E.finished; }
+  function setDriver(d) { S.drv = d || null; }
+
   /* The display score is the stored score, transposed. The timeline, drawn bars and sound all come from it. */
   function rebuild(first) {
     S.sc = SC.transposed(S.score, S.prefs.transpose);
@@ -125,8 +136,8 @@
     S.written = S.score.tempo || 100;
     V.computeR();
     applyMix();
-    if (!first && S.playing) { var ep = EN.pos(); if (ep && !ep.counting) EN.seek(clamp(ep.pos, 0, S.tl.total - 1e-6)); }
-    PA.emit("rebuild", {});
+    PA.emit("rebuild", { first: !!first });
+    if (!first && S.playing) { var ep = eng().pos(); if (ep && !ep.counting) eng().seek(clamp(ep.pos, 0, S.tl.total - 1e-6)); }
   }
 
   /* ================================================================ dialogs */
@@ -379,7 +390,8 @@
         var keep = piece.prefs || {}, dp = defaultPrefs(score);
         piece.pages = ids; piece.score = score; piece.flags = res.flags; piece.updated = now;
         piece.prefs = { speed: 1, view: dp.view, loop: null, click: keep.click !== false, countIn: keep.countIn !== false, speedUp: keep.speedUp || 0, speedTarget: keep.speedTarget || 100,
-          instVol: keep.instVol == null ? dp.instVol : keep.instVol, clickVol: keep.clickVol == null ? dp.clickVol : keep.clickVol, transpose: 0, mix: {}, display: merge(dp.display, keep.display), viz: merge(dp.viz, keep.viz) };
+          instVol: keep.instVol == null ? dp.instVol : keep.instVol, clickVol: keep.clickVol == null ? dp.clickVol : keep.clickVol, transpose: 0, mix: {}, display: merge(dp.display, keep.display), viz: merge(dp.viz, keep.viz),
+          rec: keep.rec || null, recVol: keep.recVol == null ? 1 : keep.recVol, overlay: !!keep.overlay, overlayVol: keep.overlayVol == null ? 0.6 : keep.overlayVol, vid: merge(dp.vid, keep.vid), wait: merge(dp.wait, keep.wait) };
         piece.clips = [];
       } else {
         piece = { id: uid(), title: (score.title || "").trim() || "Untitled", created: now, updated: now, pages: ids, score: score, flags: res.flags, prefs: defaultPrefs(score) };
@@ -503,10 +515,16 @@
     var dk = $("dock");
     S.dockH = dk.offsetHeight || 150;
     document.documentElement.style.setProperty("--dockh", S.dockH + "px");
+    var sb = $("sub");
+    if (sb && !sb.hidden) document.documentElement.style.setProperty("--subb", Math.round((parseFloat(getComputedStyle(sb).top) || 0) + sb.offsetHeight) + "px");
+    PA.emit("layout", {});
   }
 
   /* ---------------- transport ---------------- */
-  function bpmNow() { return Math.round((S.tl ? S.tl.writtenAt(curPos()) : S.written) * S.prefs.speed); }
+  function bpmNow() {
+    if (S.drv && S.drv.bpm && S.tl) { var b = S.drv.bpm(curPos()); if (b > 0) return Math.round(b); }
+    return Math.round((S.tl ? S.tl.writtenAt(curPos()) : S.written) * S.prefs.speed);
+  }
   function speedPct() { return Math.round(S.prefs.speed * 100); }
   function updateTransport() {
     $("bPlay").innerHTML = S.playing ? ICON.pause : ICON.play;
@@ -530,36 +548,40 @@
   }
   E.onLoad = function () { if (S.route === "player") showHint(); };
   function playLogText() { return S.piece.title + " · " + speedPct() + "% · " + bpmNow() + " bpm"; }
-  function startPlay() {
-    if (S.playing || E.starting || !S.tl) return;
+  function startPlay(opts) {
+    if (S.playing || E.starting || S.starting || !S.tl) return;
     S.loopSel = 0; S.loopPick = null;
-    closePanels();
+    if (!(opts && opts.keepPanels)) closePanels();
     E.startSpeed = S.prefs.speed;
     E.onEnd = naturalEnd;
-    EN.start().then(function () {
+    if (S.drv) S.drv.onEnd = naturalEnd;
+    S.starting = true;
+    eng().start(opts).then(function () {
+      S.starting = false;
       S.playing = true; S.lastSeg = null; S.sessionAt = Date.now(); S.sessionStartPos = S.startPos;
       logCall("playing", "playalong", true, { text: playLogText() });
       updateTransport(); frame();
       PA.emit("play", { pos: S.startPos, speed: S.prefs.speed });
-    }).catch(function (e) { showErr((e && e.message) || "Couldn't start the sound."); });
+    }).catch(function (e) { S.starting = false; showErr((e && e.message) || "Couldn't start the sound."); });
   }
   function recordSession() {
     if (!S.sessionAt || !S.piece) return;
     var secs = Math.round((Date.now() - S.sessionAt) / 1000), bpm = bpmNow();
     S.sessionAt = 0;
     if (secs < 5) return;
-    var h = S.piece.history = S.piece.history || [];
-    h.push({ at: Date.now(), secs: secs, bpm: bpm });
+    var h = S.piece.history = S.piece.history || [], entry = { at: Date.now(), secs: secs, bpm: bpm };
+    PA.emit("session", { entry: entry, piece: S.piece });
+    h.push(entry);
     if (h.length > 300) h.splice(0, h.length - 300);
     ST.saveSoon();
   }
   function pausePlay(quiet) {
     if (!S.playing) return;
-    var ep = EN.pos();
-    EN.stop();
+    var ep = eng().pos();
+    eng().stop();
     S.playing = false;
     cancelAnimationFrame(S.raf);
-    if (ep && !ep.counting && !E.finished) {
+    if (ep && !ep.counting && !engFinished()) {
       var loc = EN.locate(S.tl, clamp(ep.pos, 0, S.tl.total - 1e-6));
       if (loc) S.startPos = S.tl.passes[loc.pass].start + S.tl.offs[loc.bar][loc.ev];
     }
@@ -570,7 +592,7 @@
     PA.emit("pause", { pos: S.startPos, ended: false });
   }
   function naturalEnd() {
-    EN.stop(true);
+    eng().stop(true);
     S.playing = false; cancelAnimationFrame(S.raf);
     if (S.prefs.speedUp > 0 && E.startSpeed) S.prefs.speed = E.startSpeed;
     recordSession();
@@ -580,12 +602,12 @@
   }
   function frame() {
     if (!S.playing) return;
-    var ep = EN.pos();
+    var ep = eng().pos();
     if (ep) {
       var pos;
       if (ep.counting) {
         pos = S.startPos;
-        var k = Math.floor((ep.pos - E.ciStart) / (E.ciUnit || S.tl.unit) + 1e-6) + 1;
+        var k = ep.ci != null ? ep.ci : Math.floor((ep.pos - E.ciStart) / (E.ciUnit || S.tl.unit) + 1e-6) + 1;
         showHint(String(clamp(k, 1, 16)));
       } else { pos = clamp(ep.pos, 0, S.tl.total - 1e-6); showHint(); }
       S.lastPos = pos;
@@ -606,7 +628,7 @@
   function seekTo(pos) {
     pos = clamp(pos, 0, Math.max(0, S.tl.total - 1e-6));
     S.startPos = pos; S.lastPos = pos;
-    if (S.playing) EN.seek(pos);
+    if (S.playing || (S.drv && S.drv.alwaysSeek)) eng().seek(pos);
     updateCursor(pos, true);
     updateBpmReadout();
     PA.emit("seek", { pos: pos });
@@ -614,7 +636,7 @@
   function changeSpeed(v, quiet) {
     v = clamp(Math.round(v * 100) / 100, 0.25, 2);
     if (v === S.prefs.speed) return;
-    S.prefs.speed = v; EN.setSpeed(v); savePrefs(); updateTransport();
+    S.prefs.speed = v; eng().setSpeed(v); savePrefs(); updateTransport();
     if (S.playing) logCall("playing", "playalong", true, { text: playLogText() });
     PA.emit("speed", { speed: v, auto: false });
   }
@@ -1063,7 +1085,9 @@
     save: savePrefs, saveData: function () { ST.save(); }, layout: layout, dialog: dialog, closeDlg: closeDlg, askText: askText, confirmBox: confirmBox,
     openPanel: openPanel, closePanels: closePanels, showErr: showErr, renderClips: renderClips, bpmNow: bpmNow,
     slot: function () { return $("dockSlot"); }, curPos: curPos, updateCursor: updateCursor, renderList: renderList, openAdd: openAdd,
-    defaultPrefs: defaultPrefs, loadPrefs: loadPrefs
+    defaultPrefs: defaultPrefs, loadPrefs: loadPrefs,
+    setDriver: setDriver, eng: eng, showHint: showHint, updateTransport: updateTransport, logCall: logCall, uid: uid, esc: esc, el: el, KEYS: KEYS, syncPanels: syncPanels,
+    refreshViews: syncViewButtons
   };
 
   // for tests and tinkering in the console

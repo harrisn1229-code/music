@@ -223,7 +223,7 @@
   /* ---- scrolling ---- */
   V.scrollIntoPlace = function (absTop, force) {
     if (!force && V.hooks.holdScroll()) return;
-    var y = Math.max(0, absTop - window.innerHeight * 0.33);
+    var y = Math.max(0, absTop - window.innerHeight * 0.33 - (S.vidInset || 0));
     var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     try { window.scrollTo({ top: y, behavior: rm ? "auto" : "smooth" }); } catch (e) { window.scrollTo(0, y); }
   };
@@ -409,7 +409,7 @@
       if (TV.curR !== g.row) {
         TV.curR = g.row;
         var vTop = surf.getBoundingClientRect().top + row.top * 1;
-        if (S.playing || vTop < 110 || vTop + rowH * Z > window.innerHeight - (S.dockH || 150)) V.scrollIntoPlace(vTop + window.scrollY, false);
+        if (S.playing || vTop < 110 + (S.vidInset || 0) || vTop + rowH * Z > window.innerHeight - (S.dockH || 150)) V.scrollIntoPlace(vTop + window.scrollY, false);
       }
     };
     // tab cursor's top: rows are blocks, offsetTop is in CSS px (already scaled by Z through svg height)
@@ -520,7 +520,7 @@
         if (curCell) { curCell.classList.remove("cur"); curCell._prog.style.opacity = "0"; }
         c.classList.add("cur"); curCell = c;
         if (horiz) V.followX(v, c.offsetLeft, true);
-        else { var top = c.getBoundingClientRect().top; if (jump || top < 130 || top > window.innerHeight - (S.dockH || 150) - 60 || (S.playing && top > window.innerHeight * 0.55)) V.scrollIntoPlace(top + window.scrollY, !!jump && false); }
+        else { var top = c.getBoundingClientRect().top; if (jump || top < 130 + (S.vidInset || 0) || top > window.innerHeight - (S.dockH || 150) - 60 || (S.playing && top > window.innerHeight * 0.55)) V.scrollIntoPlace(top + window.scrollY, !!jump && false); }
       }
       c._prog.style.opacity = "1";
       c._prog.style.left = (clamp(loc.off / c._len, 0, 1) * 100) + "%";
@@ -594,7 +594,7 @@
       if (curBar !== loc.bar || jump) {
         curBar = loc.bar;
         var rc = p.hi.getBoundingClientRect();
-        if (jump || rc.top < 130 || rc.bottom > window.innerHeight - (S.dockH || 150) || (S.playing && rc.top > window.innerHeight * 0.6)) V.scrollIntoPlace(rc.top + window.scrollY, !!jump && false);
+        if (jump || rc.top < 130 + (S.vidInset || 0) || rc.bottom > window.innerHeight - (S.dockH || 150) || (S.playing && rc.top > window.innerHeight * 0.6)) V.scrollIntoPlace(rc.top + window.scrollY, !!jump && false);
       }
     };
     v.destroy = function () { S.pageUrls.forEach(function (u) { URL.revokeObjectURL(u); }); S.pageUrls = []; };

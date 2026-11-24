@@ -269,14 +269,26 @@ focus loop, transpose -12..+12 saved per piece), Sections and a fretboard or key
 Loops are chosen by dragging over bars (handles to adjust) and can be saved as clips; Space, arrows, L, [ ], M, C, F and ? are shortcuts.
 Sound comes from `samples.js` (the sampled instruments) with the synthesized models as fallback, so playback works offline.
 
+Real recordings: the Recording pill under the toolbar switches between Synth and recordings of the piece (an audio or video
+file kept in IndexedDB `media`, a YouTube link, or your own takes). With a recording the recording is the clock: the cursor follows
+its sync map, speed is the player's rate, loops seek the recording, and the click (and optionally the synth parts, with their own
+volume) follow the recording's real timing. Video shows in a panel above the music (left of it on wide screens): drag its bottom
+edge to resize, hide, mirror. The sync editor (the wave button) is tap-to-sync: press play and tap on each downbeat (or any key),
+per bar or per beat; drag a marker on the waveform, nudge it 10 ms, delete it or clear from here. Record (red button, `R`) records the
+microphone while playback runs and saves a take with sync from what was playing. Wait (More, `W`) stops the cursor on each note of
+your part until you play it (microphone, or MIDI when a keyboard is connected); the hit counter goes into the practice history.
+Files: `rec.js` (recordings, driver, video, sync editor, takes) and `wait.js`, using `media.js` and `listen.js`. A recording is
+`{id, kind, name, mediaId, mime, video, youtube, sync:[{pos,t}], offset, created, bpm}` in `piece.recordings`; the engine can run on
+an external clock (`engine.extStart`), and `PA.app.setDriver` lets another clock replace the synth engine.
+
 Files: `score.js` (score v2 helpers: per-bar meta, parts, normalisers, checks, transpose), `store.js` (localStorage + IndexedDB),
 `engine.js` (timeline and audio, per-part buses), `transcribe.js` (request and image prep), `views.js` (tab, chords, page, loop
 selection), `abc.js` (notation and Score view), `viz.js` (fretboard/keyboard), `app.js` (UI), plus `samples.js`, `import.js`,
-`media.js`, `listen.js` from earlier phases (the last two are not loaded yet). Other tools can hook in with `PA.on` /
+`media.js`, `listen.js` from earlier phases (wired in by `rec.js` and `wait.js`). Other tools can hook in with `PA.on` /
 `PA.emit` (open, leave, play, pause, seek, speed, frame, view, loop, clips, main, rebuild) and `PA.app`.
 
 Data stays on the device: scores and player settings in `playalong:v1` (localStorage), the page photos (JPEG,
-long edge 2400) in IndexedDB `music-playalong`. Nothing is synced. Only the transcription request leaves the
+long edge 2400) in IndexedDB `music-playalong` (with recordings' audio and video). Nothing is synced. Only the transcription request leaves the
 device, through `shared/ai.js` (the musician's own key). PDFs are drawn with School's pdf.js, loaded only when one is picked.
 
 Transcription is one streamed request per page (the dialog shows the bar being read): the whole page and close-ups of its top and bottom halves, with

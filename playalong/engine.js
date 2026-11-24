@@ -12,7 +12,12 @@
      prefetch()    start loading sample packs for the configured sounds (no gesture needed)
      start() / stop(soft) / seek(pos) / pos() / setSpeed(f) / applyVolumes()
      E.counts[key]  notes scheduled per part (for tests), E.loading (packs still decoding), E.onLoad callback
-     E.segs: tempo anchors { t, pos, spb, speed, bpm, next, auto } */
+     E.segs: tempo anchors { t, pos, spb, speed, bpm, next, auto }
+   External clock (a recording is the clock; click and synth overlay follow it)
+     extStart(x, pos) / extSeek(pos) / extStop()
+       x = { ctxAt(pos) -> audio time, posAt(audioTime) -> pos, spb(pos) -> audio seconds per beat, parts: bool (synth overlay), watch() called every tick }
+     clickAt(accent, t) one click at audio time t     playRange(a, b, spb, t0) the backing parts' events in [a,b) starting at audio time t0 (wait mode)
+     start({noCountIn}) */
 (function () {
   "use strict";
   var PA = window.PA = window.PA || {};
@@ -150,7 +155,7 @@
   var E = {
     ctx: null, master: null, instBus: null, clickBus: null, chains: null, piano: null, bufs: {}, voices: [], wake: null, ctxStuck: false,
     running: false, starting: false, segs: [], schedPos: 0, gate: 0, ciActive: false, ciClicks: [], finished: false, endAt: 0,
-    worker: null, ivl: null, ciStart: 0, ciBeats: 0, ticks: 0,
+    worker: null, ivl: null, ciStart: 0, ciBeats: 0, ticks: 0, ext: null,
     buses: {}, thud: {}, cfg: { parts: {} }, counts: {}, loading: 0, failed: {}, onLoad: null, onEnd: null, speed: 1
   };
   NS.E = E;
@@ -189,7 +194,8 @@
   function applyVolumes() {
     if (!E.ctx || !E.instBus) return;
     var P = S.prefs || {}, t = E.ctx.currentTime;
-    E.instBus.gain.setTargetAtTime(clamp(P.instVol == null ? 0.8 : P.instVol, 0, 1) * 1.25, t, 0.02);
+    var ov = E.ext ? clamp(P.overlayVol == null ? 0.6 : P.overlayVol, 0, 1) : 1;
+    E.instBus.gain.setTargetAtTime(clamp(P.instVol == null ? 0.8 : P.instVol, 0, 1) * 1.25 * ov, t, 0.02);
     E.clickBus.gain.setTargetAtTime(clamp(P.clickVol == null ? 0.7 : P.clickVol, 0, 1) * 1.1, t, 0.02);
     Object.keys(E.buses).forEach(function (k) { E.buses[k].gain.setTargetAtTime(busGain(k), t, 0.02); });
   }
@@ -439,7 +445,7 @@
     var rp = refPos == null ? pos : refPos, bpm = S.tl.writtenAt(rp) * speed;
     return { t: t, pos: pos, spb: 60 / bpm, bpm: bpm, speed: speed, next: S.tl.nextTempoPos(rp), auto: !!auto };
   }
-  function timeOf(seg, pos) { return seg.t + (pos - seg.pos) * seg.spb; }
+  function timeOf(seg, pos) { return seg.map ? seg.map(pos) : seg.t + (pos - seg.pos) * seg.spb; }
   function posAtTime(t) {
     var segs = E.segs, s = segs[0];
     for (var i = segs.length - 1; i >= 0; i--) if (segs[i].t <= t) { s = segs[i]; break; }
@@ -457,6 +463,7 @@
     }
     var parts = tl.parts;
     for (var pi = 0; pi < parts.length; pi++) {
+      if (E.ext && !E.ext.parts) break;
       var p = parts[pi], c2 = E.cfg.parts[p.key];
       if (!c2 || c2.on === false || !c2.sound || c2.sound === "off") continue;
       var cfgp = { sound: c2.sound, kind: c2.kind || p.instrument }, list = tl.partEvents[p.key];
@@ -466,7 +473,24 @@
       }
     }
   }
+  function tickExt() {
+    var X = E.ext, ctx = E.ctx;
+    if (!X || !ctx) return;
+    if (X.watch) { try { X.watch(); } catch (e) {} }
+    X = E.ext;
+    if (!X) return;
+    var now = ctx.currentTime, hz = now + HORIZON;
+    if (E.voices.length > 60) E.voices = E.voices.filter(function (v) { return v.end > now - 0.2; });
+    if (ctx.state === "interrupted" || ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} }
+    var endPos = X.posAt(hz), limit = limitFor(E.schedPos), upTo = Math.min(endPos, limit);
+    if (upTo > E.schedPos + 1e-9) {
+      var seg = { map: X.ctxAt, spb: X.spb(E.schedPos) };
+      scheduleRange(E.schedPos, upTo, seg, limit);
+      E.schedPos = upTo;
+    }
+  }
   function tick() {
+    if (E.ext) { tickExt(); return; }
     if (!E.running || !E.ctx) return;
     var ctx = E.ctx, now = ctx.currentTime, hz = now + HORIZON, tl = S.tl;
     E.ticks++;
@@ -511,7 +535,7 @@
   }
 
   /* Starts playing from S.startPos (a count-in first if it is on). */
-  function start() {
+  function start(opts) {
     if (E.running || E.starting) return Promise.resolve();
     E.starting = true;
     var ctx = ensureCtx();
@@ -526,7 +550,7 @@
       if (startPos >= tl.total - 1e-6) startPos = 0;
       S.startPos = startPos;
       var P = S.prefs, loc = PA.engine.locate(tl, startPos), pass = tl.passes[loc.pass];
-      var ci = P.countIn ? SC.timeLen(pass.time) : 0, unit = pass.unit, speed = clamp(P.speed || 1, 0.1, 3), t0 = ctx.currentTime + 0.12;
+      var ci = P.countIn && !(opts && opts.noCountIn) ? SC.timeLen(pass.time) : 0, unit = pass.unit, speed = clamp(P.speed || 1, 0.1, 3), t0 = ctx.currentTime + 0.12;
       applyVolumes();
       E.voices = []; E.counts = {};
       E.ciBeats = ci; E.ciStart = startPos - ci; E.speed = speed;
@@ -571,6 +595,49 @@
     E.voices = [];
   }
 
+  /* ---- external clock ---- */
+  function extStart(x, pos) {
+    var ctx = ensureCtx();
+    if (!ctx) return false;
+    if (E.running) stop();
+    E.ext = x; E.schedPos = pos; E.finished = false; E.ciActive = false;
+    applyVolumes(); prefetch();
+    timerStart(); holdWake(true);
+    return true;
+  }
+  function extSeek(pos) {
+    if (!E.ext || !E.ctx) return;
+    var now = E.ctx.currentTime;
+    E.voices.forEach(function (v) { killVoice(v, now); }); E.voices = [];
+    E.schedPos = pos;
+  }
+  function extStop() {
+    if (!E.ext) return;
+    E.ext = null;
+    timerStop(); holdWake(false);
+    if (E.ctx) { var now = E.ctx.currentTime; E.voices.forEach(function (v) { killVoice(v, now); }); applyVolumes(); }
+    E.voices = [];
+  }
+  function clickAt(accent, t) { if (E.ctx) playClick(accent, t); }
+  /* The backing parts' events starting in [a, b), the first at audio time t0 (not the main part, not the click). */
+  function playRange(a, b, spb, t0) {
+    var tl = S.tl, ctx = ensureCtx(), n = 0;
+    if (!ctx || !tl) return 0;
+    prefetch();
+    for (var pi = 1; pi < tl.parts.length; pi++) {
+      var p = tl.parts[pi], c2 = E.cfg.parts[p.key];
+      if (!c2 || c2.on === false || !c2.sound || c2.sound === "off") continue;
+      var cfgp = { sound: c2.sound, kind: c2.kind || p.instrument }, list = tl.partEvents[p.key];
+      for (var i = eventIndexAt(list, a); i < list.length && list[i].start < b - 1e-7; i++) {
+        var ev = list[i];
+        playEventNotes(p.key, cfgp, ev, t0 + (ev.start - a) * spb + ev.shift * spb, spb, b);
+        n++;
+      }
+    }
+    return n;
+  }
+
+  NS.extStart = extStart; NS.extSeek = extSeek; NS.extStop = extStop; NS.clickAt = clickAt; NS.playRange = playRange;
   NS.buildTimeline = buildTimeline; NS.locate = locate; NS.locateParts = locateParts; NS.firstPassOf = firstPassOf; NS.eventIndexAt = eventIndexAt;
   NS.loopRange = loopRange; NS.ensureCtx = ensureCtx; NS.configure = configure; NS.prefetch = prefetch; NS.start = start; NS.stop = stop; NS.seek = seek;
   NS.pos = curPos; NS.setSpeed = setSpeed; NS.applyVolumes = applyVolumes; NS.posAtTime = posAtTime; NS.ksSamples = ksSamples; NS.clickUnit = clickUnit;

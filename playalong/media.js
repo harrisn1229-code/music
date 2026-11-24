@@ -9,7 +9,7 @@
    PAMedia.peaks(blob, buckets) -> Promise<Float32Array> 0..1 per bucket (max abs); decoded at a low sample rate so long files fit a phone
    PAMedia.SyncMap(points, fallbackSpb) -> map           points [{pos (beats), t (seconds)}]
         map.timeAt(pos), map.posAt(t), map.points, map.add({pos,t}), map.remove(i), map.nearest(pos), map.spbAt(pos)
-   PAMedia.recorder() -> { start()->Promise<performance.now() of first audio frame>, stop()->Promise<Blob>, level()->0..1, mime, cancel() }
+   PAMedia.recorder() -> { start()->Promise<performance.now() of first audio frame>, stop()->Promise<Blob>, level()->0..1, mime, latency (s, from the track's settings, 0 if unknown), cancel() }
    PAMedia.supportsRecording() -> bool
    Call player.play() / recorder.start() inside a tap on iOS. */
 (function () {
@@ -350,6 +350,7 @@
       return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }).then(function (s) {
         if (cancelled) { s.getTracks().forEach(function (t) { t.stop(); }); cleanup(); throw new Error("cancelled"); }
         stream = s;
+        try { var tr = s.getAudioTracks()[0], gs = tr && tr.getSettings && tr.getSettings(); r.latency = gs && gs.latency > 0 ? gs.latency : 0; } catch (e) { r.latency = 0; }
         try { rec = r.mime ? new MediaRecorder(s, { mimeType: r.mime }) : new MediaRecorder(s); } catch (e) { rec = new MediaRecorder(s); }
         r.mime = rec.mimeType || r.mime;
         return new Promise(function (res, rej) {

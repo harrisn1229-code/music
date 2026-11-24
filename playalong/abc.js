@@ -406,7 +406,7 @@
           var rc = first.getBoundingClientRect();
           if (horiz) V.followX(v, rc.left - v.surf.getBoundingClientRect().left, true);
           else {
-            var top = 130, bottom = window.innerHeight - (S.dockH || 150);
+            var top = 130 + (S.vidInset || 0), bottom = window.innerHeight - (S.dockH || 150);
             if (jump || rc.top < top || rc.bottom > bottom || (S.playing && curR !== c.r && rc.top > window.innerHeight * 0.5)) V.scrollIntoPlace(rc.top + window.scrollY, false);
           }
         }

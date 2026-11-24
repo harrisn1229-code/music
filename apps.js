@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.38.0",
+  version: "1.39.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
@@ -87,7 +87,7 @@ self.MUSIC = {
       icon: "icon-192.png",
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png", "score.js", "store.js", "engine.js", "transcribe.js", "views.js", "abc.js", "viz.js",
         "samples.js", "samples/bass.bin", "samples/guitar.bin", "samples/acoustic.bin", "samples/piano.bin",
-        "import.js", "vendor/alphatab/alphaTab.min.js", "vendor/alphatab/LICENSE", "media.js", "listen.js"]
+        "import.js", "vendor/alphatab/alphaTab.min.js", "vendor/alphatab/LICENSE", "media.js", "listen.js", "rec.js", "wait.js"]
     },
     {
       id: "library",
