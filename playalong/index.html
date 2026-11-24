@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Play Along</title>
+<title>Transcribe</title>
 <meta name="description" content="Photograph sheet music or tab and play along with it. Works offline.">
 <meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
@@ -28,7 +28,7 @@
   <div class="bar-in wrap">
     <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
     <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:#A63DB8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:#CF8BDB}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:#CF8BDB}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 20.5H6A1.5 1.5 0 0 1 4.5 19V5A1.5 1.5 0 0 1 6 3.5h8.5L19.5 8.5v2.5"/><path d="M14.5 3.5v5h5"/><path d="M7.5 9.5h8M7.5 12.5h5M7.5 15.5h3"/><circle cx="17.5" cy="17.5" r="4.5"/><path d="M16.2 15.6v3.8l3.1-1.9z"/></g></svg>
-    <h1 class="brand">Play Along</h1>
+    <h1 class="brand">Transcribe</h1>
     <button class="sync-dot" id="syncDot" type="button" data-s="off" aria-label="Sync" hidden><i></i></button>
     <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.500l-1.700-4.800L2.500 9l4.800-1.700z"/><path d="M15.500 12.500l.8 1.900 1.900.8-1.900.8-.8 1.900-.8-1.900-1.900-.8 1.900-.8z"/></svg></button>
   </div>
@@ -114,7 +114,7 @@
 <div class="toast" id="toast" role="status" hidden></div>
 <dialog id="addSheet" class="sheet" aria-label="Add music"></dialog>
 <dialog id="dlg" class="sheet small" aria-label="Dialog"></dialog>
-<noscript><p class="wrap">Play Along needs JavaScript turned on.</p></noscript>
+<noscript><p class="wrap">Transcribe needs JavaScript turned on.</p></noscript>
 
 <script src="../shared/ai.js"></script>
 <script src="../shared/assistant.js"></script>
@@ -142,7 +142,7 @@
   /* ---------- assistant ---------- */
   if (window.MusicAssistant) MusicAssistant.mount({
     app: "playalong", button: document.getElementById("ai-btn"),
-    context: function () { return window.__playalongContext ? window.__playalongContext() : "In Play Along."; }
+    context: function () { return window.__playalongContext ? window.__playalongContext() : "In Transcribe."; }
   });
 
   /* ---------- offline: Music's shared service worker, one folder up ---------- */

@@ -1166,9 +1166,9 @@
     window.__playalongContext = function () {
       if (S.route === "player" && S.piece && S.loc) {
         var b = S.sc.measures[S.loc.bar];
-        return "In Play Along: " + S.piece.title + ", bar " + b.n + " of " + S.sc.measures.length + ", " + speedPct() + "% (" + bpmNow() + " bpm).";
+        return "In Transcribe: " + S.piece.title + ", bar " + b.n + " of " + S.sc.measures.length + ", " + speedPct() + "% (" + bpmNow() + " bpm).";
       }
-      return S.route === "player" && S.piece ? "In Play Along: " + S.piece.title + "." : "In Play Along, list of pieces.";
+      return S.route === "player" && S.piece ? "In Transcribe: " + S.piece.title + "." : "In Transcribe, list of pieces.";
     };
     layout();
     route();

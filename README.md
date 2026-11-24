@@ -18,7 +18,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
 | Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click, presets, and Library's drills to practise with it |
-| Play Along | `playalong/` | Photograph sheet music or tab; Claude reads it once, then it plays back with a moving cursor, click, count-in, loop and tempo control |
+| Transcribe | `playalong/` | Photograph sheet music or tab; Claude reads it once, then it plays back with a moving cursor, click, count-in, loop and tempo control |
 | Voice Memos | `memos/` | Record yourself playing and listen back: waveform, slow-down, loop, share |
 | Looper | `looper/` | A loop pedal: record a loop, trim it to time, layer parts on top (overdubs), export the mix |
 | Circle of Fifths | `circle/` | The circle with key signatures, scales, diatonic chords and common progressions in any key |
@@ -54,7 +54,7 @@ ear/                   Ear Training (index.html, app.js, app.css; synthesizes al
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler; drills.js reads Library's drills)
 timer/                 Timer (index.html, app.js, app.css; the timing itself is shared/timer.js)
-playalong/             Play Along (index.html, app.css and score/store/engine/transcribe/views/abc/viz/app/lists/notebook/sync/fix .js; samples, importer; photos in IndexedDB, scores in localStorage)
+playalong/             Transcribe, formerly Play Along (index.html, app.css and score/store/engine/transcribe/views/abc/viz/app/lists/notebook/sync/fix .js; samples, importer; photos in IndexedDB, scores in localStorage)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 looper/                Looper (index.html, app.js, app.css; engine.js, dsp.js, worklet.js; loops kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
@@ -257,7 +257,9 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
 - `metronome/#drill=<id>` opens the Metronome with that drill loaded. Every drill's page in Library
   has a "Practise with metronome" button that links there (built from `music-school`).
 
-## Play Along
+## Transcribe (folder `playalong/`)
+
+Shown as "Transcribe" in the Tools section; the folder, app id and stored data keep the name `playalong` so saved pieces, sync and the Practice Log carry over.
 
 Photograph (or pick) pages of sheet music, tab or a PDF; Claude reads them once and the piece then plays
 back from the app itself, as a practice player. Views: Score (notation and tab stacked, one staff per part),
