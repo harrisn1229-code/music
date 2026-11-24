@@ -238,6 +238,7 @@
 
   /* ================================================================ Tab view */
   var SP = 13;
+  V.TAB_SP = SP;
   function slotW(d) { return 8 + 20 * Math.pow(d, 0.7); }
   function nominal(d) {
     function pw(x) { var l = Math.log2(x); return Math.abs(l - Math.round(l)) < 1e-3; }

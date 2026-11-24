@@ -138,7 +138,7 @@
       var n = R.length, systems = [];
       if (per > 0) for (var r0 = 0; r0 < n; r0 += per) systems.push([r0, Math.min(n, r0 + per) - 1]); else systems.push([0, n - 1]);
       if (single) {
-        abc = head + "K:" + key0.name + " clef=" + staves[0].clef + "\n" + systems.map(function (sy, k) { return lineText(all[0].items, sy[0], sy[1]) + (k === systems.length - 1 ? endText() : ""); }).join("\n") + "\n";
+        abc = head + "K:" + key0.name + " clef=" + staves[0].clef + "\n" + systems.map(function (sy, k) { return lineText(all[0].items, sy[0], sy[1]) + (k === systems.length - 1 ? endText() : ""); }).join("\n%%vskip 30\n") + "\n";
       } else {
         var score = [];
         staves.forEach(function (st, i) {
@@ -148,10 +148,11 @@
         });
         abc = head + "%%score " + score.join(" ") + "\nK:" + key0.name + "\n";
         systems.forEach(function (sy, k) {
+          if (k > 0) abc += "%%vskip 44\n";   /* air between systems, so the chords over a system do not read as belonging to the one above */
           staves.forEach(function (st, i) {
             var def = "";
             if (k === 0) {
-              var nm = st.grand === 2 ? "" : ' nm="' + SC.partName(st.part).replace(/"/g, "") + '" snm=" "';
+              var pn = SC.partName(st.part).replace(/"/g, ""), nm = st.grand === 2 ? "" : ' nm="' + pn + '" snm="' + pn + '"';   /* the same name on every system, so every system has the same indent */
               def = " clef=" + st.clef + nm;
             }
             abc += "V:" + (i + 1) + def + "\n" + (k === 0 && st.drum ? "[K:C]" : "") + lineText(all[i].items, sy[0], sy[1]) + (k === systems.length - 1 ? endText() : "") + "\n";
@@ -296,8 +297,8 @@
           ev.notes.forEach(function (nt) {
             if (nt.s == null || nt.f == null || nt.s > N) return;
             var y = tb.y0 + (nt.s - 1) * tb.gap, txt = nt.dead ? "x" : (nt.cont ? "(" + nt.f + ")" : String(nt.f)), wd = txt.length * 5.4 + 3;
-            sv("rect", { x: x - wd / 2, y: y - 5.2, width: wd, height: 10.4, "class": "pa-tko" }, svg);
-            tels.push(sv("text", { x: x, y: y + 0.4, "class": "pa-tn" + (nt.cont ? " tie" : "") }, svg, txt));
+            sv("rect", { x: x - wd / 2, y: y - 5.2, width: wd, height: 10.4, "class": "pa-tko", "data-pe": "main:" + r + ":" + j, "data-s": nt.s }, svg);
+            tels.push(sv("text", { x: x, y: y + 0.4, "class": "pa-tn" + (nt.cont ? " tie" : ""), "data-pe": "main:" + r + ":" + j, "data-s": nt.s }, svg, txt));
           });
           (v.NV.tabEls[r] = v.NV.tabEls[r] || [])[j] = tels;
         });

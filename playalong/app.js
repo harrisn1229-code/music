@@ -9,6 +9,7 @@
      viz.js         fretboard and keyboard
      samples.js, import.js   phase 1 modules (sounds, file import)
      media.js, listen.js   phase 1 modules, wired in by rec.js (recordings, sync editor, takes) and wait.js (wait mode)
+     lists.js, notebook.js, sync.js, fix.js   phase 3b: lists (setlists), the Notebook sheet, sync through the Music account, Fix mode (quick fixes, re-read a bar)
    Hooks for later phases: PA.on / PA.emit events (open, leave, play, pause, seek, speed, frame, view, loop, rebuild, session), PA.app (see the end of this file),
    a "driver" (PA.app.setDriver) that replaces the synth engine as the playback clock: { start(opts)->Promise, stop(soft), seek(pos), pos()->{pos,counting,ci?,speed,seg}, setSpeed(f), finished, onEnd, bpm?(pos) },
    the #dockSlot element above the transport, and PA.app.tools.add() for more icon buttons next to Display / Mixer. */
@@ -50,6 +51,9 @@
     clip: svgi('<path d="M6 4h12v17l-6-4-6 4z"/>'),
     help: svgi('<circle cx="12" cy="12" r="9"/><path d="M9.500 9.500a2.500 2.500 0 1 1 3.500 2.300c-.7.300-1 .8-1 1.500"/><path d="M12 17h.01"/>'),
     eye: svgi('<path d="M2 12s3.500-6.500 10-6.500S22 12 22 12s-3.500 6.500-10 6.500S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', 1.8),
+    up: svgi('<path d="m6 15 6-6 6 6"/>', 2.2), down: svgi('<path d="m6 9 6 6 6-6"/>', 2.2),
+    book: svgi('<path d="M5 4.500A1.500 1.500 0 0 1 6.500 3H19v15H6.500A1.500 1.500 0 0 0 5 19.500z"/><path d="M5 19.500A1.500 1.500 0 0 0 6.500 21H19v-3"/><path d="M9 8h6"/>', 1.8),
+    score: svgi('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17.500h4"/>', 1.8),
     eyeoff: svgi('<path d="M3 3l18 18"/><path d="M10.500 6c.5-.1 1-.1 1.500-.1 6.500 0 10 6 10 6a17 17 0 0 1-3 3.600M6.500 7.500A17 17 0 0 0 2 12s3.500 6.500 10 6.500c1.400 0 2.700-.3 3.800-.7"/>', 1.8)
   };
   var BTN_X = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>';
@@ -163,6 +167,23 @@
     d.querySelector("#dlgNo").onclick = closeDlg;
   }
 
+  /* what the transcription (or the importer) wasn't sure of, as lines of text */
+  function transNotes() {
+    var notes = [], f = (S.piece && S.piece.flags) || {}, sc = S.score || {};
+    if (sc.uncertain) notes.push(sc.uncertain);
+    if (f.off && f.off.length) notes.push("Bars that may be off: " + f.off.join(", ") + ".");
+    if (f.tabFixed) notes.push("Tab numbers changed to match the staff: " + f.tabFixed + ".");
+    if (f.tabGuessed) notes.push("Tab positions chosen by the app: " + f.tabGuessed + ".");
+    if (f.junk) notes.push("Unreadable items skipped: " + f.junk + ".");
+    return notes;
+  }
+  function toast(msg) {
+    var t = $("toast"); if (!t) return;
+    t.textContent = msg; t.hidden = !msg;
+    clearTimeout(toast.t);
+    if (msg) toast.t = setTimeout(function () { t.hidden = true; }, 5000);
+  }
+
   /* ================================================================ list */
   var thumbUrls = {};
   function thumbFor(pageId, node) {
@@ -176,9 +197,12 @@
   }
   function renderList() {
     var ul = $("list"); ul.innerHTML = "";
-    var list = data.pieces.filter(function (p) { return !p.deleted; }).sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); });
+    if (PA.lists) PA.lists.top();
+    var all = data.pieces.filter(function (p) { return !p.deleted; });
+    var list = PA.lists ? PA.lists.items() : all.sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); });
     $("empty").hidden = list.length > 0;
-    list.forEach(function (p) {
+    $("empty").textContent = all.length ? "Nothing here" : "No music yet";
+    list.forEach(function (p, i) {
       var li = el("li", "item");
       var open = el("button", "open");
       open.type = "button";
@@ -186,26 +210,31 @@
       var t = el("span", "t"); t.appendChild(el("span", "n", esc(p.title))); t.appendChild(el("span", "m", esc(summary(p))));
       open.appendChild(t);
       open.setAttribute("aria-label", "Open " + p.title);
-      open.onclick = function () { location.hash = "#/p/" + p.id; };
+      open.onclick = function () { if (PA.lists) PA.lists.opening(); location.hash = "#/p/" + p.id; };
       var dots = el("button", "dots", ICON.dots); dots.type = "button"; dots.setAttribute("aria-label", "More for " + p.title);
       dots.onclick = function () { cardMenu(p); };
       li.appendChild(open); li.appendChild(dots); ul.appendChild(li);
+      if (PA.lists) PA.lists.decorate(li, p, i, list.length);
       if (p.pages && p.pages[0]) thumbFor(p.pages[0], th);
     });
   }
   function cardMenu(p) {
-    var d = dialog('<div class="sh-h"><h2>' + esc(p.title) + '</h2></div><div class="menu"><button class="btn" id="mRen" type="button">Rename</button><button class="btn" id="mAgain" type="button">Transcribe again</button><button class="btn" id="mDel" type="button" style="color:var(--danger)">Delete</button></div>');
+    var d = dialog('<div class="sh-h"><h2>' + esc(p.title) + '</h2></div><div class="menu"><button class="btn" id="mRen" type="button">Rename</button>' + (PA.lists ? '<button class="btn" id="mList" type="button">Add to list…</button>' : '') + (p.pages && p.pages.length ? '<button class="btn" id="mAgain" type="button">Transcribe again</button>' : '') + '<button class="btn" id="mDel" type="button" style="color:var(--danger)">Delete</button></div>');
     d.querySelector("#mRen").onclick = function () { askText("Rename", p.title, function (v) { p.title = v; p.updated = Date.now(); ST.save(); renderList(); }); };
-    d.querySelector("#mAgain").onclick = function () { closeDlg(); openAdd(p); };
+    if (d.querySelector("#mList")) d.querySelector("#mList").onclick = function () { PA.lists.addTo(p); };
+    if (d.querySelector("#mAgain")) d.querySelector("#mAgain").onclick = function () { closeDlg(); openAdd(p); };
     d.querySelector("#mDel").onclick = function () {
       confirmBox("Delete “" + p.title + "”?", "Delete", function () { deletePiece(p); });
     };
   }
   function deletePiece(p) {
-    data.pieces = data.pieces.filter(function (x) { return x !== p; });
-    ST.save();
     (p.pages || []).forEach(function (id) { ST.pgDel(id).catch(function () {}); if (thumbUrls[id]) { URL.revokeObjectURL(thumbUrls[id]); delete thumbUrls[id]; } });
     (p.recordings || []).forEach(function (r) { if (r.mediaId) ST.mediaDel(r.mediaId).catch(function () {}); });
+    // what is left is a tombstone, so the deletion can sync to the other devices (kept 60 days)
+    var keep = { id: p.id, deleted: true, updated: Date.now(), title: p.title };
+    Object.keys(p).forEach(function (k) { delete p[k]; });
+    for (var k in keep) p[k] = keep[k];
+    ST.save();
     renderList();
   }
 
@@ -254,6 +283,8 @@
     if (!A) return;
     var list = Array.prototype.slice.call(files || []);
     if (!list.length) return;
+    var sf = !A.piece && window.PAImport ? list.filter(function (f) { return !/^image\//.test(f.type) && !(f.type === "application/pdf" || /\.pdf$/i.test(f.name || "")) && PAImport.accepts(f); })[0] : null;
+    if (sf) { importFile(sf); return; }
     A.prep = true; A.err = ""; renderAdd();
     var chain = Promise.resolve();
     list.forEach(function (f) {
@@ -270,7 +301,7 @@
     chain.then(function () { if (A) { A.prep = false; renderAdd(); } });
   }
   function openAdd(piece) {
-    A = { pages: [], hint: "auto", busy: false, prep: false, err: "", status: "", piece: piece || null, ctl: null, removed: [], keyErr: "" };
+    A = { pages: [], hint: "auto", busy: false, prep: false, err: "", status: "", piece: piece || null, ctl: null, removed: [], keyErr: "", imp: null };
     var d = $("addSheet");
     renderAdd();
     if (!d.open) d.showModal();
@@ -290,6 +321,63 @@
     A = null;
     var d = $("addSheet"); if (d.open) d.close();
   }
+  /* Score files: Guitar Pro, MusicXML, MIDI. A second picker with its own accept list (extensions and MIME types, as iOS wants both); holding the button
+     lists every file instead, in case iOS greys the score files out (remembered in localStorage "playalong:anyfile"). */
+  var SCORE_ACCEPT = ".gp,.gp3,.gp4,.gp5,.gpx,.xml,.musicxml,.mxl,.mid,.midi,audio/midi,audio/x-midi,audio/mid,application/x-midi,application/vnd.recordare.musicxml,application/vnd.recordare.musicxml+xml,application/xml,text/xml,application/x-guitar-pro,application/x-gtp,application/gp";
+  var scoreIn = null;
+  function anyFile() { try { return localStorage.getItem("playalong:anyfile") === "1"; } catch (e) { return false; } }
+  function scoreAcceptNow() { return anyFile() ? "" : SCORE_ACCEPT; }
+  function instName(inst, prog) { return inst === "drums" || (inst === "other" && prog === -1) ? "Drums" : (SC.INST_NAME[inst] || "Music"); }
+  function importFile(f) {
+    var cur = A;
+    if (!cur || cur.busy || !window.PAImport) return;
+    cur.busy = true; cur.err = ""; cur.status = "Reading " + (f.name || "the file") + "…"; cur.imp = null;
+    cur.ctl = { abort: function () { cur.cancelled = true; cur.busy = false; cur.ctl = null; if (A === cur) renderAdd(); } };
+    cur.cancelled = false;
+    renderAdd();
+    PAImport.read(f, f.name).then(function (res) {
+      if (A !== cur || cur.cancelled) return;
+      cur.busy = false; cur.ctl = null;
+      var sc = res.score, list = [{ index: -1, name: sc.mainName || instName(sc.instrument, sc.program), instrument: instName(sc.instrument, sc.program) }];
+      (res.parts || []).forEach(function (q) { list.push({ index: q.index, name: q.name || instName(q.instrument), instrument: instName(q.instrument) }); });
+      cur.imp = { res: res, list: list, choice: -1, title: (sc.title || "").trim() || String(f.name || "Score").replace(/\.[A-Za-z0-9]+$/, "") };
+      if (list.length < 2) { finishImport(cur); return; }
+      renderAdd();
+    }).catch(function (e) {
+      if (A !== cur || cur.cancelled) return;
+      cur.busy = false; cur.ctl = null; cur.err = (e && e.message) || "Couldn't read that file."; renderAdd();
+    });
+  }
+  function finishImport(sess) {
+    var im = sess.imp, res = im.res, score = res.score;
+    if (im.choice >= 0 && window.PAImport) PAImport.setMain(score, im.choice);
+    var flags = SC.finishImported(score); SC.markTies(score);
+    if (res.warnings && res.warnings.length) score.uncertain = (score.uncertain ? score.uncertain + "\n" : "") + res.warnings.join("\n");
+    var now = Date.now();
+    var piece = { id: uid(), title: im.title, created: now, updated: now, pages: [], score: score, flags: flags, prefs: defaultPrefs(score) };
+    data.pieces.push(piece); ST.save();
+    logCall("event", "playalong", "Added " + piece.title);
+    closeAdd();
+    location.hash = "#/p/" + piece.id;
+    if (S.route === "player" && S.piece && S.piece.id === piece.id) openPiece(piece.id);
+  }
+  function renderPick(d) {
+    var im = A.imp, h = '<div class="sh-in"><div class="sh-h"><h2>' + esc(im.title) + '</h2><button class="icon-btn" id="aClose" type="button" aria-label="Close">' + BTN_X + "</button></div>";
+    h += '<div class="row"><span class="lb">Your part</span></div><div class="menu" id="aParts" role="radiogroup" aria-label="Your part">';
+    im.list.forEach(function (q) {
+      h += '<button class="btn pickrow" type="button" role="radio" data-p="' + q.index + '" aria-checked="' + (im.choice === q.index) + '" aria-pressed="' + (im.choice === q.index) + '">' + esc(q.name) + "<small>" + esc(q.instrument) + '</small><i class="tick" aria-hidden="true"></i></button>';
+    });
+    h += '</div><div class="btns"><button class="btn" id="aImpNo" type="button">Cancel</button><button class="btn pri" id="aImpGo" type="button">Open</button></div></div>';
+    d.innerHTML = h;
+    d.querySelector("#aClose").onclick = closeAdd; d.querySelector("#aImpNo").onclick = closeAdd;
+    Array.prototype.forEach.call(d.querySelectorAll("[data-p]"), function (b) {
+      b.onclick = function () {
+        im.choice = +b.getAttribute("data-p");
+        Array.prototype.forEach.call(d.querySelectorAll("[data-p]"), function (x) { var on = x === b; x.setAttribute("aria-pressed", String(on)); x.setAttribute("aria-checked", String(on)); });
+      };
+    });
+    d.querySelector("#aImpGo").onclick = function () { finishImport(A); };
+  }
   function renderAdd() {
     var d = $("addSheet");
     if (!A) return;
@@ -297,6 +385,18 @@
       fileIn = el("input"); fileIn.type = "file"; fileIn.accept = "image/*,application/pdf"; fileIn.multiple = true; fileIn.hidden = true; fileIn.id = "fileIn";
       fileIn.onchange = function () { var f = fileIn.files; addFiles(f); setTimeout(function () { fileIn.value = ""; }, 0); };
     }
+    if (!scoreIn) {
+      scoreIn = el("input"); scoreIn.type = "file"; scoreIn.hidden = true; scoreIn.id = "scoreIn";
+      scoreIn.onchange = function () {
+        var f = scoreIn.files && scoreIn.files[0];
+        setTimeout(function () { scoreIn.value = ""; }, 0);
+        if (!f) return;
+        if (window.PAImport && PAImport.accepts(f)) importFile(f);
+        else if (A) { A.err = "That isn't a Guitar Pro, MusicXML or MIDI file."; renderAdd(); }
+      };
+    }
+    scoreIn.accept = scoreAcceptNow();
+    if (A.imp && A.imp.res && !A.busy) { renderPick(d); return; }
     var again = !!A.piece, busy = A.busy, needKey = !(window.MusicAI && MusicAI.has());
     var h = '<div class="sh-in">';
     h += '<div class="sh-h"><h2>' + (again ? "Transcribe again" : "Add music") + '</h2><button class="icon-btn" id="aClose" type="button" aria-label="Close">' + BTN_X + "</button></div>";
@@ -307,7 +407,8 @@
       });
       h += "</div>";
     }
-    if (!busy) h += '<div class="pick"><button class="btn" id="aPick" type="button">' + ICON.image + (A.pages.length ? "Add page" : "Photo or PDF") + "</button></div>";
+    if (!busy) h += '<div class="pick"><button class="btn" id="aPick" type="button">' + ICON.image + (A.pages.length ? "Add page" : "Photo or PDF") + "</button>" +
+      (!again && !A.pages.length && window.PAImport ? '<button class="btn" id="aScore" type="button">' + ICON.score + "Score file</button>" : "") + "</div>";
     if (!busy) {
       h += '<div class="chips" role="group" aria-label="Instrument">';
       [["auto", "Auto"], ["bass", "Bass"], ["guitar", "Guitar"], ["piano", "Piano"], ["other", "Other"]].forEach(function (c) {
@@ -329,9 +430,16 @@
     h += "</div>";
     d.innerHTML = h;
     d.querySelector(".sh-in").appendChild(fileIn);
+    d.querySelector(".sh-in").appendChild(scoreIn);
     var q = function (s) { return d.querySelector(s); };
     q("#aClose").onclick = closeAdd;
     if (q("#aPick")) q("#aPick").onclick = function () { fileIn.click(); };
+    if (q("#aScore")) {
+      var sb = q("#aScore"), held = 0, long = false;
+      sb.onclick = function () { if (long) { long = false; return; } scoreIn.accept = scoreAcceptNow(); scoreIn.click(); };
+      sb.addEventListener("pointerdown", function () { long = false; held = setTimeout(function () { long = true; try { localStorage.setItem("playalong:anyfile", anyFile() ? "0" : "1"); } catch (e) {} toast(anyFile() ? "Showing every file" : "Showing score files"); }, 700); });
+      ["pointerup", "pointerleave", "pointercancel"].forEach(function (n) { sb.addEventListener(n, function () { clearTimeout(held); }); });
+    }
     Array.prototype.forEach.call(d.querySelectorAll("[data-rm]"), function (b) {
       b.onclick = function () {
         var i = +b.getAttribute("data-rm"), p = A.pages.splice(i, 1)[0];
@@ -722,13 +830,8 @@
     h += '<div class="row"><span class="lb">Click</span><div class="chips"><button class="chip" id="cClick" type="button" aria-pressed="false">Click</button><button class="chip" id="cCount" type="button" aria-pressed="false">Count-in</button></div></div>';
     h += '<div class="row"><span class="lb">Speed up each loop</span><div class="chips grow" id="cUp">' + [[0, "Off"], [2, "+2"], [5, "+5"], [10, "+10"]].map(function (s) { return chipBtn(s[1], 'data-u="' + s[0] + '"', false); }).join("") + '</div></div>';
     h += '<div class="row" id="rTarget"><span class="lb">Up to</span><div class="chips grow" id="cTarget">' + [80, 90, 100, 120, 150].map(function (s) { return chipBtn(s + "%", 'data-t="' + s + '"', false); }).join("") + "</div></div>";
-    h += '<div class="row"><span class="lb">Tools</span><div class="chips"><button class="chip ic" id="cClip" type="button">' + ICON.clip + 'Save loop</button><button class="chip ic" id="cFull" type="button">' + ICON.full + 'Full screen</button><button class="chip ic" id="cKeys" type="button">' + ICON.help + "Keys</button></div></div>";
-    var notes = [];
-    if (S.score.uncertain) notes.push(S.score.uncertain);
-    if (f.off && f.off.length) notes.push("Bars that may be off: " + f.off.join(", ") + ".");
-    if (f.tabFixed) notes.push("Tab numbers changed to match the staff: " + f.tabFixed + ".");
-    if (f.tabGuessed) notes.push("Tab positions chosen by the app: " + f.tabGuessed + ".");
-    if (f.junk) notes.push("Unreadable items skipped: " + f.junk + ".");
+    h += '<div class="row"><span class="lb">Tools</span><div class="chips"><button class="chip ic" id="cClip" type="button">' + ICON.clip + 'Save loop</button><button class="chip ic" id="cFull" type="button">' + ICON.full + 'Full screen</button><button class="chip ic" id="cKeys" type="button">' + ICON.help + "Keys</button>" + (PA.notebook ? '<button class="chip ic" id="cBook" type="button">' + ICON.book + "Notebook</button>" : "") + "</div></div>";
+    var notes = transNotes();
     if (notes.length) h += '<details><summary>Notes from the transcription</summary><p>' + esc(notes.join("\n")) + "</p></details>";
     m.innerHTML = h;
     var q = function (s) { return m.querySelector(s); };
@@ -741,6 +844,7 @@
     q("#cClip").onclick = saveClip;
     q("#cFull").onclick = toggleFullscreen;
     q("#cKeys").onclick = function () { closePanels(); showShortcuts(); };
+    if (q("#cBook")) q("#cBook").onclick = function () { closePanels(); PA.notebook.open(); };
   }
   function syncMore() {
     var m = $("more"), P = S.prefs;
@@ -820,7 +924,7 @@
     S.prefs.viz.kind = null;
     S.piece.prefs = S.prefs; ST.save();
     rebuild(true);
-    S.view = pickView(S.view);
+    S.view = pickView(S.prefs.view);   // prefs.view is the view he chose, so Score comes back when a part with tab is main again
     buildPanels(); syncViewButtons(); updateTransport();
     PA.viz.mount($("viz")); renderView();
     PA.emit("main", { index: idx });
@@ -939,7 +1043,7 @@
     });
   }
   var KEYS = [["Space", "Play / pause"], ["← →", "Previous / next bar"], ["Shift ← →", "Extend the loop"], ["L", "Loop this bar on / off"], ["[ ]", "Speed −5% / +5%"], ["− =", "Zoom out / in"],
-    ["M", "Click on / off"], ["C", "Count-in on / off"], ["F", "Fretboard / keyboard"], ["Esc", "Clear the loop"], ["Home", "Back to start"], ["?", "This list"]];
+    ["M", "Click on / off"], ["C", "Count-in on / off"], ["F", "Fretboard / keyboard"], ["N", "Notebook"], ["Esc", "Clear the loop"], ["Home", "Back to start"], ["?", "This list"]];
   function showShortcuts() {
     dialog('<div class="sh-h"><h2>Keys</h2></div><dl class="keys">' + KEYS.map(function (k) { return "<dt>" + esc(k[0]) + "</dt><dd>" + esc(k[1]) + "</dd>"; }).join("") + '</dl><div class="btns"><button class="btn" id="dlgNo" type="button">Close</button></div>').querySelector("#dlgNo").onclick = closeDlg;
   }
@@ -988,6 +1092,7 @@
     else if (k === "m" || k === "M") { S.prefs.click = !S.prefs.click; savePrefs(); syncPanels(); }
     else if (k === "c" || k === "C") { S.prefs.countIn = !S.prefs.countIn; savePrefs(); syncPanels(); }
     else if (k === "f" || k === "F") { S.prefs.viz.on = !S.prefs.viz.on; savePrefs(); PA.viz.mount($("viz")); PA.viz.update(S.loc); syncViewButtons(); layout(); }
+    else if (k === "n" || k === "N") { if (PA.notebook) PA.notebook.open(); }
     else if (k === "Escape") { if (anyPanelOpen()) closePanels(); else if (document.body.classList.contains("fs")) toggleFullscreen(); else clearLoop(); }
     else if (k === "Home") { var L = EN.loopRange(); scrollHold = 0; seekTo(L ? L.start : 0); }
     else if (k === "?") showShortcuts();
@@ -1087,7 +1192,7 @@
     slot: function () { return $("dockSlot"); }, curPos: curPos, updateCursor: updateCursor, renderList: renderList, openAdd: openAdd,
     defaultPrefs: defaultPrefs, loadPrefs: loadPrefs,
     setDriver: setDriver, eng: eng, showHint: showHint, updateTransport: updateTransport, logCall: logCall, uid: uid, esc: esc, el: el, KEYS: KEYS, syncPanels: syncPanels,
-    refreshViews: syncViewButtons
+    refreshViews: syncViewButtons, toast: toast, transNotes: transNotes
   };
 
   // for tests and tinkering in the console

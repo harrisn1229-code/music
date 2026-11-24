@@ -4,6 +4,7 @@
      that has bars which don't add up. Answers go through PA.score.normalizePage / mergePages / finishScore.
    Request schema (v2): per bar box [x,y,w,h] (fractions of IMAGE 1), section, tempo, time, key, per event lyric, per note dead, and
    optional parts (extra staves, bar-aligned by bar number).
+   transcribe.rereadBars(score, barIndexes, getBlob(pg) -> Promise<Blob>, { signal }) -> Promise<[{ index, bar }]>: Fix mode's "Read again" (see below).
    PA.img: decodeBlob, srcSize, drawRegion, canvasBlob, prepImage, makeThumb (the photo helpers the add sheet uses). */
 (function () {
   "use strict";
@@ -293,6 +294,98 @@
       flags.off = bad.map(function (i) { return score.measures[i].n; });
     });
   }
+
+  /* ================================================================ re-reading chosen bars (Fix mode: "Read again") */
+  /* Re-reads bars idxs (indices into score.measures) from the page photos. getBlob(pg) -> Promise<Blob|null> gives page pg's photo.
+     Sends the whole page and a high-resolution crop around the bars' boxes (about 15% margin; with no box, the two close-ups the transcription uses),
+     the score header and the JSON of the bars and their neighbours, and asks for just those bars back (fix_bars, streamed, effort high).
+     Resolves to [{ index, bar }] where bar is a normalised replacement (box, section, time, key, tempo and page carried over). */
+  function cropBlocks(blob, boxes) {
+    return decodeBlob(blob).then(function (im) {
+      var s = srcSize(im), w = s.w, h = s.h;
+      var blocks = [imgBlock(drawRegion(im, 0, 0, w, h, 1568))];
+      if (boxes && boxes.length) {
+        var x0 = 1, y0 = 1, x1 = 0, y1 = 0;
+        boxes.forEach(function (b) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
+        var mx = Math.max((x1 - x0) * 0.15, 0.02), my = Math.max((y1 - y0) * 0.15, 0.02);
+        x0 = Math.max(0, x0 - mx); y0 = Math.max(0, y0 - my); x1 = Math.min(1, x1 + mx); y1 = Math.min(1, y1 + my);
+        blocks.push(imgBlock(drawRegion(im, Math.round(x0 * w), Math.round(y0 * h), Math.max(8, Math.round((x1 - x0) * w)), Math.max(8, Math.round((y1 - y0) * h)), 1568)));
+      } else if (h >= w) {
+        blocks.push(imgBlock(drawRegion(im, 0, 0, w, Math.round(h * 0.55), 1568)));
+        blocks.push(imgBlock(drawRegion(im, 0, Math.round(h * 0.45), w, h - Math.round(h * 0.45), 1568)));
+      } else {
+        blocks.push(imgBlock(drawRegion(im, 0, 0, Math.round(w * 0.55), h, 1568)));
+        blocks.push(imgBlock(drawRegion(im, Math.round(w * 0.45), 0, w - Math.round(w * 0.45), h, 1568)));
+      }
+      if (im.close) try { im.close(); } catch (e) {}
+      return blocks;
+    });
+  }
+  function rereadBars(score, idxs, getBlob, opt) {
+    opt = opt || {};
+    idxs = idxs.slice().sort(function (a, b) { return a - b; });
+    var byPage = {}, order = [], mt = SC.meta(score);
+    idxs.forEach(function (i) {
+      var m = score.measures[i], pg = m.box ? (m.box.pg || 0) : (m.pg || 0);
+      if (!byPage[pg]) { byPage[pg] = []; order.push(pg); }
+      byPage[pg].push(i);
+    });
+    var blocks = [], chain = Promise.resolve(), pageNote = [];
+    order.forEach(function (pg, k) {
+      chain = chain.then(function () {
+        if (opt.signal && opt.signal.aborted) throw AbortErr();
+        return getBlob(pg).then(function (blob) {
+          if (!blob) throw new Error("That page's photo isn't on this device.");
+          var boxes = byPage[pg].map(function (i) { return score.measures[i].box; });
+          return cropBlocks(blob, boxes.every(Boolean) ? boxes : null).then(function (bl) {
+            blocks = blocks.concat(bl);
+            pageNote.push("images " + (blocks.length - bl.length + 1) + "-" + blocks.length + " are page " + (pg + 1) + (boxes.every(Boolean) ? " (the whole page, then a close-up around the bar" + (boxes.length > 1 ? "s" : "") + ")" : " (the whole page, then close-ups of its halves)"));
+          });
+        });
+      });
+    });
+    return chain.then(function () {
+      var want = {}, ctx = {};
+      idxs.forEach(function (i) { want[i] = 1; });
+      idxs.forEach(function (i) { [i - 1, i + 1].forEach(function (j) { if (j >= 0 && j < score.measures.length && !want[j]) ctx[j] = 1; }); });
+      var shown = Object.keys(want).concat(Object.keys(ctx)).map(Number).sort(function (a, b) { return a - b; });
+      var send = shown.map(function (i) { var o = rawBar(score.measures[i]); o.reread = !!want[i]; return o; });
+      var tm = mt[idxs[0]].time, head = "Score: \"" + (score.title || "Untitled") + "\", instrument " + score.instrument + ", clef " + score.clef + ", key " + mt[idxs[0]].key + ", time " + tm[0] + "/" + tm[1] +
+        (score.tuning ? ", tuning " + score.tuning.map(SC.midiName).join(" ") + " (lowest string first, " + score.strings + " strings)" : "") + ".";
+      var lens = idxs.map(function (i) { return "bar " + score.measures[i].n + " should add up to " + String(Math.round(mt[i].len * 1000) / 1000) + " beats"; });
+      var text = pageNote.join("; ") + ". " + head + " Read bar" + (idxs.length > 1 ? "s " : " ") + idxs.map(function (i) { return score.measures[i].n; }).join(", ") +
+        " again, very carefully, from the photo; the earlier reading may be wrong (" + lens.join("; ") + "). Return only " + (idxs.length > 1 ? "those bars" : "that bar") + " with fix_bars. Neighbouring bars are included for context only (reread: false); do not return them.\n\n" + JSON.stringify(send);
+      return abortable(window.MusicAI.call({
+        system: SYSTEM,
+        messages: [{ role: "user", content: blocks.concat([{ type: "text", text: text }]) }],
+        tools: [FIX_TOOL], tool_choice: { type: "tool", name: "fix_bars" },
+        max_tokens: 24000, effort: "high", signal: opt.signal, stream: true
+      }), opt.signal);
+    }).then(function (res) {
+      var inp = toolInput(res, "fix_bars", "the bar"), list = Array.isArray(inp.measures) ? inp.measures : [], out = [];
+      idxs.forEach(function (i) {
+        var old = score.measures[i], hit = null;
+        list.forEach(function (m) { if (Math.round(+(m && m.n)) === old.n) hit = m; });
+        if (!hit && idxs.length === 1 && list.length === 1 && !(Math.round(+(list[0] && list[0].n)) > 0)) hit = list[0];   // an answer with no bar number is taken for the one bar asked about
+        if (!hit) return;
+        var nb = SC.normalizeBar(hit, old.n, mt[i].len).bar;
+        if (!nb.events.length) return;
+        var f2 = { tabFixed: 0, tabGuessed: 0, tabNone: 0 };
+        if (!SC.isDrumMain(score)) SC.fixTabLists([nb.events], score.instrument, score.tuning, SC.transOf(score), f2);
+        nb.n = old.n; nb.pg = old.pg;
+        ["box", "section", "time", "key", "tempo"].forEach(function (f) { if (old[f] != null) nb[f] = old[f]; });
+        if (!nb.chords.length && old.chords && old.chords.length) nb.chords = old.chords;
+        ["repeatStart", "repeatEnd", "ending"].forEach(function (f) { if (nb[f] == null && old[f] != null) nb[f] = old[f]; });
+        nb.sum = SC.barSum(nb);
+        var ok = SC.expectedLens(score, i, mt).some(function (L) { return Math.abs(nb.sum - L) < 0.02; });
+        if (!ok) nb.bad = true;
+        out.push({ index: i, bar: nb });
+      });
+      if (!out.length) throw new Error("Nothing came back for " + (idxs.length > 1 ? "those bars" : "that bar") + ". Try again.");
+      return out;
+    });
+  }
+  transcribe.rereadBars = rereadBars;
 
   PA.transcribe = transcribe;
   PA.transcribeInfo = { SYSTEM: SYSTEM, TOOL: TOOL, FIX_TOOL: FIX_TOOL, pageText: pageText };
