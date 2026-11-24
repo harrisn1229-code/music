@@ -2,7 +2,7 @@
 -- Paste the whole file into the project's SQL Editor and run it. It is safe to run again.
 -- Then add yourself at the bottom (step 4).
 
--- 1) One saved document per person per tool. School keeps its progress in the row app = 'school'.
+-- 1) One saved document per person per tool. School keeps its progress in the row app = 'school'; Play Along uses app = 'playalong'.
 create table if not exists public.app_data (
   user_id    uuid        not null references auth.users (id) on delete cascade,
   app        text        not null,
@@ -35,6 +35,7 @@ create or replace function public.is_owner() returns boolean
   language sql stable security definer set search_path = public as
   $$ select exists (select 1 from public.members where lower(email) = lower(auth.jwt() ->> 'email') and owner) $$;
 
+-- (Play Along keeps its photos and recordings in this same bucket under the playalong/ prefix; no change needed.)
 -- 3) The private bucket for School's files (chord charts, album art, book scans, screenshots).
 --    Members can read; owners can add, replace and remove. Nobody else can see anything.
 insert into storage.buckets (id, name, public) values ('school-files', 'school-files', false)

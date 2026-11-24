@@ -18,6 +18,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <script src="../shared/settings.js"></script>
+<script src="../shared/cloud-config.js"></script>
+<script src="../shared/cloud.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -27,7 +29,8 @@
     <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
     <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:#A63DB8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:#CF8BDB}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:#CF8BDB}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 20.5H6A1.5 1.5 0 0 1 4.5 19V5A1.5 1.5 0 0 1 6 3.5h8.5L19.5 8.5v2.5"/><path d="M14.5 3.5v5h5"/><path d="M7.5 9.5h8M7.5 12.5h5M7.5 15.5h3"/><circle cx="17.5" cy="17.5" r="4.5"/><path d="M16.2 15.6v3.8l3.1-1.9z"/></g></svg>
     <h1 class="brand">Play Along</h1>
-    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+    <button class="sync-dot" id="syncDot" type="button" data-s="off" aria-label="Sync" hidden><i></i></button>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.500l-1.700-4.800L2.500 9l4.800-1.700z"/><path d="M15.500 12.500l.8 1.900 1.900.8-1.900.8-.8 1.900-.8-1.900-1.900-.8 1.900-.8z"/></svg></button>
   </div>
 </header>
 
@@ -35,9 +38,24 @@
   <div class="sub-in wrap">
     <button class="icon-btn" id="back" type="button" aria-label="Back to pieces"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.500 4 6.500 10l6 6"/></svg></button>
     <h2 class="ptitle" id="ptitle"></h2>
+    <div class="tools" id="tools">
+      <button class="icon-btn sm" id="tSec" type="button" aria-label="Sections" hidden></button>
+      <button class="icon-btn sm" id="tDisp" type="button" aria-label="Display" aria-pressed="false"></button>
+      <button class="icon-btn sm" id="tMix" type="button" aria-label="Mixer" aria-pressed="false"></button>
+      <button class="icon-btn sm" id="tViz" type="button" aria-label="Fretboard" aria-pressed="false"></button>
+    </div>
+  </div>
+  <div class="sub-in wrap lrow" id="lrow" hidden>
+    <button class="icon-btn sm" id="lPrev" type="button" aria-label="Previous piece"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.500 4 6.500 10l6 6"/></svg></button>
+    <span class="lname" id="lName"></span>
+    <button class="icon-btn sm" id="lNext" type="button" aria-label="Next piece"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.500 4 6 6-6 6"/></svg></button>
+  </div>
+  <div class="sub-in wrap vrow">
     <div class="seg" id="views" role="group" aria-label="View">
+      <button type="button" data-v="score" aria-pressed="false">Score</button>
+      <button type="button" data-v="notation" aria-pressed="false">Notation</button>
       <button type="button" data-v="tab" aria-pressed="false">Tab</button>
-      <button type="button" data-v="notes" aria-pressed="false">Notes</button>
+      <button type="button" data-v="chords" aria-pressed="false">Chords</button>
       <button type="button" data-v="page" aria-pressed="false">Page</button>
     </div>
   </div>
@@ -45,31 +63,47 @@
 
 <main class="wrap" id="view">
   <div class="col" id="vList">
+    <div class="listtop" id="listTop" hidden>
+      <div class="chips lchips" id="lChips" role="group" aria-label="Lists"></div>
+      <input class="field" id="lSearch" type="search" placeholder="Search" aria-label="Search pieces" autocomplete="off" hidden>
+    </div>
     <ul class="list" id="list" aria-label="Pieces"></ul>
     <p class="empty" id="empty" hidden>No music yet</p>
   </div>
   <div id="vPlayer" hidden>
+    <div class="vp" id="vScore" hidden></div>
+    <div class="vp" id="vNotation" hidden></div>
     <div class="vp" id="vTab" hidden></div>
-    <div class="vp" id="vNotes" hidden></div>
+    <div class="vp" id="vChords" hidden></div>
     <div class="vp" id="vPage" hidden></div>
     <div class="cursor-badge" id="badge" hidden></div>
   </div>
 </main>
 
+<div class="fsbar" id="fsBar" hidden>
+  <button class="tb" id="fsPlay" type="button" aria-label="Play"></button>
+  <button class="tb" id="fsExit" type="button" aria-label="Exit full screen"></button>
+</div>
+
 <footer class="dock" id="dock">
   <div class="dock-in col" id="dockList">
     <button class="add-btn" id="add" type="button" aria-label="Add music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
-  <div class="dock-in col" id="dockPlay" hidden>
+  <div class="dock-in col wide" id="dockPlay" hidden>
     <p class="err" id="err" role="status" hidden></p>
     <div class="more" id="more" hidden></div>
+    <div class="more" id="pMixer" hidden></div>
+    <div class="more" id="pDisplay" hidden></div>
+    <div id="dockSlot"></div>
+    <div class="viz" id="viz" hidden></div>
+    <div class="clips" id="clips" hidden></div>
     <div class="tp">
       <button class="tb" id="bLoop" type="button" aria-label="Loop" aria-pressed="false"></button>
       <button class="tb" id="bStart" type="button" aria-label="Back to start"></button>
       <button class="tb play" id="bPlay" type="button" aria-label="Play"></button>
       <div class="tempo">
         <button class="tb sm" id="bSlow" type="button" aria-label="Slower">&minus;</button>
-        <button class="tval" id="bBpm" type="button" aria-label="Tempo, tap to type"><b id="bpmN">100</b><small>bpm</small></button>
+        <button class="tval" id="bBpm" type="button" aria-label="Speed, tap to type"><b id="bpmN">100%</b><small id="bpmS">100 bpm</small></button>
         <button class="tb sm" id="bFast" type="button" aria-label="Faster">+</button>
       </div>
       <button class="tb" id="bMore" type="button" aria-label="More" aria-expanded="false"></button>
@@ -77,13 +111,32 @@
   </div>
 </footer>
 
+<div class="toast" id="toast" role="status" hidden></div>
 <dialog id="addSheet" class="sheet" aria-label="Add music"></dialog>
 <dialog id="dlg" class="sheet small" aria-label="Dialog"></dialog>
 <noscript><p class="wrap">Play Along needs JavaScript turned on.</p></noscript>
 
 <script src="../shared/ai.js"></script>
 <script src="../shared/assistant.js"></script>
+<!-- one namespace, window.PA, shared by these files; the order matters -->
+<script src="score.js"></script>
+<script src="store.js"></script>
+<script src="engine.js"></script>
+<script src="transcribe.js"></script>
+<script src="views.js"></script>
+<script src="abc.js"></script>
+<script src="viz.js"></script>
+<script src="samples.js"></script>
+<script src="import.js"></script>
+<script src="media.js"></script>
+<script src="listen.js"></script>
 <script src="app.js"></script>
+<script src="rec.js"></script>
+<script src="wait.js"></script>
+<script src="lists.js"></script>
+<script src="notebook.js"></script>
+<script src="sync.js"></script>
+<script src="fix.js"></script>
 <script>
 (function () {
   /* ---------- assistant ---------- */

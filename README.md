@@ -53,7 +53,7 @@ ear/                   Ear Training (index.html, app.js, app.css; synthesizes al
 tuner/                 Tuner (index.html, app.js, app.css; pitch detection in the browser)
 metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Audio scheduler; drills.js reads Library's drills)
 timer/                 Timer (index.html, app.js, app.css; the timing itself is shared/timer.js)
-playalong/             Play Along (index.html, app.js, app.css; photos in IndexedDB, scores in localStorage; synthesizes all its sound)
+playalong/             Play Along (index.html, app.css and score/store/engine/transcribe/views/abc/viz/app/lists/notebook/sync/fix .js; samples, importer; photos in IndexedDB, scores in localStorage)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
@@ -258,20 +258,71 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
 ## Play Along
 
 Photograph (or pick) pages of sheet music, tab or a PDF; Claude reads them once and the piece then plays
-back from the app itself, with a moving cursor in a Tab view (bass and guitar), a Notes view (abcjs, the copy
-Barline ships) and a Page view of the original photos. Count-in, click, tempo (40-160% of the written tempo),
-bar loops and "speed up each loop" are in the dock and its More panel. Bass and guitar are plucked-string
-models and the piano is Barline's, all synthesized, so playback works offline.
+back from the app itself, as a practice player. Views: Score (notation and tab stacked, one staff per part),
+Notation, Tab, Chords (lead-sheet grid) and Page (the photos, with the current bar boxed). Every bar can carry its own
+time signature, key and tempo, a section name, lyrics, dead notes and a box on the photo; extra staves (drums, piano...)
+are parts. The dock has speed as a percent of the written tempo (25-200%, shown with the bpm), loop, play and a More
+panel (speed presets, click, count-in, speed trainer +2/+5/+10 up to a target, save loop, full screen, keys). Four sheets:
+Mixer (volume, mute, solo, show/hide and sound per part, "Your part", click and master), Display (notation, tab, chord
+names, pitch names, counts, bar numbers, lyrics, expand repeats, wrapped or horizontal layout, zoom 60-200 with pinch,
+focus loop, transpose -12..+12 saved per piece), Sections and a fretboard or keyboard panel that lights the current notes.
+Loops are chosen by dragging over bars (handles to adjust) and can be saved as clips; Space, arrows, L, [ ], M, C, F and ? are shortcuts.
+Sound comes from `samples.js` (the sampled instruments) with the synthesized models as fallback, so playback works offline.
+
+Real recordings: the Recording pill under the toolbar switches between Synth and recordings of the piece (an audio or video
+file kept in IndexedDB `media`, a YouTube link, or your own takes). With a recording the recording is the clock: the cursor follows
+its sync map, speed is the player's rate, loops seek the recording, and the click (and optionally the synth parts, with their own
+volume) follow the recording's real timing. Video shows in a panel above the music (left of it on wide screens): drag its bottom
+edge to resize, hide, mirror. The sync editor (the wave button) is tap-to-sync: press play and tap on each downbeat (or any key),
+per bar or per beat; drag a marker on the waveform, nudge it 10 ms, delete it or clear from here. Record (red button, `R`) records the
+microphone while playback runs and saves a take with sync from what was playing. Wait (More, `W`) stops the cursor on each note of
+your part until you play it (microphone, or MIDI when a keyboard is connected); the hit counter goes into the practice history.
+Files: `rec.js` (recordings, driver, video, sync editor, takes) and `wait.js`, using `media.js` and `listen.js`. A recording is
+`{id, kind, name, mediaId, mime, video, youtube, sync:[{pos,t}], offset, created, bpm}` in `piece.recordings`; the engine can run on
+an external clock (`engine.extStart`), and `PA.app.setDriver` lets another clock replace the synth engine.
+
+Files: `score.js` (score v2 helpers: per-bar meta, parts, normalisers, checks, transpose), `store.js` (localStorage + IndexedDB),
+`engine.js` (timeline and audio, per-part buses), `transcribe.js` (request and image prep), `views.js` (tab, chords, page, loop
+selection), `abc.js` (notation and Score view), `viz.js` (fretboard/keyboard), `app.js` (UI), plus `samples.js`, `import.js`,
+`media.js`, `listen.js` from earlier phases (wired in by `rec.js` and `wait.js`). Other tools can hook in with `PA.on` /
+`PA.emit` (open, leave, play, pause, seek, speed, frame, view, loop, clips, main, rebuild, session, recordings, sync) and `PA.app`.
 
 Data stays on the device: scores and player settings in `playalong:v1` (localStorage), the page photos (JPEG,
-long edge 2400) in IndexedDB `music-playalong`. Nothing is synced. Only the transcription request leaves the
-device, through `shared/ai.js` (the musician's own key). PDFs are drawn with School's pdf.js, loaded only when one is picked.
+long edge 2400) in IndexedDB `music-playalong` (with recordings' audio and video). Signed in to a Music account, the pieces sync too (see Cloud sync below); otherwise nothing leaves the device except the transcription request, sent through `shared/ai.js` (the musician's own key). PDFs are drawn with School's pdf.js, loaded only when one is picked.
 
 Transcription is one streamed request per page (the dialog shows the bar being read): the whole page and close-ups of its top and bottom halves, with
 `save_transcription` forced as the tool. Answers are normalized (fractions to numbers, bad pitches dropped),
 tab and staff are made to agree (the staff pitch is what sounds), and every bar is checked against the time
 signature. A second request per page, `fix_bars`, re-reads only the bars that don't add up; any still wrong
 get an amber dot and play as written.
+
+Phase 3b adds four files: `lists.js` (lists), `notebook.js`, `sync.js` and `fix.js`.
+
+Importing scores: Add > Score file takes Guitar Pro (.gp3-.gp7, .gpx), MusicXML (.musicxml, .xml, .mxl) and MIDI; no AI is used. A
+part picker appears when the file has several parts, and the importer's warnings go into the piece's transcription notes. iOS can
+grey out files whose type it doesn't know, so the button uses an extension plus MIME accept list; long-pressing it toggles an
+"any file" picker (`playalong:anyfile`) as a fallback.
+
+Fixing misreads: the pencil tool (Fix mode) lets you tap a note to change fret, string, pitch or duration, make it a triplet, rest,
+tie, add or delete it; per bar you can set chords or clear the bar. The panel shows a live check of the bar's beat sum, and
+undo/redo covers every edit. "Read again" (photo pieces) re-reads one bar or the looped range with the page and a close-up crop,
+then shows a playable Before/After preview to Keep or Discard.
+
+Notebook (More, or N): free notes per piece plus the practice history and total time. Lists: chips on the list screen (All, your
+lists, +), "Add to list..." in a piece's menu, rename/delete/ordering, previous/next inside a list from the player, and a search box
+once there are more than about 8 pieces.
+
+Cloud sync: with a Music account (`shared/cloud.js`) the app document `playalong` is merged per piece by its `updated` time (recordings,
+clips and lists the same, per item); history is a union. Deletes are tombstones kept 60 days. Musical settings sync (speed, loop, transpose, mix,
+click, count-in, speed trainer); device settings (recording choice and volume, overlay, video, wait, view, zoom, layout, full screen,
+fretboard) stay on the device. Photos, recordings and takes go to the `school-files` bucket as `playalong/<pieceId>/<blobId>.<ext>`,
+only for owners (members sync the document, skip uploads and are told once); other devices fetch them on first use ("Downloading...").
+Over 100 MB gets a note, over 200 MB is skipped. The dot beside the title shows the state; tap it for Sync now or Account.
+
+Credits: Instrument sounds (electric bass, electric guitar, steel acoustic guitar, grand piano): samples from the FluidR3_GM SoundFont,
+as pre-rendered in gleitz/midi-js-soundfonts (https://github.com/gleitz/midi-js-soundfonts), licensed CC BY 3.0
+(https://creativecommons.org/licenses/by/3.0/). Samples were trimmed, resampled to mono 32 kHz, loudness-matched and re-encoded as MP3.
+Guitar Pro files are read with alphaTab (MPL-2.0, `playalong/vendor/alphatab/`).
 
 ## Voice Memos
 
