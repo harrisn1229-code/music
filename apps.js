@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.40.0",
+  version: "1.41.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
@@ -172,6 +172,15 @@ self.MUSIC = {
       color: "#D9483B",
       icon: "icon-192.png",
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
+    },
+    {
+      id: "looper",
+      section: "practice",
+      name: "Looper",
+      about: "A loop pedal: record a loop, trim it to time, layer parts on top",
+      color: "#C02D8E",
+      icon: "icon-192.png",
+      files: ["index.html", "app.js", "app.css", "engine.js", "dsp.js", "worklet.js", "icon.svg", "icon-192.png"]
     },
     {
       id: "circle",

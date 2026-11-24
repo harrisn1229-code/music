@@ -20,6 +20,7 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | Metronome | `metronome/` | Click with accents, subdivisions, swing, speed trainer, gap click, presets, and Library's drills to practise with it |
 | Play Along | `playalong/` | Photograph sheet music or tab; Claude reads it once, then it plays back with a moving cursor, click, count-in, loop and tempo control |
 | Voice Memos | `memos/` | Record yourself playing and listen back: waveform, slow-down, loop, share |
+| Looper | `looper/` | A loop pedal: record a loop, trim it to time, layer parts on top (overdubs), export the mix |
 | Circle of Fifths | `circle/` | The circle with key signatures, scales, diatonic chords and common progressions in any key |
 
 Everything runs in the browser and is saved on the device. Three optional
@@ -55,6 +56,7 @@ metronome/             Metronome (index.html, app.js, app.css; look-ahead Web Au
 timer/                 Timer (index.html, app.js, app.css; the timing itself is shared/timer.js)
 playalong/             Play Along (index.html, app.css and score/store/engine/transcribe/views/abc/viz/app/lists/notebook/sync/fix .js; samples, importer; photos in IndexedDB, scores in localStorage)
 memos/                 Voice Memos (index.html, app.js, app.css; recordings kept in IndexedDB on the device)
+looper/                Looper (index.html, app.js, app.css; engine.js, dsp.js, worklet.js; loops kept in IndexedDB on the device)
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
 scratchpad/            Scratchpad (index.html, app.js, app.css; owns the assistant's Scratchpad tools)
@@ -333,6 +335,40 @@ awake and the take is saved to a draft every few seconds; leaving the page saves
 left behind becomes a memo the next time Voice Memos opens. Playback slows to 0.5× or 0.75×
 without changing pitch, loops, and shares the file. Recording and listening back count in the
 Practice Log.
+
+## Looper
+
+A loop pedal. Record a loop, then layer parts on top of it (bass, keys, another guitar), each its
+own layer with volume, mute, timing and a name. Everything stays on the device (IndexedDB
+`music-looper`: `sessions` for each loop and its layers, `takes` for each layer's audio as 16-bit);
+prefs in `looper:prefs:v1`, the open loop in `looper:current`.
+
+- **First loop, Free**: tap record, play, tap again on the downbeat that would start it over. The loop
+  is trimmed to the notes (`LoopDSP.autoTrim`): it starts on the first note after record and ends on
+  the note nearest the stop tap (the closing note is lined up with the opening one by the shape of
+  its attack, so a strum played over a ringing chord still lands to the sample); with no note there,
+  the end goes where the beat of what was played puts the bar line. Bars and tempo are worked out from
+  where the notes fall (shown with ≈). It plays on in time with you, from wherever you are in it.
+- **First loop, Tempo**: tempo, metre and bars (or Tap: until tapped, to the nearest bar line), a
+  count-in, and a click while recording. The length is exact.
+- **Overdubs** start at the next loop start (a count-in for the last bar) or right away, and last 1, 2 or 4
+  loops or until tapped (rounded to whole loops). The new layer starts playing the instant its recording
+  ends: it starts from audio already captured, and the final render takes over at the same phase.
+- **Trim** (the first layer, while it's the only one): the whole take with start and end handles
+  that snap to notes, close-ups of each for millisecond moves, bars, beats and a BPM box (typing a tempo
+  sets the end from the start), Auto, and Seam (plays across the join). The loop keeps playing as it changes.
+- **Timing**: the input is captured continuously by an AudioWorklet (`worklet.js`) with each sample
+  stamped with the audio clock, so recordings are cut by time, not by when a tap arrived. The round-trip
+  latency (Settings, Test: eight clicks through the speaker heard back by the mic) is taken off every
+  overdub. Each layer also has a Timing slider (±150 ms) and a seam crossfade.
+- **Undo** (tap) cancels a recording or removes the last layer; hold it to redo. **Click** plays the beat
+  while looping. Export (Loops sheet) mixes 1-8 times round to a WAV to share, or straight into Voice Memos.
+- A Bluetooth page-turner pedal works as a foot switch: → (or Space, ↓, Page Down) records, ← plays and
+  stops, holding ← undoes.
+
+Practice Log counts the time looping or recording (`loop`). Files: `dsp.js` (onsets, trimming, tempo
+fit, layer rendering, WAV; plain functions that run in Node too), `engine.js` (`window.Looper`: mic,
+capture, clock, layers, recording, saving), `app.js` (UI).
 
 ## Accounts
 
