@@ -34,6 +34,8 @@
     metronome: '<path d="M9.5 3h5l4.5 17.5H5z"/><path d="M5.9 16.5h12.2"/><path d="m12 16.5 5-9"/><path d="M15.4 9.6h2.6"/>',
     // Voice Memos: a microphone
     memos: '<rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5v4M8.5 21.5h7"/>',
+    // Looper: a stomp box with a loop arrow and its footswitch
+    looper: '<rect x="4.5" y="2.5" width="15" height="19" rx="2.5"/><path d="M13.84 6.08A3.2 3.2 0 1 1 10.03 6.18"/><path d="M9.64 7.76L10.38 5.9L8.4 6.18"/><circle cx="12" cy="16.6" r="2.2"/>',
     // Play Along: a page with staff lines and a play triangle in a circle at the lower right
     playalong: '<path d="M13.5 20.5H6A1.5 1.5 0 0 1 4.5 19V5A1.5 1.5 0 0 1 6 3.5h8.5L19.5 8.5v2.5"/><path d="M14.5 3.5v5h5"/><path d="M7.5 9.5h8M7.5 12.5h5M7.5 15.5h3"/><circle cx="17.5" cy="17.5" r="4.5"/><path d="M16.2 15.6v3.8l3.1-1.9z"/>',
     // Circle of Fifths: the circle with its twelve keys

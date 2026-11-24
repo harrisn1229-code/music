@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Looper</title>
+<meta name="description" content="A loop pedal: record a loop, trim it to time, layer parts on top. Works offline.">
+<meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- Looper is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script src="../shared/settings.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:#C02D8E}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:#D974AF}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:#D974AF}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="2.5" width="15" height="19" rx="2.5"/><path d="M13.84 6.08A3.2 3.2 0 1 1 10.03 6.18"/><path d="M9.64 7.76L10.38 5.9L8.4 6.18"/><circle cx="12" cy="16.6" r="2.2"/></g></svg>
+    <h1 class="brand">Looper</h1>
+    <span class="bar-sp"></span>
+    <button class="icon-btn" id="list-btn" type="button" aria-label="Loops"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 5.5h12M4 10h12M4 14.5h8"/></svg></button>
+    <button class="icon-btn" id="set-btn" type="button" aria-label="Settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 6h6M13.5 6h3M3.5 14h2M9.5 14h7"/><circle cx="11.5" cy="6" r="2"/><circle cx="7.5" cy="14" r="2"/></svg><i class="dot" id="set-dot" hidden></i></button>
+    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap" id="view">
+  <div class="col">
+    <section class="stage" aria-label="Loop">
+      <div class="ring" id="ring-box">
+        <svg id="ring" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="r-track" cx="100" cy="100" r="88"/>
+          <g id="ticks"></g>
+          <circle class="r-arc" id="arc" cx="100" cy="100" r="88"/>
+          <circle class="r-rec" id="rec-arc" cx="100" cy="100" r="88"/>
+          <circle class="r-head" id="head" cx="100" cy="12" r="5"/>
+        </svg>
+        <div class="center" aria-live="off">
+          <b class="big" id="big"></b>
+          <span class="sub" id="sub"></span>
+        </div>
+      </div>
+      <div class="info" id="info">
+        <button class="chip" id="tempo-chip" type="button" hidden></button>
+        <button class="chip" id="click-chip" type="button" aria-pressed="false" hidden>Click</button>
+        <button class="chip" id="edit-chip" type="button" hidden>Trim</button>
+      </div>
+    </section>
+
+    <section class="card setup" id="setup" aria-label="First loop">
+      <div class="seg two" role="radiogroup" aria-label="First loop">
+        <button class="chip" type="button" role="radio" data-mode="free">Free</button>
+        <button class="chip" type="button" role="radio" data-mode="tempo">Tempo</button>
+      </div>
+      <div class="tempo" id="tempo-set" hidden>
+        <div class="bpm-row">
+          <button class="mini" id="bpm-dec" type="button" aria-label="Slower">&minus;</button>
+          <button class="bpm" id="bpm" type="button" aria-label="Tempo, tap to type">90</button>
+          <input class="bpm-in" id="bpm-in" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" aria-label="Tempo in BPM" hidden>
+          <button class="mini" id="bpm-inc" type="button" aria-label="Faster">+</button>
+          <span class="unit">BPM</span>
+        </div>
+        <div class="seg" id="beats-seg" role="radiogroup" aria-label="Beats in a bar"></div>
+        <div class="bars-row"><div class="seg" id="bars-seg" role="radiogroup" aria-label="Bars"></div><span class="unit">BARS</span></div>
+      </div>
+    </section>
+
+    <ul class="layers" id="layers" aria-label="Layers"></ul>
+  </div>
+</main>
+
+<footer class="dock" id="dock">
+  <div class="dock-in col">
+    <p class="err" id="err" role="status" hidden></p>
+    <div class="od" id="od" hidden>
+      <button class="chip sm" id="redo" type="button" hidden>Redo</button>
+      <div class="seg" id="len-seg" role="radiogroup" aria-label="Overdub length"></div>
+    </div>
+    <div class="meter" id="meter" hidden><i id="meter-i"></i></div>
+    <div class="ctl">
+      <button class="side" id="undo" type="button" aria-label="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button class="main" id="main" type="button" aria-label="Record"><span class="m-in" id="main-in"></span></button>
+      <button class="side" id="play" type="button" aria-label="Play"></button>
+    </div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<noscript><p class="wrap">Looper needs JavaScript turned on.</p></noscript>
+<script src="../shared/ai.js"></script>
+<script src="../shared/assistant.js"></script>
+<script src="dsp.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  if (window.MusicAssistant) MusicAssistant.mount({
+    app: "looper", button: document.getElementById("ai-btn"),
+    context: function () { return window.__looperContext ? window.__looperContext() : "In Looper."; }
+  });
+  /* offline: Music's shared service worker, one folder up */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
