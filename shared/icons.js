@@ -34,6 +34,8 @@
     metronome: '<path d="M9.5 3h5l4.5 17.5H5z"/><path d="M5.9 16.5h12.2"/><path d="m12 16.5 5-9"/><path d="M15.4 9.6h2.6"/>',
     // Voice Memos: a microphone
     memos: '<rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5v4M8.5 21.5h7"/>',
+    // Play Along: a page with staff lines and a play triangle in a circle at the lower right
+    playalong: '<path d="M13.5 20.5H6A1.5 1.5 0 0 1 4.5 19V5A1.5 1.5 0 0 1 6 3.5h8.5L19.5 8.5v2.5"/><path d="M14.5 3.5v5h5"/><path d="M7.5 9.5h8M7.5 12.5h5M7.5 15.5h3"/><circle cx="17.5" cy="17.5" r="4.5"/><path d="M16.2 15.6v3.8l3.1-1.9z"/>',
     // Circle of Fifths: the circle with its twelve keys
     circle: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M7.5 4.2l1.25 2.17M15.25 17.63l1.25 2.17M4.2 7.5l2.17 1.25M17.63 15.25l2.17 1.25M4.2 16.5l2.17-1.25M17.63 8.75l2.17-1.25M7.5 19.8l1.25-2.17M15.25 6.37 16.5 4.2"/>'
   };
