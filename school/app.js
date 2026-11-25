@@ -3274,7 +3274,12 @@ function overview() {
     ${today ? ovsec('today', 'Today', today, (dueList().length || missDue().length)
         ? `<button class="btn btn-go" data-drill-start="${Math.min(CFG.daily_drip, dueList().length)
             || missDue().length}">Start quiz session</button>` : '') : ''}
-    ${ovsec('calendar', 'Calendar', calendarBlock() + termTotalLine())}
+    ${/* 2026-11-25 — Nate: the calendar moves out of School to a page of its own, the Music home
+          screen's Calendar tab (music/calendar/app.js). In the app it is drawn only in the BRIDGE
+          copy, the out-of-sight School that tab opens to read the term from these month grids
+          (`.cal .cmo`, in-term days `.in`) along with the Schedule below. Keep that markup as it
+          is or change the tab with it. The artifact page (not LOCAL) still shows it. */''}
+    ${!LOCAL || BRIDGE ? ovsec('calendar', 'Calendar', calendarBlock() + termTotalLine()) : ''}
     ${/* `plan.weeks` alone used to gate this, but that counts only the lane-paced courses \u2014
           a course scheduled entirely on its own chosen days (daysLessons()) contributes zero
           to it, so a term with nothing BUT a custom-days course rendered "Nothing scheduled"

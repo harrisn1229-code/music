@@ -18,6 +18,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="shared/settings.js"></script>
 <link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="calendar/app.css">
 <style>
 /* Music home screen: one tile per app. Tiles are plain white (light theme) or
    black (dark theme) with the app's line-art icon drawn in the app's own color
@@ -121,8 +122,26 @@ main{flex:1;padding-top:1rem;padding-bottom:1.5rem}
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ---------- foot ---------- */
-.foot{padding-top:.25rem;padding-bottom:calc(1.25rem + env(safe-area-inset-bottom, 0px));display:flex;flex-wrap:wrap;gap:.25rem 1rem;justify-content:space-between;font-size:.8125rem;color:var(--muted)}
+.foot{padding-top:.25rem;padding-bottom:1.25rem;display:flex;flex-wrap:wrap;gap:.25rem 1rem;justify-content:space-between;font-size:.8125rem;color:var(--muted)}
 .foot p{margin:0}
+
+/* ---------- tabs ----------
+   Home and Calendar, along the bottom like a phone app's tab bar. Each tab is a view of this page;
+   the bar stays put and the page under it scrolls. */
+body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom, 0px))}
+.view{flex:1;display:flex;flex-direction:column}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;padding-bottom:env(safe-area-inset-bottom, 0px);
+  background:var(--paper);background:color-mix(in srgb, var(--paper) 88%, transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);
+  box-shadow:0 -1px 0 var(--rule)}
+.tabbar-in{display:flex;max-width:28rem;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
+.tab{flex:1;height:3.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;
+  color:var(--muted);font-size:.6875rem;font-weight:600;letter-spacing:.01em}
+.tab svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"] svg{stroke-width:2.1}
+.tab:active svg{transform:scale(.9)}
+.tab:focus-visible{outline-offset:-3px;border-radius:.75rem}
 
 /* ---------- install sheet ---------- */
 dialog{
@@ -217,6 +236,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   </div>
 </header>
 
+<div class="view" id="view-home" role="tabpanel" aria-labelledby="tab-home">
 <main class="wrap">
   <div id="tiles"></div>
   <noscript>Music needs JavaScript turned on to list its apps.</noscript>
@@ -226,6 +246,18 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   <p id="privacy">Works offline. Your charts and ratings stay on this device.</p>
   <p id="version"></p>
 </footer>
+</div>
+
+<div class="view" id="view-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
+  <div class="wrap cal" id="cal"></div>
+</div>
+
+<nav class="tabbar" aria-label="Music">
+  <div class="tabbar-in" role="tablist">
+    <button class="tab" id="tab-home" type="button" role="tab" data-tab="home" aria-controls="view-home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 3.8l8.5 7.2"/><path d="M5.8 9.300V20h4.400v-5.500h3.600V20h4.400V9.300"/></svg>Home</button>
+    <button class="tab" id="tab-calendar" type="button" role="tab" data-tab="calendar" aria-controls="view-calendar" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.500" rx="2.500"/><path d="M3.5 9.800h17M8 3v4M16 3v4"/><path d="M7.600 13.500h.01M12 13.500h.01M16.400 13.500h.01M7.600 17h.01M12 17h.01"/></svg>Calendar</button>
+  </div>
+</nav>
 
 <dialog id="sheet" aria-labelledby="sheet-title">
   <h2 id="sheet-title"></h2>
@@ -253,6 +285,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 <script src="shared/account.js"></script>
 <script src="shared/cloud-config.js"></script>
 <script src="shared/cloud.js"></script>
+<script src="calendar/app.js"></script>
 <script>
 (function () {
   "use strict";
@@ -310,6 +343,39 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   window.addEventListener("pageshow", (e) => { if (e.persisted) render(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
   window.addEventListener("storage", render);
+
+  /* ---------- tabs: Home and Calendar ----------
+     Two views of this one page, switched by the bar along the bottom. The address carries
+     #calendar while Calendar is showing (replaced, not pushed: switching tabs is not a step back
+     can undo), so a reload or a link to ../#calendar opens on it. Tapping the tab you are on goes
+     back to the top. Calendar draws itself (calendar/app.js). */
+  const TABS = ["home", "calendar"];
+  const tabScroll = {};
+  let tab = "home";
+  const cal = self.MusicCalendar || null;
+  if (cal) cal.mount($("cal"));
+  function showTab(id) {
+    if (TABS.indexOf(id) < 0) id = "home";
+    if (id === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    tabScroll[tab] = window.scrollY;
+    tab = id;
+    TABS.forEach((t) => {
+      $("view-" + t).hidden = t !== id;
+      $("tab-" + t).setAttribute("aria-selected", String(t === id));
+    });
+    if (cal) { if (id === "calendar") cal.show(); else cal.hide(); }
+    window.scrollTo(0, tabScroll[id] || 0);
+    try { history.replaceState(history.state, "", id === "home" ? location.pathname + location.search : "#" + id); } catch (e) {}
+  }
+  document.querySelector(".tabbar").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tab]");
+    if (b) showTab(b.dataset.tab);
+  });
+  if (location.hash === "#calendar") showTab("calendar");
+  window.addEventListener("hashchange", () => { if (location.hash === "#calendar") showTab("calendar"); });
+  // Back on this page (from an app, or the phone woke up): Calendar checks whether School or the day moved on.
+  window.addEventListener("pageshow", (e) => { if (e.persisted && tab === "calendar" && cal) cal.show(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && tab === "calendar" && cal) cal.show(); });
 
   /* ---------- install (Add to Home Screen / Dock) ---------- */
   let installEvt = null;  // Chrome and Edge hand over their install prompt here
@@ -668,7 +734,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
   // What goes in a backup: what the tools keep, never keys or sign-in state or anything tied to one device.
   const BK_PREFIX = ["barline:", "shed-deck:", "school:", "ear:", "library:", "tuner:", "metronome:", "circle:"];
-  const BK_ONLY = ["music:settings"];
+  const BK_ONLY = ["music:settings", "calendar:prefs"];
   const BK_NOT = /(^|:)(ghToken|ghUser|ghMoved|aiKey|gistId|cloudUser|cloudEmail|syncedAt|syncUser|syncBase|cloudFiles|accountAsked)$/;
   const inBackup = (k) => typeof k === "string" && !/^sb-/.test(k) && !BK_NOT.test(k) && (BK_ONLY.indexOf(k) >= 0 || BK_PREFIX.some((p) => k.indexOf(p) === 0));
   function collect() {
@@ -820,7 +886,8 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   }
 
   /* ---------- assistant ---------- */
-  if (self.MusicAssistant) self.MusicAssistant.mount({ app: "home", button: $("ai-btn"), context: () => "On the Music home screen" });
+  if (self.MusicAssistant) self.MusicAssistant.mount({ app: "home", button: $("ai-btn"),
+    context: () => (tab === "calendar" && cal ? cal.context() : "On the Music home screen") });
 
   /* ---------- offline ---------- */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {

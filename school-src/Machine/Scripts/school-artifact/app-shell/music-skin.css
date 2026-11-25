@@ -1,0 +1,353 @@
+/* Music skin — School and the Library shelves in the Music app's own look.
+
+   app.css is the school's original design (a serif reading face, a display serif, hairline
+   cards). Inside Music everything shares one style, the one the home screen, Barline, Note Cards
+   and Library use: the system typeface with heavy headings, a grey page, white cards on a
+   hairline-and-shadow, pill buttons, ink for whatever is selected. This file is that style laid
+   over app.css. It is only loaded by the app shell, so the single-file artifact page keeps the
+   original look.
+
+   It works the way app.css asks to be worked on: tokens first. Most of the change is the block
+   of tokens below; the rest is the handful of components whose SHAPE differs (radius, buttons,
+   the menu, the header bar). */
+:root{
+  --ground:#F2F3F6; --surface:#FFFFFF; --sunk:#F0F1F5; --raised:#FFFFFF;
+  --ink:#14171F; --ink-2:#3A404C; --muted:#5F6675; --faint:#8A91A0;
+  --line:#E3E6EC; --line-2:#CED3DD;
+  --shadow:0 0 0 1px rgb(20 24 44 / .07), 0 1px 2px rgb(22 26 52 / .05);
+  --sh:var(--shadow);
+  --surface-2:#F0F1F5; --surface-3:#E3E6EE; --sel:#14171F; --on-sel:#FFFFFF; --focus:#9F2D3F;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235F6675' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  --r-lg:1.25rem; --r-md:.875rem;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI","Noto Music",sans-serif;
+  --read:var(--ui); --disp:var(--ui);
+  --mono:ui-monospace,SFMono-Regular,Menlo,"Courier New",monospace;
+  --rail:15rem;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D0E12; --surface:#181A20; --sunk:#21242C; --raised:#21242C;
+    --ink:#ECEEF4; --ink-2:#C6CBD6; --muted:#9BA1B0; --faint:#727A8A;
+    --line:#292D38; --line-2:#3A404D;
+    --shadow:0 0 0 1px rgb(255 255 255 / .06);
+    --surface-2:#21242C; --surface-3:#2E323D; --sel:#ECEEF4; --on-sel:#14171F; --focus:#F08A9B;
+    --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239BA1B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D0E12; --surface:#181A20; --sunk:#21242C; --raised:#21242C;
+  --ink:#ECEEF4; --ink-2:#C6CBD6; --muted:#9BA1B0; --faint:#727A8A;
+  --line:#292D38; --line-2:#3A404D;
+  --shadow:0 0 0 1px rgb(255 255 255 / .06);
+  --surface-2:#21242C; --surface-3:#2E323D; --sel:#ECEEF4; --on-sel:#14171F; --focus:#F08A9B;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239BA1B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+
+/* Link colour is ink, not the school's indigo; status colours (due, ok) are untouched. */
+:root,[data-domain]{--accent:var(--ink);--accent-soft:var(--surface-2);--accent-line:var(--line-2);}
+body{font:16px/1.45 var(--ui);-webkit-tap-highlight-color:transparent;}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px;}
+.boot h1{font-weight:800;letter-spacing:-.02em;}
+
+/* ---------------------------------------------------------------- type */
+h2.vh{font-weight:800;font-size:1.75rem;letter-spacing:-.022em;line-height:1.1;}
+.eyebrow{font-size:.8125rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted);}
+.eyebrow.path{font-size:.8125rem;}
+.lede{font-size:1rem;line-height:1.5;color:var(--muted);}
+.calnote{font-size:.8125rem;}
+.prose{font-size:1rem;line-height:1.6;}
+.prose h3,.prose h4,.prose h5,.prose h6{font-size:1rem;font-weight:800;letter-spacing:-.01em;}
+.prose h5,.prose h6{font-size:.875rem;letter-spacing:0;}
+.prose code,.prose pre{font-family:var(--mono);}
+.prose th{font-size:.75rem;letter-spacing:0;text-transform:none;font-weight:700;}
+.dhead .eyebrow{color:var(--ink);font-size:1.0625rem;font-weight:800;letter-spacing:-.01em;}
+.dhead .rule{background:transparent;}
+.navgrp{font-size:.75rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted);}
+
+/* ---------------------------------------------------------------- surfaces */
+.card{border:0;border-radius:var(--r-lg);box-shadow:var(--sh);padding:1rem 1.125rem;}
+.rd{border:0;border-radius:var(--r-md);box-shadow:var(--sh);background:var(--surface);}
+.banner{border-radius:var(--r-md);}
+.byo-miss{border-radius:var(--r-md);}
+.pr-ban{border-radius:var(--r-lg);border:0;box-shadow:var(--sh);}
+.pr-ban b{font-weight:800;letter-spacing:-.02em;}
+.stile-art,.songhead-art{border-radius:var(--r-md);}
+.bkpg img{border-radius:var(--r-md);}
+
+/* ---------------------------------------------------------------- controls */
+.btn{border:0;border-radius:999px;padding:.55rem 1.05rem;font-size:.875rem;font-weight:600;
+  background:var(--ink);color:var(--ground);box-shadow:none;}
+.btn:hover{opacity:.88;}
+.btn:active{transform:scale(.97);}
+.btn[disabled]{opacity:.5;}
+.btn-quiet,label.btn{background:var(--surface);color:var(--ink);box-shadow:var(--sh);}
+.runhint .btn{margin:0;}
+.pill{border-radius:999px;letter-spacing:.02em;}
+.syncin,.pq-a,.fr-off input{border:0;box-shadow:inset 0 0 0 1px var(--line-2);border-radius:.75rem;background:var(--surface);}
+.syncin{height:2.75rem;padding:0 .9rem;font-size:1rem;}
+.pq-a{font-size:1rem;}
+.pq-n{font-family:var(--ui);font-weight:800;}
+
+/* ---------------------------------------------------------------- the header bar and the menu
+   Every Music tool opens with the same bar: a round button (home, or back), the tool's icon, its
+   name. School needs a menu as well, so on a wide screen the bar heads a column with the menu
+   under it, and on a phone the bar runs across the top with a button that opens the menu. */
+#app{grid-template-columns:var(--rail) minmax(0,1fr);}
+.rail{background:var(--ground);border-right:0;gap:1rem;padding:.75rem .75rem 1rem;}
+.mbar{display:flex;align-items:center;gap:.6rem;min-height:3rem;}
+.icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;background:var(--surface);box-shadow:var(--sh);
+  display:inline-grid;place-items:center;flex:none;color:var(--ink);}
+.icon-btn:active{transform:scale(.92);}
+.icon-btn svg{width:1.25rem;height:1.25rem;}
+.mbar .logo{width:2.25rem;height:2.25rem;flex:none;display:block;}
+.mbar .brand{font-size:1.3125rem;font-weight:800;letter-spacing:-.015em;line-height:1;flex:1;min-width:0;}
+.rail .rail-toggle{align-self:auto;}
+.rail .sem{font-size:.8125rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted);
+  margin:-.35rem 0 0 .25rem;}
+nav{gap:.125rem;}
+nav button,nav a.navlink{padding:.55rem .75rem;border-radius:.75rem;font-size:.9375rem;font-weight:600;color:var(--ink-2);}
+nav button:hover,nav a.navlink:hover{background:var(--surface);}
+nav button[aria-current="page"]{background:var(--ink);color:var(--ground);font-weight:700;}
+nav .n{font-size:.75rem;font-weight:700;}
+nav button[aria-current="page"] .n{color:var(--ground);opacity:.8;}
+.navgrp{padding:0 .75rem;margin-bottom:.15rem;}
+.navgrp-2{border-top:0;margin-top:.9rem;padding-top:0;}
+.rail-foot{padding:0 .5rem;}
+.savechip{font-size:.75rem;letter-spacing:0;text-transform:none;font-weight:600;}
+/* collapsed on a wide screen: just the two round buttons, stacked */
+.rail.shut{padding:.75rem .5rem;align-items:center;}
+.rail.shut .mbar{flex-direction:column;}
+.rail.shut .logo,.rail.shut .brand,.rail.shut .sem{display:none;}
+main{padding:1.25rem 1.5rem 5rem;max-width:68rem;}
+.view{gap:1.25rem;}
+
+@media (max-width:700px){
+  /* The bar runs across the top; the menu drops down from it when the button is pressed. */
+  .rail,.rail.shut{position:fixed;left:0;right:0;top:0;z-index:20;width:auto;max-width:none;height:auto;
+    max-height:100vh;overflow-y:auto;padding:env(safe-area-inset-top,0px) 16px 0;gap:.5rem;box-shadow:none;
+    background:color-mix(in srgb, var(--ground) 88%, transparent);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);align-items:stretch;}
+  .rail:not(.shut){background:var(--ground);padding-bottom:1rem;box-shadow:0 1px 0 var(--line),0 12px 28px -12px rgb(20 24 44 / .28);}
+  .mbar,.rail.shut .mbar{flex-direction:row;min-height:3.75rem;}
+  .rail.shut .logo{display:block;}
+  .rail.shut .brand{display:block;}
+  .rail.shut .rail-toggle{width:2.5rem;height:2.5rem;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--sh);}
+  main{padding:5rem 16px 5rem;}
+}
+
+/* ---------------------------------------------------------------- lists and tiles */
+.qz{border-radius:var(--r-md);}
+.stile-t{font-size:.875rem;font-weight:700;}
+.stile-a{font-size:.8125rem;}
+.frow{font-size:.9375rem;}
+.fgrp .rd-t,.rd-t{font-weight:700;}
+.pq-q{font-size:1rem;}
+.pq-mine,.pq-key,.pq-why{font-size:.9375rem;}
+
+/* ---------------------------------------------------------------- section headings and labels
+   The school set its section labels in small spaced capitals. Music sets them as plain bold
+   words. Tiny status tags (pills, calendar weekdays) keep their caps; headings and field labels
+   do not. */
+.ovsec-t,.dhead .dfold,.callout.co-unlocks summary,.tl-done>summary,
+.uindex .lbl,.blk .lbl,.wb-k,.lesson-h .u,.extform label,.ef-l,.pl-form label{
+  font-size:.9375rem;font-weight:800;letter-spacing:-.005em;text-transform:none;color:var(--ink);}
+.extform label,.ef-l,.pl-form label,.wb-k,.lesson-h .u{font-size:.8125rem;font-weight:700;letter-spacing:0;color:var(--muted);}
+.tl-w .tl-k,.tl-w .tl-t{font-family:var(--ui);}
+.tl-w .tl-t{font-size:.8125rem;font-weight:600;letter-spacing:0;}
+
+
+/* ---------------------------------------------------------------- no preamble
+   A page opens with its name and then its contents. The line above the title that says which
+   part of the app this is, and the paragraph under it that explains the page, are not shown.
+   (`.path` marks the few eyebrows that carry a fact — which lesson a homework page belongs to —
+   and a song's artist sits in `.songhead-b`.) */
+.view .eyebrow:not(.path):has(+ h2.vh),
+.view h2.vh ~ .lede,
+.view h2.vh ~ .calnote{display:none;}
+.songhead-b .eyebrow{display:block !important;}
+
+/* ---------------------------------------------------------------- shelves of tiles */
+.shelf-tile{border:0;border-radius:var(--r-lg);box-shadow:var(--sh);min-height:6.5rem;padding:1rem 1.125rem;}
+.shelf-tile:hover{background:var(--surface);}
+.shelf-tile:active,.dtile:active{transform:scale(.97);}
+.shelf-n{font-size:1.125rem;font-weight:800;letter-spacing:-.01em;}
+.shelf-c{font-size:.8125rem;font-weight:600;}
+.chip{border:0;box-shadow:var(--sh);font-size:.875rem;padding:.45rem .95rem;}
+.chip[aria-pressed="true"]{box-shadow:none;}
+.dtile{border:0;border-radius:var(--r-md);box-shadow:var(--sh);background:var(--surface);}
+.dtile:hover{background:var(--surface);}
+a.dtile{text-decoration:none;color:inherit;}
+.drillsview .dtile-t{font-size:.875rem;font-weight:700;line-height:1.3;}
+.ytbox{border-radius:var(--r-lg);}
+
+.vthumb{border:0;border-radius:var(--r-md);box-shadow:var(--sh);}
+.vtile:active .vthumb{transform:scale(.97);}
+.vtile-t{font-size:.875rem;font-weight:700;}
+
+/* The app's song page (songPage in app.js): sleeve, chart, then the note folded by section. */
+.songs-top{align-items:center;margin-bottom:12px;}
+.songpage .songhead{grid-template-columns:96px minmax(0,1fr);gap:16px;align-items:center;margin-bottom:2px;}
+.songpage .songhead-art{width:96px;max-width:none;}
+.songpage .songhead-b .vh{font-size:1.5rem;line-height:1.15;}
+.songnotes{display:flex;flex-direction:column;gap:8px;}
+.songsec .rd-b{padding-top:4px;}
+.songpage .songhead-c{margin-top:4px;}
+
+
+/* ---------------------------------------------------------------- filters and search
+   Library's own search field and chips: a full-width search, then pill selects in one row. */
+.search{display:flex;align-items:center;gap:.6rem;height:2.875rem;padding:0 .9rem;border-radius:var(--r-md);
+  background:var(--surface);box-shadow:var(--sh);color:var(--muted);}
+.search:focus-within{outline:3px solid var(--focus);outline-offset:2px;}
+.search svg{width:1.05rem;height:1.05rem;flex:none;}
+.filters .search input,.search input{flex:1;min-width:0;height:100%;width:auto;padding:0;border:0;box-shadow:none;
+  background:none;color:var(--ink);font:inherit;font-size:1rem;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;}
+.search input::placeholder{color:var(--muted);}
+.search input::-webkit-search-cancel-button{display:none;}
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;}
+.filters .search{order:-1;flex:1 1 100%;}
+.filters select,.filters>input{height:2.5rem;padding:0 2.1rem 0 .95rem;border:0;border-radius:999px;
+  background:var(--surface) var(--chev) no-repeat right .7rem center/1rem;box-shadow:var(--sh);color:var(--ink);
+  font:inherit;font-size:.875rem;font-weight:600;-webkit-appearance:none;appearance:none;max-width:100%;}
+.filters select:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+.filters .btn{height:2.5rem;padding:0 1rem;}
+.filters>span{font-size:.8125rem;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:.25rem;}
+.songsview .filters{margin-top:0;}
+select{-webkit-appearance:none;appearance:none;border:0;border-radius:999px;height:2.5rem;padding:0 2.1rem 0 .95rem;
+  background:var(--surface) var(--chev) no-repeat right .7rem center/1rem;box-shadow:var(--sh);color:var(--ink);font:inherit;font-size:.875rem;font-weight:600;}
+.filters select{margin:0;}
+
+/* ---------------------------------------------------------------- text actions are small pills */
+.lnkedit,.upbtn.lnkedit,.xlink.hw-go{display:inline-flex;align-items:center;gap:.3rem;min-height:2rem;padding:0 .85rem;
+  border:0;border-radius:999px;background:var(--surface-3);color:var(--ink);font:inherit;font-size:.8125rem;
+  font-weight:700;line-height:1;text-decoration:none;cursor:pointer;white-space:nowrap;}
+.lnkedit:hover,.upbtn:hover{background:var(--surface-3);color:var(--ink);filter:brightness(.96);}
+.lnkedit:active{transform:scale(.95);}
+.xlink,.prose a{border-bottom-color:var(--line-2);}
+.xlink-read,.xlink-tool,.xlink-concept,.xlink-course,.xlink-class{color:var(--ink);}
+.dchips .xlink{border:0;background:var(--surface-3);}
+
+/* ---------------------------------------------------------------- counts and meta: UI face, muted, tabular */
+.shelf-c,.rd-m,.dtile-n,.stile-k,.n,.fr-m,.progressline,.savechip,.tl-w .tl-k,.pq-n,.dtile-c,.rd-l,.songhead-m{
+  font-family:var(--ui);font-variant-numeric:tabular-nums;letter-spacing:0;}
+.shelf-c,.rd-m,.dtile-n,.dtile-c,.fr-m{color:var(--muted);font-weight:600;}
+.pq-n{color:var(--ink);}
+
+/* ---------------------------------------------------------------- disclosure: one chevron
+   Replaces the triangle glyphs (▸ ▾). Drawn with borders so it takes the text colour. */
+.callout summary::before,.tl-done>summary::before,.rd-t::before,.bk-t::before{
+  content:"" !important;display:inline-block;width:.42em;height:.42em;margin:0 .6em .12em .15em;
+  border:solid var(--muted);border-width:0 2px 2px 0;border-radius:1px;transform:rotate(-45deg);
+  transition:transform .15s;vertical-align:middle;font-size:1em;}
+.callout[open] summary::before,.tl-done[open]>summary::before,.rd[open] .rd-t::before,.bk[open] .bk-t::before{
+  content:"" !important;transform:rotate(45deg);margin-bottom:.28em;}
+
+/* ---------------------------------------------------------------- song tiles */
+.stile-art,.songhead-art{border:0;border-radius:var(--r-md);box-shadow:var(--sh);}
+.no-art>span{font-weight:800;letter-spacing:-.01em;}
+.stile:hover .stile-t{color:var(--ink);}
+.stile-k{font-weight:700;}
+
+/* ---------------------------------------------------------------- the old system's small caps and boxes
+   Spaced capitals become plain bold words; hairline boxes become Music cards. */
+.pill,.pl-st{text-transform:none;letter-spacing:0;font-size:.75rem;font-weight:700;border:0;
+  background:var(--surface-3);color:var(--ink-2);padding:.25rem .65rem;border-radius:999px;}
+.pill-theory{color:var(--theory);background:var(--theory-soft);}
+.pill-prod{color:var(--prod);background:var(--prod-soft);}
+.pill-instr{color:var(--instr);background:var(--instr-soft);}
+.pill-due,.pl-st[data-s="learning"]{color:var(--due);background:var(--due-soft);}
+.pill-ok,.pl-st[data-s="maintenance"]{color:var(--ok);background:var(--ok-soft);}
+.pl-form label,.ds-k,.pl-t th,.blk .lbl,.uindex .lbl,.lesson-h .u{text-transform:none;letter-spacing:0;}
+.ds-k,.pl-t th{font-size:.75rem;font-weight:700;color:var(--muted);}
+.dstats{gap:.5rem;background:none;border:0;border-radius:0;overflow:visible;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));}
+.dstat{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh);padding:.75rem .9rem;}
+.ds-v{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;}
+.ds-s{font-size:.75rem;color:var(--muted);}
+.pl-cur{font-family:var(--ui);font-weight:800;letter-spacing:-.02em;}
+.pl-form input,.syncin,.ef-i,.extform input,.extform textarea,.extform select{
+  border:0;box-shadow:inset 0 0 0 1px var(--line-2);border-radius:.75rem;background:var(--surface);color:var(--ink);}
+.pl-form input:focus-visible,.syncin:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+.pl-tw{border:0;border-radius:var(--r-md);box-shadow:var(--sh);}
+.callout{border:0;border-radius:var(--r-md);box-shadow:var(--sh);background:var(--surface);}
+.callout.co-unlocks{border:0;background:var(--surface);}
+.callout .co-title,.callout summary{font-size:.9375rem;font-weight:800;letter-spacing:-.005em;}
+.lesson{border-top:0;padding-top:1rem;}
+.lesson-h h3{font-family:var(--ui);font-weight:800;letter-spacing:-.02em;}
+hr,.rule{border-color:var(--line);}
+.bar{height:.4rem;border-radius:999px;background:var(--surface-3);}
+.bar i{background:var(--ink);border-radius:999px;}
+.tl-w .tl-k,.tl-w .tl-t{font-family:var(--ui);}
+.uindex{border-left:0;}
+
+/* section chevrons: the same border chevron as the disclosures */
+.ovsec-t .car,.dfold .car{width:.42em;height:.42em;border:solid var(--muted);border-width:0 2px 2px 0;border-radius:1px;
+  transform:rotate(45deg);margin:-.2em .2em 0 .1em;transition:transform .15s;}
+.ovsec.shut .ovsec-t .car,.dfold.shut .car{transform:rotate(-45deg);margin:0 .2em 0 .1em;}
+.rail-toggle .car{display:none;}
+.ovsec-t,.dhead .dfold{text-transform:none;letter-spacing:-.005em;font-size:.9375rem;font-weight:800;color:var(--ink);}
+.blk .lbl{font-size:.9375rem;font-weight:800;letter-spacing:-.005em;color:var(--ink);}
+.blk .lbl .done,.blk .lbl .done.is-all{font-size:.8125rem;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums;}
+.pl-none{letter-spacing:0;font-weight:600;font-size:.9375rem;color:var(--muted);}
+.pl-c{font-size:.8125rem;font-weight:600;}
+/* the calendar */
+.cmo{border:0;border-radius:var(--r-lg);box-shadow:var(--sh);padding:.9rem 1rem 1rem;}
+.cmo-h{font-family:var(--ui);font-weight:800;font-size:1.0625rem;letter-spacing:-.01em;}
+.cdh{font-size:.6875rem;font-weight:700;letter-spacing:0;text-transform:none;}
+.cd{border-radius:.5rem;}
+.cd.today,.cd.in.today,.cd.in.now.today{background:var(--ink);color:var(--ground);box-shadow:none;}
+.cd.in.now{font-weight:700;}
+
+/* class tiles and other hairline boxes */
+.tile{border:0;border-radius:var(--r-lg);box-shadow:var(--sh);}
+.tile:hover{border:0;}
+.tile-bar{display:none;}
+.tile-b{padding:1rem 1.125rem;}
+.tile-b h3{font-family:var(--ui);font-weight:800;font-size:1.125rem;letter-spacing:-.015em;}
+.tile-courses{border-top:0;padding-top:0;}
+.tile-foot{border-top:0;background:none;padding:0 1.125rem 1rem;}
+.crow{border-radius:.625rem;font-size:.875rem;}
+.crow .n{font-size:.75rem;letter-spacing:0;}
+.crow:hover{background:var(--surface-2);}
+.ccard,.tl-done,.cmo,.tcard,.uindex,.pl-tw{border:0;border-radius:var(--r-md);box-shadow:var(--sh);}
+.tl-done>summary:hover{background:none;}
+.alongside{border-left:0;padding-left:0;margin-left:0;}
+.dhead .cnt{font-size:.8125rem;font-weight:600;color:var(--muted);}
+.dhead .rule{display:none;}
+.dhead{justify-content:space-between;}
+.spread{flex-wrap:wrap;align-items:center;}
+.view>.spread>.btn,.view>.row>.btn{white-space:nowrap;}
+
+/* lists of rows: separate cards, not one ruled box */
+.quizlist{gap:.5rem;border:0;border-radius:0;overflow:visible;background:none;}
+.quizlist.wide .qz,.qz{padding:.6rem .9rem;background:var(--surface);box-shadow:var(--sh);}
+.qz[data-held]{box-shadow:var(--sh);}
+.qz-t{font-size:.9375rem;font-weight:600;}
+.qz-t:hover{color:var(--ink);}
+.qz-r{border:0;text-transform:none;letter-spacing:0;font-size:.75rem;}
+.qz-r[data-pass="n"]{border:0;}
+.qz-off,.qz-t .hw-n{text-transform:none;letter-spacing:0;font-size:.75rem;}
+.qz-d{font-size:.75rem;}
+.eyebrow.path{font-family:var(--ui);font-size:.8125rem;font-weight:700;letter-spacing:0;color:var(--muted);}
+.hw-turn{background:var(--surface);}
+.hw-tally,.wb-n b,.rowcard .num,.pr-ban b,.mast h1{font-family:var(--ui);font-weight:800;letter-spacing:-.02em;}
+.hw-tally{font-size:1.375rem;}
+.hw-not{border-top:1px solid var(--line);}
+.qz-b.btn{padding:.35rem .9rem;}
+
+/* notes, charts, missing-file slots */
+.byo-miss{border:0;background:var(--surface);box-shadow:var(--sh);align-items:center;}
+.byo-n{font-weight:700;color:var(--ink);}
+.byo-media{border-radius:var(--r-md);}
+.rd-b{border-top:0;}
+.chartbody{border-top:0;background:var(--surface-2);border-radius:var(--r-md);}
+.songpage hr,.songhead{border-bottom:0;}
+.tl-q,.tl-more,.tl-q.pend{border-style:solid;border-color:transparent;background:var(--surface-3);}
+
+/* section rules: spacing instead of hairlines */
+.weekband,.clscols{border-top:0;border-bottom:0;padding:.25rem 0;}
+.view>.ovsec{border-top:0;padding-top:.5rem;}
+.tsec{border-top:0;}
+.rd-f,.bk-f,.bk-b:not(:empty){border-top:0;}

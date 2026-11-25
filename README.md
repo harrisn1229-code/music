@@ -1,6 +1,7 @@
 # Music
 
-One music app with several tools inside it. Open Music, pick a tool.
+One music app with several tools inside it. Open Music, pick a tool. Along the bottom of the
+home screen are two tabs: Home (the tools) and Calendar.
 
 Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 `main`).
@@ -31,7 +32,8 @@ older GitHub sync on devices that have not signed in yet.
 ## What's in here
 
 ```
-index.html             Home screen: one app icon per tool, in the order of apps.js
+index.html             Home screen: one app icon per tool, in the order of apps.js, and the tab bar (Home, Calendar)
+calendar/              The home screen's Calendar tab (app.js, app.css), loaded into index.html
 apps.js                The list of tools (read by the home screen and by sw.js)
 sw.js                  Service worker: keeps every file available offline
 manifest.webmanifest   Name, icon and shortcuts for the installed app
@@ -60,7 +62,8 @@ looper/                Looper (index.html, app.js, app.css; engine.js, dsp.js, w
 circle/                Circle of Fifths (index.html, app.js, app.css; reads shared/theory.js)
 originals/             Originals (index.html, app.js, app.css; owns the assistant's Originals tools)
 scratchpad/            Scratchpad (index.html, app.js, app.css; owns the assistant's Scratchpad tools)
-school/                School, built from the music-school repo. Do not edit by hand.
+school/                School as built by school-src/'s build. Do not edit by hand.
+school-src/            School's source: lesson notes, app code, the build (see School)
 ```
 
 Each tool is a single `index.html` in its own folder. The home screen only
@@ -95,16 +98,57 @@ ratings, so do not change how a key is built.
 
 ## School
 
-School is built from its own repo, [music-school](https://github.com/harrisn1229-code/music-school)
-(the lesson notes and the build), straight into `school/` here:
-`python3 Machine/Scripts/school-artifact/build.py --dest ../music/school`. Change it there, never
-in `school/`.
+School's source lives in this repo too, in `school-src/`: the lesson notes
+(`school-src/00 Human/20 Music/School & Content/`), the app's code
+(`school-src/Machine/Scripts/school-artifact/`: `app.js`, `app.css`, `app-shell/`) and the build.
+`school/` is what the build writes, so change School in `school-src/` and rebuild, never in
+`school/` by hand. From the root of this repo:
+
+```
+python3 school-src/Machine/Scripts/school-artifact/build.py
+```
+
+then commit the source and the rebuilt `school/` together. `school-src/CLAUDE.md` has the rules
+that come with it, the main one being that nothing licensed or personal goes in (this repo is
+public; `school-src/.gitignore` lists the known paths). Until 2026-11-25 the source was its own
+repo, `music-school`; it was moved in here unchanged (a rebuild from it matched `school/` exactly).
 
 It is much bigger than the other tools (the whole curriculum and a book of scans), so it is the
 one exception to "no service worker of its own": `school/sw.js` looks after `school/` and updates
 file by file. `apps.js` says so with `worker: "sw.js"`; Music's worker then leaves that folder
 alone, and the home screen starts School's worker in the background so School is saved for
 offline use as well. School does not need `version` raised when only `school/` changes.
+
+School's Overview no longer shows its calendar: that is the home screen's Calendar tab now. In
+the app School draws that section only in its bridge copy, the out-of-sight one the Calendar tab
+opens to read the term from (`overview()` in `app.js`); the old single-file artifact page still
+shows it.
+
+## Calendar
+
+The home screen's second tab (`calendar/app.js`, `calendar/app.css`; listed under `tabs` in
+`apps.js` so they are kept offline). A month at a time, Sunday first: the School term tinted, its
+school weeks numbered down the side and the current week in bold, today filled in. Days carry a dot
+for each thing School has on them (colour = theory, instrument, production or teacher; a ring = a
+lesson finished that day). Tapping a day lists them under the month, and each opens in School
+(`school/#course:25`, `#homework:01:4`, `#drill`). Today also has School's Overdue, folded to one line.
+Instrument lessons that stay open for the week show under "Still open" until they close.
+
+**Activity** (a switch under the month, off by default, `calendar:prefs`) adds the Practice Log:
+time per day on each date, the month's total, and that day's sessions (times, tools, what was done)
+under the day. A session opens Practice Log on that day (`log/#day=YYYY-MM-DD`). With an account it
+fetches other devices' practice (`MusicLog.sync`) at most every 5 minutes.
+
+School works out its own schedule, so the Calendar asks School instead of doing it a second time:
+it opens `school/index.html?bridge=1#overview` out of sight (School's bridge mode: no history, no
+change to the page School reopens on, never counted by the Practice Log) and reads what the Overview
+draws, the same contract School's Google Calendar sync relies on: Schedule rows
+`.tl > .tl-d[data-date]` and their chips (kind from the chip's data attributes, `open through` from a
+lane's title), the Overdue band `.tl > .tl-late`, Completed lessons `.tl-done .tl-drow`, and the term
+from the month grids `.cal .cmo` (in-term days are `.in`), which School draws only in that bridge copy. The result is kept under `calendar:school`
+and read again when `school:progress` changes, on a new day, after 3 hours, or with Try again. Signed
+in, School may pull newer progress after it first draws, so the frame is read again on each redraw
+for 8 seconds.
 
 ### Library's shelves
 
@@ -122,7 +166,7 @@ older device, an old backup) is folded in on load.
 Library has no front page: each shelf is its own tile in the home screen's Reference section (`shortcuts`
 in `apps.js`): Modes, Chords and Arpeggios (`library/#/modes` etc.), Production chains, Drills and My files.
 Each page's bar shows that shelf's name and icon, with Home. All of them, and School, share one look — School's
-is `school/music-skin.css`, written from the `music-school` repo.
+is `school/music-skin.css`, built from `school-src/Machine/Scripts/school-artifact/app-shell/music-skin.css`.
 
 ### Production chains
 
@@ -255,7 +299,7 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
   right through as the tempo. Runs of one drill on one day add up into one entry (`by: "metronome"`).
   Signed in, it is merged into the account's `practice` document the way School does it.
 - `metronome/#drill=<id>` opens the Metronome with that drill loaded. Every drill's page in Library
-  has a "Practise with metronome" button that links there (built from `music-school`).
+  has a "Practise with metronome" button that links there (built from `school-src/`).
 
 ## Transcribe (folder `playalong/`)
 

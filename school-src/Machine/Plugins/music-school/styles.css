@@ -1,0 +1,56 @@
+/* The iframe carries the school's own stylesheet, so nothing INSIDE it is styled here — these
+   rules only frame it. The bar deliberately says "offline copy": the one thing this pane must
+   never do is look identical to the published page while writing somewhere else. */
+.ms-wrap { display: flex; flex-direction: column; height: 100%; padding: 0; }
+
+/* flex-wrap is the mobile fix. The bar carries six things now (label, stamp, scans note, build
+   picker, status, Reload) and on a phone that is far past one line — unwrapped, the Reload button
+   and the save status slide off the right edge, which is exactly where the two controls you need
+   when something has gone wrong were living. */
+.ms-bar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 6px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary); flex: 0 0 auto; }
+.ms-title { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-accent); }
+.ms-sub { font-size: 11px; color: var(--text-muted); }
+.ms-status { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+.ms-status[data-s="saving"] { color: var(--text-accent); }
+.ms-status[data-s="ok"] { color: var(--text-success, var(--text-muted)); }
+.ms-status[data-s="err"] { color: var(--text-error); font-weight: 600; }
+.ms-bar button { font-size: 11px; padding: 2px 8px; }
+.ms-pick { font-variant: tabular-nums; text-transform: lowercase; }
+
+/* border:0 matters — Obsidian's default iframe border draws a line inside the page's own chrome
+   and gives away that this is a frame.
+   `width:1px; min-width:100%` is not a typo: iOS webviews ignore a percentage width on an iframe
+   and size it to its content instead, which on this page means a horizontally scrolling pane that
+   never fits the screen. Declaring a tiny width and forcing it back up with min-width is the
+   long-standing way to make the frame honour its container there; on desktop it computes to the
+   same 100% and changes nothing. */
+.ms-frame { flex: 1 1 auto; width: 1px; min-width: 100%; height: 100%; border: 0;
+  background: var(--background-primary); -webkit-overflow-scrolling: touch; }
+
+.ms-empty { padding: 28px; color: var(--text-muted); font-size: 13px; line-height: 1.6; max-width: 62ch; }
+.ms-empty code { background: var(--background-secondary); padding: 1px 5px; border-radius: 3px;
+  word-break: break-all; }
+.ms-empty b { color: var(--text-normal); }
+.ms-empty ul { padding-left: 1.2em; }
+.ms-empty li { font-family: var(--font-monospace); font-size: 11px; word-break: break-all; }
+
+/* Touch targets. An 11px button is a desktop affordance; on a phone — and especially on the Boox,
+   where a mis-tap costs a full e-ink repaint — the diagnostic controls have to be hittable. */
+.is-mobile .ms-bar { padding: 8px 12px; gap: 8px; }
+.is-mobile .ms-bar button { font-size: 13px; padding: 6px 12px; }
+.is-mobile .ms-status { font-size: 12px; }
+.is-mobile .ms-empty { padding: 18px; font-size: 14px; }
+
+/* The running version, always visible. "It still does the same thing" and "the update never loaded"
+   look identical from the other end of a message, and this is what tells them apart. */
+.ms-ver { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+  background: var(--background-modifier-border); color: var(--text-muted); letter-spacing: .04em; }
+
+/* An engine below the floor is not a warning, it is the answer — it gets the loudest chip in the bar
+   because no amount of reloading will change it. */
+.ms-warn { font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px;
+  background: var(--background-modifier-error); color: var(--text-error); }
+.is-mobile .ms-ver, .is-mobile .ms-warn { font-size: 12px; padding: 3px 7px; }

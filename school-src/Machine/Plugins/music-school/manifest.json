@@ -1,0 +1,9 @@
+{
+  "id": "music-school",
+  "name": "Music School",
+  "version": "2.2.0",
+  "minAppVersion": "1.4.0",
+  "description": "Runs the Music School page inside Obsidian, offline, on desktop and mobile. Reads the school build in this vault and saves progress back to it.",
+  "author": "Hyperion",
+  "isDesktopOnly": false
+}

@@ -1,0 +1,42 @@
+---
+type: yt-note
+date: 2026-08-11
+source: youtube
+url: https://www.youtube.com/watch?v=LHszraOpPZo
+channel: Nathan Borton
+duration: "00:08:47"
+video_type: lesson
+music_enriched: true
+transcript_source: captions
+transcript_confidence: high — clean captions, spoken lesson throughout, no garbling
+tags: [yt-note, music, guitar, theory, improvisation, jazz, guide-tones, arpeggios, chord-tones, chromaticism]
+briefed: backlog
+---
+
+# Difficult Chord Progressions Made EASY! Learn the Secrets to Start Playing Over Tricky Chords
+
+![](https://www.youtube.com/watch?v=LHszraOpPZo)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=LHszraOpPZo)
+
+## Synopsis
+A short, tightly-focused Nathan Borton lesson (his second video in this vault after [[Learn Charlie Parker's Phrasing Secrets... with CONFIRMATION!|the Confirmation phrasing breakdown]]) that names a single common "tricky" chord progression — a **I → I7 → IV → #ivdim → I/5 walk-up**, worked in F: `Fmaj7 → F7 → B♭maj7 → Bdim → F/C` — and then teaches three general-purpose methods for navigating it (and, by extension, any similarly non-diatonic stretch of a songbook tune): building a **guide tone line**, **linking arpeggios chord-to-chord in one neck position**, and **playing a single connected linear line across the whole progression**. Borton is explicit the progression itself isn't the point — it's the vehicle for the three methods, which he states plainly generalize to other tricky spots (♯4 chords, passing diminished chords) that show up constantly in jazz standards. The video is short on note-for-note transcription (music demonstrations aren't captioned as notation, just described) but strong on the *process* for constructing each device from scratch, step by step, which is exactly the gap most of the vault's other guide-tone/arpeggio material assumes is already solved. Most valuable for Nate: the fully worked, chord-by-chord derivation of a guide tone line (pick a starting chord tone, move it by the smallest interval to the nearest chord tone of the next chord, repeat notes are fine occasionally) is a rare from-scratch construction walkthrough rather than an applied example — most of the vault's existing [[Guide Tones]] material assumes the guide tone line already exists and shows what to do with it.
+
+## What's taught
+- **The named progression and where it shows up** — a common **walk-up** progression found "often in the blues as well as songbook tunes," explicitly named across **"Lover Come Back to Me," "If I Were a Bell," [[Rhythm Changes]], and "It's Only a Paper Moon,"** plus "many others." Not transcribed in the captions as a chord chart, but reconstructed from the narration: **Fmaj7 (I) → F7/A (I7, third in bass) → B♭maj7 (IV) → Bdim (♯ivdim) → F/C (I, fifth in bass)** — the classic I–I7–IV–♯ivdim–I(/5) walk-up shape. [~0:45] → [[Chord Progressions]], [[Rhythm Changes]]
+- **Method 1 — construct a guide tone line from scratch, one chord-tone move at a time.** Step-by-step derivation, not just a finished example: (1) pick a **starting note out of the arpeggio of the first chord** — here, the **7th of Fmaj7 (E)**; (2) for each subsequent chord, find **the smallest possible move** from the current note to a chord tone of the new chord. Worked chord-by-chord: **E (7th of Fmaj7) → E♭ (♭7th of F7)** — a half-step down, reframing the same pitch-class as the dominant's characteristic tone; **E♭ → D (3rd of B♭maj7)** — a half-step down; **D → D (stays put over Bdim)** — explicitly named as acceptable to hold a guide tone line on a repeated note "once in a while," just not too often; **D → C (5th of Fmaj7)** — a half-step down to resolve. Stated principle: **aim for arpeggio/chord tones on the guide tone line**, but it's fine to pass through a non-chord-tone occasionally if it makes the line move somewhere better. [~1:10]–[~2:35] → [[Guide Tones]]
+- **Method 1, continued — turn the guide tone skeleton into an actual line with enclosures or interval jumps.** Once the guide tone line (the skeletal one-note-per-chord backbone above) is built, the next step is decorating/connecting those skeleton notes into real melodic material using either **enclosures** (surrounding a guide tone note before landing on it) or **interval jumps** (leaping to/from a guide tone note rather than a smooth step) — demonstrated with two worked examples over the same progression, mixing both devices freely rather than committing to one. [~2:50]–[~3:20] → [[Bebop Vocabulary]] §2 (Enclosures), [[Guide Tones]]
+- **Method 2 — link arpeggios chord-to-chord using the same "smallest move" mindset as the guide tone line, all from one neck position.** First, practice each chord's arpeggio **in the same fretboard position** (his example: around the 8th fret) rather than the position's "default"/open-position shape for that chord — mirrors the CAGED-adjacency logic already on [[Arpeggio Shapes for Playing Over Changes]]. Once each arpeggio is comfortable in that position, **link them together using the exact same guide-tone mindset**: move between arpeggios via the closest available chord tone rather than resetting to the root each time. Enclosures are usable here too — "it doesn't have to be straight arpeggios all the time." [~3:35]–[~4:20] → [[Arpeggio Shapes for Playing Over Changes]]
+- **Method 3 — one continuous linear line across the whole progression, with chromatic alteration exactly on the "& of 4."** Practice the scale for each chord in the neck position being used first, in isolation, same as the arpeggio method's first step. Then connect the scales into one line with a precise timing rule: **right on the last upbeat before the chord change (the "& of 4," the beat right before the downbeat)**, look ahead to the next note the current scale would give you and check whether it's actually in the **next** chord's scale — **if it fits, keep going; if it doesn't, alter it chromatically (sharp or flat it) to land inside the incoming chord scale.** Explicitly recommends practicing this ascending, descending, **and changing direction mid-line** through the progression, not just one fixed direction. [~4:30]–[~5:30] → [[Continuous Scale Exercise]]
+- **Closing generalization — these three methods aren't progression-specific.** States directly that guide tone lines, linked arpeggios, and connected linear lines are the general toolkit for **any** tricky, commonly-recurring songbook progression, explicitly naming **♯4 chords and passing diminished chords** as other categories the same three methods apply to (not covered in depth here — flagged as candidate follow-up content). [~7:40] → [[Diminished Chords]]
+- **No sound/tone or gear content** — this is a pure theory/technique lesson, nothing to route to the [[Sound Selection Guide]] or [[Vintage Gear Index]].
+
+## Routed to
+- [[Guide Tones]] — new "From videos" bullet: the full from-scratch construction walkthrough (pick a starting chord tone, move by smallest interval chord-to-chord, hold occasionally, enclosures/interval jumps to build a line from the skeleton) over the F walk-up
+- [[Arpeggio Shapes for Playing Over Changes]] — new "From videos" bullet: linking arpeggios chord-to-chord in one neck position using the identical guide-tone "smallest move" mindset
+- [[Bebop Vocabulary]] — new "From videos" bullet (§2 Enclosures / §4 Target the guide tones): enclosures and interval jumps used specifically to turn a guide-tone skeleton into a playable line
+- [[Continuous Scale Exercise]] — new "From videos" bullet: a simpler, beat-anchored version of the same key-change decision rule ("& of 4" lookahead, chromatic alteration if the next scale note doesn't fit)
+- [[Chord Progressions]] — new "From videos" bullet: the named I–I7–IV–♯ivdim–I/5 walk-up progression itself and the four songbook tunes it's cited in, as a concrete recurring-progression example
+- Not routed to [[Song Practice]] — this is a general navigation technique applied to a demonstration progression, not a specific tune Nate is currently learning; no natural slot in the current Learning now / Queue sections.
+
+## Source
+[Difficult Chord Progressions Made EASY! Learn the Secrets to Start Playing Over Tricky Chords](https://www.youtube.com/watch?v=LHszraOpPZo) · Nathan Borton · 00:08:47 · captions (high confidence) · transcript: [[Difficult Chord Progressions Made EASY! Learn the Secrets to Start Playing Over Tricky Chords (transcript)]]

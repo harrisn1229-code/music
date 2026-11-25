@@ -1,0 +1,45 @@
+---
+type: reference
+tags:
+  - music
+  - theory
+  - chords
+created: 2026-07-17
+source: https://www.pianochord.org/aug.html
+swept: 2026-07-19
+---
+
+# Augmented Chords
+
+Part of [[Music Theory]] → [[Chords]]. Major triad with the 5th raised a half-step — root + two stacked major 3rds (4+4 half-steps). Symmetrical like [[Diminished Chords|dim]], so it repeats every 4 half-steps.
+
+| Chord | Symbols | Formula | C example |
+|---|---|---|---|
+| Augmented triad | Caug / C+ / C(♯5) | 1 3 ♯5 | C E G♯ |
+| Augmented 7th | Caug7 / C7♯5 / C7+ | 1 3 ♯5 ♭7 | C E G♯ B♭ (site spells A♯) |
+
+- Sounds dissonant because the ♯5 falls outside the root's major [[Scales|scale]] (Gaug = G B D♯ — D♯ isn't in G major)
+- 7♯5 with more alterations → [[Altered Chords]]; the Δ♯5 chord from melodic/harmonic minor → [[Scale Modes Reference]]
+
+## Usage — transition/passing chords
+Small chromatic shift from a plain triad creates movement between unrelated chords:
+- C → Caug → Am (5th walks G → G♯ → A)
+- G → Gaug → Em
+- Classic move: I → Iaug → VIm (or → IV6). The rising line is the hook
+
+## Related
+[[Chords]] · [[Seventh Chords]] · [[Chord Progressions]] · piano diagrams: [pianochord.org/aug](https://www.pianochord.org/aug.html)
+
+## From videos
+
+- **An ear-training discrimination cue for telling augmented and diminished triads apart — both dissonant, easily confused by a less experienced ear.** Augmented sounds "wider" and comparatively static — dissonant but without a strong forward pull; diminished sounds like it "wants to go somewhere," actively pulling toward resolution. → [[Diminished Chords]] — David Bennett Music Theory, [[The Ear Training Olympics]]
+- **A song-example survey of augmented-chord uses, organized by function.** **Dominant substitute (built on V, resolving up a 4th)**: "Oh! Darling" (Beatles, E+→A, modeled on Chuck Berry's "School Days"/"No Particular Place to Go"), "From Me to You" (Beatles middle 8), "The Warmth of the Sun" (Beach Boys), "Blackout" (Muse). The Beatles used it in 20+ songs — George Harrison's reported nickname: "the naughty chord." **Built on the tonic, resolving up to IV**: "Crying" (Roy Orbison), "It's My Party" (Lesley Gore). **Alternative resolution target (vi instead of IV, since both contain the target 6th degree)**: "Let There Be Love" (Oasis). **Tease-and-fall-back, no resolution**: "Let There Be Love" (Oasis intro) and "Mamma Mia" (ABBA intro) both pivot tonic→tonic-augmented→back to tonic. **Line-cliché byproduct**: "Stairway to Heaven" (descending) and "Life on Mars?" (ascending) both produce an augmented chord as one step of a moving bass line, likely arrived at as a side effect of the voice-leading rather than a deliberate chord choice → [[Line Cliché]]. **Notational quirk**: augmented triads can't be truly inverted (two stacked major 3rds are symmetric) — "inverting" C+ literally produces E+, a different-named chord with identical notes; real transcriptions of "Life on Mars?" disagree on whether to call the same chord E+ or C+/E. — David Bennett Music Theory, [[Songs that use Augmented Chords]]
+- **Five concrete CAGED-position melodic arpeggio shapes for the augmented triad (root-3rd-♯5, C root), a fingering shortcut that generalizes across all five, and a whole-tone-scale-from-chord-tones recipe for soloing over it — plus why it's worth mapping at all: outline an augmented triad over any major 7♯5 chord instead of learning a separate shape for it.** Because the augmented triad is symmetric (two stacked major 3rds — any of its three notes could be heard as root), Jared treats it as the hardest chord type so far in his 12-chord-type arpeggio series: no shape has a "home base" feel, so strict root-to-root practice (pause/repeat only on the root, per [[Arpeggio Shapes for Playing Over Changes]] § *Single-chord-type ladder*) is the only way to impose a felt tonic, and the ladder's later phrasing/improv steps are noticeably harder here than on other chord types. **Fingering shortcut that holds across all five shapes:** wherever the 1st finger plays the root, the 3rd of the chord falls on the **same string**. **Position fingerings** (C root): Position 1 — 1-4-3-mid, then a stretch/reach for the 3rd (or hop with the 3rd finger if the reach strains the wrist), continuing 1-3-mid-3-pinky-1; fits both the augmented scale and the altered scale, since both contain this triad's notes. Position 2 — a cascading root-3rd-♯5-root run, then hop to a second 3rd via the 3rd finger, top three strings under pinky/middle. Position 3 — 1-4-3-2-1 cascade, then a "position pivot" (2nd finger reaches to the same fret, hand shifts to 1-2). Position 4 (the "hand-buster") — root/3rd both on the 4th string, 3rd finger plays the ♯5, pinky plays the root, middle finger plays the 3rd, fast 4th/3rd-finger alternation. Position 5 — 3-2-1-1, 3rd taken via a first-finger roll onto the root's string, ♯5 is the only note on the lowest string of the shape. **Add-note recipe for step 5 of the ladder:** add a whole step above or below every chord tone (root, 3rd, ♯5) to generate the full **whole-tone scale** on that root; chromatic connecting between established chord/whole-tone tones is also fair game by ear. Practiced against a looped C augmented backing vamp (own loop pedal) or iReal Pro/Band-in-a-Box/a YouTube "augmented triad jam track." Full position-by-position breakdown and the five-step ladder itself → [[AUGMENTED Triad Arpeggio Guitar Shapes for Soloing with Chordal Tones]]. → [[Arpeggio Shapes for Playing Over Changes]], [[Scale Modes Reference]] § *Whole Tone / Diminished*, [[Altered Chords]] — Sound Guitar Lessons With Jared, [[AUGMENTED Triad Arpeggio Guitar Shapes for Soloing with Chordal Tones]]
+- **A [[Triad Pairs]] example built from two augmented triads — the augmented triad's shape symmetry
+  (every inversion is the same shape, splitting the octave into three equal major thirds) means the
+  whole two-triad pattern can be shifted up the neck in major thirds and stays one fingering the entire
+  way.** Grant Green's lick: **D♭ augmented + E♭ augmented** for an E♭ altered dominant sound over a
+  ii-V-I, with a note left out of the first triad and a note added to the second, reshaping it into a
+  Coltrane-pattern-style rhythmic figure. Full writeup → [[Triad Pairs]] § *From videos*. → [[Triad Pairs]] — Nathan Borton, [[Triad Pairs! The Sound of Modes!]]
+- **Pat Martino's "augmented parental form" — raise or lower one note of an augmented triad at a time to generate a family of minor or major triads respectively, combined with a matching diminished-chord form into a single hybrid shape.** Lowering each note of an augmented triad in turn produces a family of **major** triads; raising each note in turn produces a family of **minor** triads; playing the derived triads together creates the composite "augmented sound." Combined with the diminished parental form (already documented on [[Diminished Chords]] § *From videos*) into one hybrid voicing — a G-diminished-derived shape that simultaneously reads as an A augmented triad over a G bass (= an inverted A7♯5) — the hybrid inherits the diminished form's minor-third transposability (working over A7♯5, C7♯5, E♭7♯5, G♭7♯5) *and* the augmented form's major-third-related triad family for extra color at each of those targets (worked: F major triad at A7♯5). Part of a broader "dimensional plane" counting system for stacking substitute sounds over one static chord. Full derivation and the worked bebop-line demonstration → [[Pat Martino's Dimensional Planes and Parental Forms]]. → [[Diminished Chords]], [[Chord Substitution]] — Nathan Borton (distilling Pat Martino's *Quantum Guitar*), [[Transform Your Playing Pat Martino's Quantum Guitar Method]]
+- **Cmaj7♯5 used as a suspended tonic in a ii–V–I (delaying the plain Cmaj7 arrival), with a ranked scale-choice list and the most specific melody-note rule of any suspension device in the source lesson — the 5th flatly does not work.** Worked in C: Dm7 → G7 lands on a plain **maj7♯5** chord instead of Cmaj7 first. **Scale choices, ranked closest-to-home outward:** **A melodic minor / Lydian augmented** (the most straight-ahead option, described as sitting closest to C major), then further out **augmented scales** and **E harmonic major**; soloing vocabulary given simply as **melodic-minor triad pairs** — no elaborate scale-running needed. **Melody-note rules for comping/arranging:** the **5th is the one chord tone that flatly fails** in the melody over this chord (reach for a diminished or borrowed-iv suspension instead when the 5th is the melody note — see [[Diminished Chords]], [[Borrowed Chords]]); the root works but isn't the first choice; **major 7th and 3rd both work well**; the **9th also works well** and is offered as a direct substitute for the diminished-chord suspension over the same "Stella by Starlight" spot. → [[The ii-V-I]] § *When the I doesn't arrive*, [[Altered Chords]], [[Scale Modes Reference]] — Jens Larsen, [[II V What!? - How not to resolve a II V I on purpose - Jazz Guitar Lesson]]

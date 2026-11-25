@@ -1,0 +1,488 @@
+{
+ "_comment": [
+  "The durable, machine-readable Fall 2026 semester plan. Source of truth for the schedule.",
+  "Read by: Machine/Scripts/school-syllabus-render.py (the PDF), /school replan, and the",
+  "Command Center Learning card's semester band (lib/school-state.js buildSemesterState).",
+  "Course metadata (lessons, concepts, target, depends_on) is duplicated here for the",
+  "renderer's benefit only -- the course notes in 00 Human/20 Music/School & Content/Curriculum/Courses/ remain",
+  "authoritative. /school replan rewrites `rows` and `semester.end`; semester.start/weeks",
+  "are written by build.py only (see the 2026-08-19 entry below) -- nothing else touches this file.",
+  "Recreated 2026-08-05 from 'Syllabus -- Fall 2026.md' (spec-146 Phase 3) to replace a",
+  "hard-coded /tmp scratchpad path that made the renderer unreproducible.",
+  "2026-08-06: Course 13 (EAR) added as a STANDING course — its 5 units install a daily routine (~10 min) rather than a reading block, so they ride weeks 1-5 alongside the normal 2 theory units instead of displacing one. Courses 14/15/16 (DRM/ARR/BAS) are in the catalogue but DELIBERATELY UNSCHEDULED: the strands were new and unscheduled at that point.",
+  "2026-08-06 (second pass): DRM/ARR/BAS scheduled after all. They are taught from zero — no prior knowledge assumed, nothing skipped, target 80. Order is build order: DRM (the beat) -> BAS (the line over it) -> ARR (the song around it); BAS and ARR depend on 14. They ride weeks 13-17 at 2 prod units/week, which is only possible because the theory track empties after week 13. Semester 13 -> 17 weeks, Nov 8 -> Dec 6.",
+  "2026-08-06 (third pass, Nate's call): production track reordered — DRM/BAS first, MIX/SMP (Course 02) last. Was 02,04,07,09,14,16,15. Course 02 had 0 units complete so nothing was lost in the move. NOTE the cost: 02 carries the three highest-real-world-cost items (no limiter on the 2-bus, the commit-vs-leave-open boundary, sample clearance) and they now land in weeks 16-17 instead of 1-3.",
+  "2026-08-09 (spec-147 Phase 1): the assessment layer was deleted. `placement` removed from every course entry; `target` kept as the pass bar. `rows`, `theory` and `prod` are untouched — the schedule is unchanged by that build.",
+  "2026-08-09 (spec-147 Phase 2): `classes` array added and a `class` key stamped on every course. Course 17 (standing, instrument) added to the catalogue — it is NOT in `theory`/`prod` and NOT in `rows`, because standing courses stay out of the two-track pacing entirely. `rows`, `theory` and `prod` are byte-identical to before.",
+  "2026-08-13 (spec-160 Job 2): Class 9 (Piano Technique) and Course 18 (The Virtuoso Pianist -- Hanon) added to the catalogue, mirroring Class 8 / Course 17 exactly — both standing, instrument-domain, reps over a book. Course 18 is NOT in `theory`/`prod` and NOT in `rows`, same reason as Course 17. Courses 01-17 and Classes 1-8 were not renumbered.",
+  "2026-08-19 (spec-171 PATCH-001): semester.start / semester.weeks are NO LONGER edited here directly -- 00 Human/20 Music/School & Content/Curriculum/School Config.md's `semester:` block is now authoritative for those two fields. This copy is a GENERATED MIRROR that Machine/Scripts/school-artifact/build.py overwrites on every rebuild so school-replan.cjs, school-syllabus-render.py and the Command Center Learning card -- which all read this file's semester{} directly -- see an edit made in School Config without anyone re-pointing them at it. semester.end is recomputed by that same sync (as the undrifted start + weeks*7 - 1) whenever start/weeks changed since the last sync; /school replan --apply still owns the drift-aware version of end (and all of `rows`) once it has actually run. Hand-editing start/weeks here will be overwritten on the next artifact build -- edit School Config.md instead.",
+  "2026-08-20 (spec-172 Phase 2, Agent C): Courses 17 and 18 RETIRED and replaced by ordinary courses — 19-24 (Hanon I-VI, class 9, 10/10/11/12/9/8 lessons, chained 19->20->21->22->23->24) and 25-26 (Reading I-II, class 8, 4 lessons each, 26 depends on 25). None is standing: the `standing: true` flag is gone from every one of them, classes 8 and 9 are `standing: false`, and School Config's courses.standing / classes.standing lists drop 17/18 and 8/9 to match — that removal is the point of spec-172, not a side effect. The eight ride the `theory` ARRAY, appended after course 08. That array is a TRACK ordering, not a domain label: app.js's domainOf() deliberately collapses `instrument` into the theory track, and school-state.js's pendingLessonsForTrack() DROPS any course id absent from `theory`/`prod` ('absent from the track array on purpose — held out'), so a third `instrument` array would have made all 68 lessons invisible to build.py's ORDER, to /school replan and to the Learning card at once. EXPECT THE PLAN TO GROW: these 68 lessons used to ride as standing riders at 1/week and now queue as normal theory work at 2/week, so a relay over the whole catalogue runs ~40 weeks rather than 17. courses.taught_limit is UNCHANGED at 2 — whether instrument courses count against it, or get their own slot and their own weekly pace, is Nate's call and is not decided here.",
+  "2026-08-20 (spec-172 Phase 3b): THE INSTRUMENT LANE. Nate: \"give instrument its own lane and lessons per week.\" Courses 19-26 moved OUT of `theory` into a new top-level `instrument` array -- a THIRD track ordering alongside `theory` and `prod`, not a domain label (the domain has always been `instrument` on these eight; what changed is which queue they are dealt from). Phase 2 put them in `theory` because a third array was invisible to every consumer; this phase taught the consumers about it, so the reason is gone. Consumers updated in lockstep: school-artifact/build.py emits order.instrument, app.js's domainOf() no longer collapses instrument into theory (schedule() deals three tracks), lib/school-state.js relaySyllabus() takes instrumentOrder and emits an `instrument` array in each row, buildSemesterState() counts it, school-replan.cjs passes it and school-syllabus-render.py prints it. ANY new reader of this file must read all THREE arrays -- `theory` + `prod` is no longer the whole catalogue. Pacing: semester.instrument_lessons_per_week is 3/week (School Config is authoritative and build.py mirrors it here), and School Config's courses.instrument_limit is 2 -- a separate allowance, so courses.taught_limit STAYS 2 and instrument work never consumes a taught slot. Expect the relay to SHRINK back: the 68 instrument lessons no longer queue behind the theory track at 2/week.",
+  "2026-08-21: instrument_lessons_per_week lowered 3 -> 2. Nate: \"for hanon: make it max 2 lessons per week. takes time to learn each one.\" This is the LANE's pace and the lane deals round-robin, so 2 is the ceiling a single book can hit; with both a Hanon and a Reading course enrolled each gets ~1/week. School Config is authoritative; build.py mirrors it here.",
+  "2026-08-21 (Class 8 re-partition): the two Reading courses became FOUR, two lessons each, reading order still equal to ID order. 25 = Reading I Part One (pp. 3-29), 26 = Reading I Part Two (pp. 30-59), 27 = Reading II Part One (pp. 60-99), 28 = Reading II Part Two (pp. 100-123); 26->25, 27->26, 28->27 in depends_on, so only one is ever dealt at a time. Nate: \"guitar sight reading split up each course into two... there's alot of pages in each one.\" A lesson was 12-20 book pages and up to 20 pieces. Nothing was rewritten -- the page ranges and all 111 homework pieces moved across unchanged, and lessons 3-4 renumbered to 1-2 in the two Part Two courses (safe: progress-nate.json held no course 25/26 key). NEW KEY: `lessons_per_week: 1` on all four course notes and mirrored on these catalogue entries -- Nate: \"for this make it max one lesson per week since there's alot still.\" It is a PER-COURSE cap under the lane pace (semester.instrument_lessons_per_week, 2), not a replacement for it; School Config still owns the lane."
+ ],
+ "semester": {
+  "name": "Fall 2026",
+  "start": "2026-08-10",
+  "end": "2026-12-06",
+  "weeks": 17,
+  "theory_lessons_per_week": 2,
+  "production_lessons_per_week": 1,
+  "float": true,
+  "instrument_lessons_per_week": 2
+ },
+ "theory": [
+  "09",
+  "01",
+  "02",
+  "03",
+  "04",
+  "05",
+  "06",
+  "07",
+  "08",
+  "29",
+  "30",
+  "31"
+ ],
+ "prod": [
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16"
+ ],
+ "instrument": [
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "25",
+  "26",
+  "27",
+  "28"
+ ],
+ "classes": [
+  {
+   "id": "1",
+   "name": "Class 1 — Music Fundamentals",
+   "domain": "theory",
+   "courses": [
+    "01",
+    "02",
+    "03"
+   ],
+   "standing": false,
+   "exam": "Theory Midterm 1"
+  },
+  {
+   "id": "2",
+   "name": "Class 2 — Reading & Rhythm",
+   "domain": "theory",
+   "courses": [
+    "04",
+    "05"
+   ],
+   "standing": false,
+   "exam": "Theory Midterm 2"
+  },
+  {
+   "id": "3",
+   "name": "Class 3 — Songwriting: Harmony & Melody",
+   "domain": "theory",
+   "courses": [
+    "06",
+    "07",
+    "08"
+   ],
+   "standing": false,
+   "exam": "Theory Final Exam"
+  },
+  {
+   "id": "4",
+   "name": "Class 4 — Ear Training",
+   "domain": "theory",
+   "courses": [
+    "09"
+   ],
+   "standing": true,
+   "exam": null
+  },
+  {
+   "id": "5",
+   "name": "Class 5 — Beat & Arrangement",
+   "domain": "production",
+   "courses": [
+    "10",
+    "11",
+    "12"
+   ],
+   "standing": false,
+   "exam": "Production Midterm 1"
+  },
+  {
+   "id": "6",
+   "name": "Class 6 — Sound Design",
+   "domain": "production",
+   "courses": [
+    "13",
+    "14"
+   ],
+   "standing": false,
+   "exam": "Production Midterm 2"
+  },
+  {
+   "id": "7",
+   "name": "Class 7 — Vocals & Release",
+   "domain": "production",
+   "courses": [
+    "15",
+    "16"
+   ],
+   "standing": false,
+   "exam": "Production Final Exam"
+  },
+  {
+   "id": "8",
+   "name": "Class 8 — Guitar Sight Reading",
+   "domain": "instrument",
+   "courses": [
+    "25",
+    "26",
+    "27",
+    "28"
+   ],
+   "standing": false,
+   "exam": null
+  },
+  {
+   "id": "9",
+   "name": "Class 9 — Piano Technique",
+   "domain": "instrument",
+   "courses": [
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24"
+   ],
+   "standing": false,
+   "exam": null
+  }
+ ],
+ "courses": {
+  "10": {
+   "name": "Course 10 — Drum Programming & Beat Construction",
+   "domain": "production",
+   "strands": "DRM",
+   "lessons": 3,
+   "concepts": 10,
+   "target": 80,
+   "depends_on": [],
+   "assumed_level": "novice",
+   "class": "5"
+  },
+  "11": {
+   "name": "Course 11 — Bass Writing & Design",
+   "domain": "production",
+   "strands": "BAS",
+   "lessons": 3,
+   "concepts": 10,
+   "target": 80,
+   "depends_on": [
+    "10"
+   ],
+   "assumed_level": "novice",
+   "class": "5"
+  },
+  "12": {
+   "name": "Course 12 — Arrangement & Song Form",
+   "domain": "production",
+   "strands": "ARR",
+   "lessons": 3,
+   "concepts": 10,
+   "target": 80,
+   "depends_on": [
+    "10"
+   ],
+   "assumed_level": "novice",
+   "class": "5"
+  },
+  "13": {
+   "name": "Course 13 — Signal Path & Synthesis Methods",
+   "domain": "production",
+   "strands": "SYN",
+   "lessons": 4,
+   "concepts": 10,
+   "target": 80,
+   "depends_on": [],
+   "class": "6"
+  },
+  "14": {
+   "name": "Course 14 — Compressor Mechanics",
+   "domain": "production",
+   "strands": "FX",
+   "lessons": 2,
+   "concepts": 6,
+   "target": 85,
+   "depends_on": [],
+   "class": "6"
+  },
+  "15": {
+   "name": "Course 15 — Vocal Method",
+   "domain": "production",
+   "strands": "VOX",
+   "lessons": 3,
+   "concepts": 7,
+   "target": 85,
+   "depends_on": [],
+   "class": "7"
+  },
+  "16": {
+   "name": "Course 16 — Handoff & Release Prep",
+   "domain": "production",
+   "strands": "MIX, SMP",
+   "lessons": 3,
+   "concepts": 9,
+   "target": 80,
+   "depends_on": [],
+   "class": "7"
+  },
+  "19": {
+   "name": "Course 19 — Hanon I",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 10,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [],
+   "class": "9"
+  },
+  "20": {
+   "name": "Course 20 — Hanon II",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 10,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "19"
+   ],
+   "class": "9"
+  },
+  "21": {
+   "name": "Course 21 — Hanon III",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 11,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "20"
+   ],
+   "class": "9"
+  },
+  "22": {
+   "name": "Course 22 — Hanon IV",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 12,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "21"
+   ],
+   "class": "9"
+  },
+  "23": {
+   "name": "Course 23 — Hanon V",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 9,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "22"
+   ],
+   "class": "9"
+  },
+  "24": {
+   "name": "Course 24 — Hanon VI",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 8,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "23"
+   ],
+   "class": "9"
+  },
+  "25": {
+   "name": "Course 25 — Reading I — First Position, Part One",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 2,
+   "lessons_per_week": 1,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [],
+   "class": "8"
+  },
+  "26": {
+   "name": "Course 26 — Reading I — First Position, Part Two",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 2,
+   "lessons_per_week": 1,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "25"
+   ],
+   "class": "8"
+  },
+  "27": {
+   "name": "Course 27 — Reading II — Position Playing, Part One",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 2,
+   "lessons_per_week": 1,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "26"
+   ],
+   "class": "8"
+  },
+  "28": {
+   "name": "Course 28 — Reading II — Position Playing, Part Two",
+   "domain": "instrument",
+   "strands": "NOT",
+   "lessons": 2,
+   "lessons_per_week": 1,
+   "concepts": 0,
+   "target": null,
+   "depends_on": [
+    "27"
+   ],
+   "class": "8"
+  },
+  "01": {
+   "name": "Course 01 — Derivation Rules",
+   "domain": "theory",
+   "strands": "FND",
+   "lessons": 4,
+   "concepts": 8,
+   "target": 85,
+   "depends_on": [],
+   "class": "1"
+  },
+  "02": {
+   "name": "Course 02 — Chord Function",
+   "domain": "theory",
+   "strands": "HAR",
+   "lessons": 4,
+   "concepts": 10,
+   "target": 80,
+   "depends_on": [
+    "01"
+   ],
+   "class": "1"
+  },
+  "03": {
+   "name": "Course 03 — Scale Construction",
+   "domain": "theory",
+   "strands": "SCL",
+   "lessons": 3,
+   "concepts": 8,
+   "target": 80,
+   "depends_on": [
+    "01",
+    "02"
+   ],
+   "class": "1"
+  },
+  "05": {
+   "name": "Course 05 — Subdivision, Feel & Genre",
+   "domain": "theory",
+   "strands": "RHY",
+   "lessons": 3,
+   "concepts": 9,
+   "target": 80,
+   "depends_on": [
+    "01",
+    "03"
+   ],
+   "class": "2"
+  },
+  "04": {
+   "name": "Course 04 — Reading & Position Play",
+   "domain": "theory",
+   "strands": "NOT",
+   "lessons": 3,
+   "concepts": 9,
+   "target": 80,
+   "depends_on": [
+    "01"
+   ],
+   "class": "2"
+  },
+  "06": {
+   "name": "Course 06 — Loop Harmony & Modal Colour",
+   "domain": "theory",
+   "strands": "POP",
+   "lessons": 4,
+   "concepts": 11,
+   "target": 80,
+   "depends_on": [
+    "02",
+    "03"
+   ],
+   "class": "3"
+  },
+  "07": {
+   "name": "Course 07 — Blues Form & Vocabulary",
+   "domain": "theory",
+   "strands": "BLU",
+   "lessons": 3,
+   "concepts": 8,
+   "target": 80,
+   "depends_on": [
+    "02"
+   ],
+   "class": "3"
+  },
+  "08": {
+   "name": "Course 08 — Melody Writing",
+   "domain": "theory",
+   "strands": "MEL",
+   "lessons": 3,
+   "concepts": 8,
+   "target": 80,
+   "depends_on": [
+    "02",
+    "05",
+    "06"
+   ],
+   "class": "3"
+  },
+  "09": {
+   "name": "Course 09 — Ear Training Method",
+   "domain": "theory",
+   "strands": "EAR",
+   "lessons": 5,
+   "concepts": 14,
+   "target": 70,
+   "depends_on": [],
+   "standing": true,
+   "class": "4"
+  }
+ },
+ "rows": []
+}
