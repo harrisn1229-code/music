@@ -1,0 +1,45 @@
+---
+type: yt-note
+date: 2026-08-11
+source: youtube
+url: https://www.youtube.com/watch?v=QIqV9TMf66U
+channel: Sound Guitar Lessons With Jared
+duration: "00:17:14"
+video_type: lesson
+music_enriched: true
+transcript_source: captions
+transcript_confidence: medium-high — clean spoken lesson, several music-only passages, a handful of caption homophone garbles (flagged in the transcript)
+tags: [yt-note, music, guitar, lesson, songwriting, composition, chromaticism, fingerstyle, theory, modal-borrowing, drone, tenths, classical-guitar]
+briefed: backlog
+---
+
+# How I wrote this unique fingerstyle guitar part with chromaticism
+
+![](https://www.youtube.com/watch?v=QIqV9TMf66U)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=QIqV9TMf66U)
+
+## Synopsis
+Jared Borowski (Sound Guitar Lessons With Jared) walks through the actual thought process behind an original fingerstyle chorus/intro part — recorded in the key of G for the lesson (his real version uses a capo/partial capo in a different key). This is explicitly a **process video, not a technique showcase**: he states up front that the part came together "totally intuitively, totally in a creative playful way," and the video's real subject is how his theory/vocabulary knowledge lets him *find and extend* intuitive ideas fast rather than generate them from theory in the first place — "I'm not necessarily starting with something like chord vocabulary... but by knowing all that stuff I can just quickly find things that sound really nice, and then after the fact analyze more of it." Three concrete, transferable pieces come out of it, all fully extracted onto their own notes: (1) a **compositional device** — diatonic 10ths walked over an open-string drone, recognized as kin to both the Beatles' "Blackbird" intro and the opening of Tárrega's classical piece "Lágrima"; (2) a **fingerstyle execution pattern** for that device (thumb on the drone, index on the moving voice); and (3) the titular **chromaticism technique** — inserting a chromatic passing SHAPE (not just a passing note) between two diatonic target shapes, validated by ear ("crunchy for a second... but it lands on something so inside"), and its more deliberate cousin, **borrowing the ♭6 from the parallel minor** as the single most common one-note chromatic color-add in a major-key piece — which he discovered he'd used twice in his own part, both times by feel first, only recognizing the borrowed-♭6 pattern afterward. The video closes on his general songwriting philosophy: write by feel, use theory to name/understand/extrapolate the result afterward, not as the starting point.
+
+## What's taught
+- **[00:00] The core creative-process claim, stated directly as the video's thesis:** theory-vocabulary knowledge (chords, intervals) isn't the *starting point* for his songwriting — he writes "totally intuitively," then uses the vocabulary to find more of what he likes fast and to analyze/name what he did after the fact. → philosophy, no single note, informs the whole workflow below.
+- **[01:02]–[02:40] Diatonic 10ths over an open drone, walked through the key of G.** A 10th interval (3rd + octave) fretted above an open drone string (open G, tonic), walked diatonically degree by degree with the open drone played *between* each shape rather than sustained under it. Recognized mid-demo as kin to the Beatles' "Blackbird" intro (thirds over a drone, but without the extra octave). Full extraction, with the exact fretboard shapes and diatonic-3rd-quality-per-degree logic → [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] § *Step 1*.
+- **[03:00]–[05:00] Confirmed as a real classical-guitar idiom, not just a pop echo:** the same 10ths-over-a-drone device opens **Francisco Tárrega's "Lágrima"** (misheard/mis-captioned in the raw transcript as "logma... Francis Francisco Tara" — corrected in the transcript). He also demonstrates transposing the whole device to the key of A, and swapping the drone note for the open D string (the 5th of G) as a fretting-hand-friendly alternative when the diatonic shape is hard to reach cleanly. → [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] § *Step 2*.
+- **[08:00]–[08:44] The fingerstyle pattern that plays it:** thumb (p) plucks two open drone strings together (open B + open G in the finished part), index (i) plays the fretted 10th shape above, counted as a repeating 1-2-3-4-1-2 figure. → [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] § *Step 3*, [[Fingerstyle Thumb Independence]].
+- **[09:00]–[09:41] The titular chromaticism technique — half-step passing SHAPES, not passing notes.** Between two diatonic target shapes already in the part, insert a shape a half-step away from the shape you're approaching, right before landing on it — "we know we're going down to this shape here — well, you can just add half steps between them." Validated by ear, not by label: momentary dissonance ("crunchy") is fine as long as the *landing* on the diatonic target afterward feels resolved ("lands on something so inside"). Possible after-the-fact labels offered (tritone substitution, half-step-above approach chord) but explicitly said not to matter for actually using the move. Full extraction → [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] § *Step 4*.
+- **[10:21]–[11:41] The deliberate version: borrow ♭6 from the parallel minor.** When you want to choose a chromatic note on purpose rather than by ear-only trial, modal-interchange/borrowed-chord logic (see [[Borrowed Chords]]) gives a specific, most-common answer for a one-note major-key chromatic add: **the ♭6**, borrowed from the parallel minor — stated directly as "the most common note to use... if you're going to add one [borrowed note] in a major key." The payoff: the chord built on that borrowed ♭6 is itself **major** (per the parallel-minor triad ladder he walks live: i, ii°, ♭III, iv, v/V, **♭VI major**, ♭VII), so it reads as a bright, stable "surprise" color rather than plain mud. → [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] § *Step 5*, [[Borrowed Chords]].
+- **[11:59]–[13:59] Applied concretely, and discovered after the fact — the compositional payoff of the whole video.** He used the borrowed-♭6 move **twice** in the finished part, and states directly he wasn't thinking "add the flat six" either time — "I just added the chromaticism that felt good to me, and then later I was like, oh no way, both those spots happen to be the flat six." Direct, transcript-grounded evidence for the write-by-feel-then-analyze workflow stated at [00:00].
+- **[13:59]–[14:24] Song structure/arrangement context:** this chromatic drone-tenths part is the **chorus/interlude**; the verses are deliberately plain by contrast — just fingerpicked **G → Cmaj7**, back and forth, nothing else. A useful general arrangement takeaway (complexity concentrated in one section, not spread evenly) even though it's song-specific to his own piece. → [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] § *Arrangement note*.
+- **[14:40]–end Closing philosophy, restated:** theory as retrospective description, never the generative step — "theory is after the fact, theory is after music was made to try to describe something." Recognizing a device after the fact is valuable because it lets you *extrapolate* deliberately elsewhere (his example: reusing a related idea in a bridge). Plugs his free "Chords with Color" chord chart (5 major + 5 minor keys, open-string chord options with extensions) — a resource mention, not a technique; not routed anywhere.
+- **Not a taught cover song** — this is original material he's writing, not a song already in [[Song Practice]] or [[Song Practice|the library]], so there's no `20 Music/Library/` song note to route this into.
+
+## Routed to
+- [[Diatonic Tenths Over a Drone with Chromatic Passing Shapes]] — new technique note, the primary home for the compositional device (drone tenths + chromatic passing shapes + fingerstyle execution).
+- [[Fingerstyle Thumb Independence]] — added a "From videos" entry for the thumb/index drone-plus-moving-voice pattern.
+- [[Borrowed Chords]] — added a "From videos" entry for the ♭6-from-parallel-minor-as-composer's-default-add framing (a composer's-workflow angle distinct from the analysis-of-existing-tunes entries already there).
+
+## Source
+- [Watch on YouTube](https://www.youtube.com/watch?v=QIqV9TMf66U) · Sound Guitar Lessons With Jared · 00:17:14
+- Transcript: [[How I wrote this unique fingerstyle guitar part with chromaticism (transcript)]] — pulled manually via the pinned `yt-dlp` (`en-orig` manual caption track); `Machine/Scripts/yt-transcript.cjs` returned an empty transcript for this video (the known caption-drop issue on this channel). Confidence medium-high.
+- Sibling video, same channel, same songwriting/composition theme: [[Writing a Complete Song in a Minor Key (Part 1) - Chord Progression]] — his full chord-progression-writing process (G minor), referenced directly in this video's ♭6 section ("I did a songwriting video where we mapped out all this").
+</content>

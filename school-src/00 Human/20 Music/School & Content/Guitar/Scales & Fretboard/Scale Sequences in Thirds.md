@@ -1,0 +1,32 @@
+---
+type: technique
+tags: [music, guitar, technique, improvisation, sequences, dorian, modes, soloing]
+created: 2026-08-10
+source: Daniel Seriff (music_enrich 2026-08-10)
+---
+
+# Scale Sequences in Thirds
+
+Part of [[Guitar Positions]] and [[Diatonic Modes]]. A classic diatonic-thirds ("broken thirds") scale sequence, taught by Daniel Seriff as a fix for the single most common intermediate-player problem: learning a scale and then only ever playing it straight up and down, which "doesn't sound like music." Skipping notes in a fixed pattern breaks the stepwise habit and is the on-ramp to sounding less scalar and more like real phrasing.
+
+## The pattern
+Instead of running the scale 1-2-3-4-5-6-7, play it in **overlapping broken thirds**: land on a degree, skip up to the degree a third above it, then step back down to the note in between, then skip up a third from there, and so on — "skip a note, back a note, skip a note, back a note." Framed with scale-degree numbers so it transposes to any scale/key instantly (here, E Dorian: 1 2 ♭3 4 5 6 ♭7): ascending broken thirds run roughly 1→2→♭3, back to 2→4, ♭3→5, 4→6, 5→♭7, 6→(octave)1, ♭7→2… continuing the same skip/step-back shape up through the scale, then the same shape in reverse coming back down. *(The exact number call-out in the transcript garbles partway through — auto-captions on rapid spoken numbers — but the shape is unambiguous and a tab is shown on-screen in the original video for the precise fingering.)*
+
+## How to use it (the actual lesson, not just the drill)
+- **Practice the mechanical sequence first** to get it under your fingers — a few minutes is enough, don't over-drill it, because playing it straight through for a long stretch "starts to sound dull" by design.
+- **Then immediately stop playing it verbatim.** The real lesson (credited to teacher **Tom Quayle**): drilling a sequence exercise straight up-and-down doesn't transfer to real improvising if that's *all* you ever do with it — "you can't practice learning how to improvise better if you don't actually practice musical things." A scale sequence is a musical concept, but only if you practice it musically.
+- **Grab small fragments of the pattern rather than the whole run** — pull 3–5 notes out of the broken-thirds shape and drop them into a phrase in the groove/pocket over the backing track, instead of playing the complete ascending-then-descending sequence. This is where it stops sounding like an exercise and starts sounding like a solo.
+- **Progression: isolate → drill for 1–5 minutes → immediately work it into material you already play.** Treat the sequence as raw vocabulary to fold into existing licks/repertoire, not a standalone party trick.
+
+## Worked example — E Dorian over a minor 7–dominant vamp
+Demonstrated at the **12th fret, standard Dorian shape**, over an **E minor 7 → A7** vamp (the Em7–A7 changes from Bill Withers' "Use Me," using Seriff's own jam-track backing video for that tune) — a one-chord-family Dorian vamp is exactly the context this sequence is built to season. → **[[LEAD Slot]]** soloing vocabulary.
+
+## Related
+[[Diatonic Modes]] · [[Dorian from the Minor Pentatonic Box]] · [[Guitar Positions]] · [[Scales]] · [[Song Practice]] · [[Beyond-Linear Scale Practice Progression]] (this page's interval-skipping idea is Round 3 of a broader 7-round practice progression)
+
+## From videos
+
+- **The same skip-through-the-scale system generalizes to any interval size, not just 3rds — worked as 4ths and 6ths over A harmonic minor, ascending and descending each.** 4ths: skip two scale notes instead of one (A D B E C F D G♯...); framed as an underused sound outside jazz/fusion — listeners are so used to lines built on 3rds that a 4ths-based line reads as noticeably less predictable using the exact same notes, and harmonic minor's own structure means some of the 4ths land as dissonant augmented 4ths for extra color. 6ths: skip four scale notes (F B G♯ C A D B...) for the "neoclassical" wide-interval sound; requires genuine string-skipping to execute while holding strict alternate picking throughout, so it doubles as a string-skipping technique exercise. General rule: bigger interval jumps = more unusual/exciting sound at the cost of technical difficulty. → [[Directional Alternate Picking System]] — BERNTH, [[The 6 BEST Guitar Solo EXERCISES (finally learn to SHRED!)]]
+- **The same broken-thirds pattern confirmed on harmonic minor, plus a named framing for *why* melodic patterns matter that generalizes beyond this specific pattern.** Same skip-up/step-back-a-third shape (there, "up a third, off, up a third, off..." run from the root through a harmonic minor scale form), taught as the go-to follow-on step once a [[Root-to-Root Scale-Form Mapping Method|root-to-root]] scale-form pass is solid. Names the underlying mechanism: playing a scale strictly in order is **"maze view"** — you only ever see the *next* note, one step ahead, and your ear/hand/eye all calibrate to that; deliberately skipping around (melodic thirds or any other pattern) forces **"map view"** — a bird's-eye sense of every note's location so you can jump to any of them on demand, not just the adjacent one. Also mentions a free downloadable PDF (top-3 pentatonic scale guitar patterns) where 2 of the 3 patterns are stated to generalize to any scale type, not just pentatonic. → [[Root-to-Root Scale-Form Mapping Method]] — Sound Guitar Lessons With Jared, [[HARMONIC MINOR SCALE Guitar Positions - how to nail them]]
+- **The source video behind that PDF, now extracted directly.** Confirms the same maze-view/map-view framing from the original pentatonic lesson and adds a third pattern beyond the "every other note" one: the **back-neighbor pattern** (note, step back a note, replay the note, one unit, advanced degree by degree) and a **pentatonic-only five-note descending/ascending lick** (explicitly not meant to generalize to other scales, unlike the every-other-note and back-neighbor patterns). States the same practice bar as this page: at least 3 melodic patterns per scale/scale-form, both directions. → [[Top 3 Pentatonic Melodic Patterns]] — Sound Guitar Lessons With Jared, [[Melodic Patterns for Pentatonic Scale Soloing]]
+- **Everything on this page** — the broken-thirds sequence shape, the "drill it then abandon verbatim playing" practice philosophy (credited to Tom Quayle), and the worked E Dorian example over Bill Withers' "Use Me" changes. → Daniel Seriff, [[Soloing With E Dorian on Bill Withers Use Me (Daniel Seriff)]]

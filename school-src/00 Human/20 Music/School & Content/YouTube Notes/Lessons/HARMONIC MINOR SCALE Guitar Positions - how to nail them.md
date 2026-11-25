@@ -1,0 +1,47 @@
+---
+type: yt-note
+date: 2026-08-11
+source: youtube
+url: https://www.youtube.com/watch?v=rToM-6U8I-k
+channel: Sound Guitar Lessons With Jared
+duration: "00:17:04"
+video_type: lesson
+music_enriched: true
+transcript_source: captions
+tags: [yt-note, music, guitar, theory, scales, harmonic-minor, positions, practice]
+briefed: backlog
+---
+
+# HARMONIC MINOR SCALE Guitar Positions - how to nail them
+
+![](https://www.youtube.com/watch?v=rToM-6U8I-k)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=rToM-6U8I-k)
+
+## Synopsis
+
+Jared Borkowski (Sound Guitar Lessons With Jared) covers the harmonic minor scale from two angles in one video: first the **theory** — how harmonic minor derives from both the major scale (flat the 3rd and 6th) and the natural minor scale (raise the 7th) — worked out along a single string for clarity, then all **five positional scale-form shapes** across the neck, and finally **why the scale is actually useful** (its role as the source scale for a minor key's dominant V7 chord, especially in jazz minor ii-V-i's, via its 5th mode, Phrygian dominant). The centerpiece technique is his **"root-to-root method"** — a scale-shape-learning drill he says he applies identically across his whole position-mapping series (major scale, natural minor, pentatonic, blues scales, and this harmonic minor entry, with melodic minor announced as the next installment) — extracted here as its own reusable technique note since it isn't specific to this one scale. He also touches on melodic patterns (breaking up straight scalar motion) as a follow-on practice step, and gives a practical lead-sheet tell (♭9/♭13 markings on a dominant 7 chord) for spotting when harmonic minor is the right color choice. No production/gear/plugin content — pure instrument theory and technique.
+
+## What's taught
+
+- **Harmonic minor derived two ways, both reduced to a one-string drill for clarity (~0:34–4:20):** (1) from the **major scale** — flat the 3rd and flat the 6th, keep the 7th natural (major scale 1-2-3-4-5-6-7 → harmonic minor 1-2-♭3-4-5-♭6-7); (2) from the **natural minor scale** — raise the 7th only (natural minor 1-2-♭3-4-5-♭6-♭7 → harmonic minor 1-2-♭3-4-5-♭6-7, i.e. the same target scale reached from the other direction). Demonstrated ascending/descending on the 5th string rooted on C, explicitly framed as ear-training as much as fingering — "listening for a whole step up, a half step up" — so the scale's internal interval structure (½ steps between 3-4 and 7-1 in the major-scale reference; ½ step between 7-1 uniquely widened to a step-and-a-half between ♭6 and 7 in harmonic minor) is felt, not just memorized as a formula. → [[Scales]], [[Parallel Minor]] (major-vs-minor-scale relationship), [[Diatonic Modes]].
+- **The five scale-form shapes, mapped root-to-root — the video's main technique, extracted in full as its own page: [[Root-to-Root Scale-Form Mapping Method]].** (~4:20–9:00) All five shapes shown rooted on C; states explicitly that moving the same shapes to any other root transposes the whole system to any key. One shape (root on the 4th string) flagged as the one most players are least comfortable with, since most scale/chord vocabulary defaults to a 6th- or 5th-string root; its fingering (1-3-4/1-3-4, then a repeated 3-4 stretch) is called out as ergonomically tricky. A transposed worked example is shown on E♭ harmonic minor to demonstrate the shapes moving to a new key (~9:40–9:50).
+- **Melodic patterns as the next practice step after the plain root-to-root pass (~9:58–11:56):** breaking the scale into non-linear patterns rather than always playing it in strict order. Named example — **melodic thirds**: go up a scale degree, skip up another, come back down one, skip up again (same shape as [[Scale Sequences in Thirds]]'s broken-thirds pattern, confirmed here on harmonic minor specifically). Names the underlying reason in his own terms: playing strictly in order is "**maze view**" (you only ever see the next note, one step ahead) vs. deliberately skipping around is "**map view**" (a bird's-eye sense of every note's location so you can jump to any of them, not just the adjacent one) — framed as the actual mechanism that keeps solos from sounding "just like scales." Mentions a free downloadable PDF (top-3 pentatonic scale guitar patterns) where 2 of the 3 patterns are stated to generalize to any scale type, not just pentatonic — not an owned resource, noted here rather than added anywhere as owned.
+- **Practical usefulness of harmonic minor — the "why bother" section (~12:00–16:30):** genre-flagged as an explicit, audible color in **metal** and very common in **jazz**. The core jazz application: **harmonic minor is the source scale for a minor key's V chord when that V is voiced as a dominant 7th** (rather than the "softer" minor-v some songs use) — demonstrated on a C minor → G7 move, where the color being borrowed for that G7 is C harmonic minor rooted a fifth up on G, which is harmonic minor's **5th mode, Phrygian dominant**. States this specific mode/application as "one of the most useful scales out there, period" and "the next most important scale after the major scale" for anyone playing music with minor ii-V-i's (jazz standards especially, but also true of any minor-key song using a dominant V). → matches [[Scale Modes Reference]]'s existing Harmonic Minor table (V — dominant 7, Phrygian nat.3) and its existing root-to-root-off-the-chord's-own-root framing of the same mode from the [[SOFTLY, AS IN A MORNING SUNRISE Guitar Lesson No. 9 of Top 25 Jazz Standards for Guitar|SOFTLY lesson]] — this video is a second, independent confirmation of that framing from the same channel.
+- **Lead-sheet reading tell:** a dominant 7 chord marked **♭9 or ♭13** (his examples: C7♭9, F7♭9/♭13) signals that chord is drawn from harmonic minor — specifically, it's the 5th chord (Phrygian dominant) of the harmonic minor scale rooted a 4th below the chord — a quick way to spot the right scale choice from chord symbols alone without re-deriving it every time. → [[Reading and Interpreting a Jazz Lead Sheet]], [[Chords by Key]].
+- **Worked demonstration:** a C minor → F minor → G7 progression (i–iv–V of C minor) played and then improvised over, showing the G7 moment specifically pulling from C harmonic minor (Phrygian dominant rooted on G) rather than a generic G Mixolydian/dominant sound. (~14:00–14:40)
+- **Series context (lower priority, not concrete technique):** explicitly part of an ongoing series applying the same root-to-root, five-position method to every common scale type — major scale, natural minor, minor pentatonic, blues scales already covered per Jared; next announced entry is melodic minor. Points to a free downloadable pentatonic-patterns PDF and an earlier video on "the chords of the minor scale," both link-in-description resources, not restated in full here. Sibling entry from the same series, also processed 2026-08-11: [[BLUES SCALE Guitar Positions - How to play all 5 shapes]] — same method worked on the blues scale, plus a rule for handling a scale note (the blue note) that falls outside the box shape, which [[Root-to-Root Scale-Form Mapping Method]] has been updated to cover.
+
+No sound/sample/tone-selection content and no production/mixing content in this video — pure instrument-theory and technique pedagogy.
+
+## Routed to
+
+- [[Root-to-Root Scale-Form Mapping Method]] — new technique note, the master extraction of the full five-shape root-to-root drill (steps, the 4th-string-root ergonomic caveat, the melodic-pattern/maze-vs-map add-on), written as a scale-agnostic method since Jared applies it identically across his whole position-mapping series.
+- [[Scale Modes Reference]] — added to `## From videos`: this video's genre flag (metal/jazz), the lead-sheet ♭9/♭13 reading tell for spotting harmonic-minor-derived dominant chords, and a second independent confirmation of the Phrygian-dominant-as-minor-V7-source application already logged from the SOFTLY lesson.
+- [[Scale Sequences in Thirds]] — added to `## From videos`: confirmation of the broken-thirds melodic pattern applied to harmonic minor, plus the new "maze view vs. map view" framing for why melodic patterns matter.
+- [[Guitar Positions]] — linked in the Related list as the video demonstrating [[Root-to-Root Scale-Form Mapping Method]] in full.
+
+## Source
+
+[HARMONIC MINOR SCALE Guitar Positions - how to nail them](https://www.youtube.com/watch?v=rToM-6U8I-k) · Sound Guitar Lessons With Jared · 00:17:04 · captions, high confidence (spoken lesson, cleanly captured; a few musical-term mishearings in the raw caption text — "flap the six" for "flat the six," "off the six" for a mode reference, "cage system" for CAGED system — corrected contextually above, no numbers/settings were garbled). Transcript: [[HARMONIC MINOR SCALE Guitar Positions - how to nail them (transcript)]]
+
+**Note on transcript source:** `yt-transcript.cjs` correctly identified this video's manual English captions (`captionType: "captions"`) but returned an empty transcript — the known issue with this channel's manually-uploaded caption tracks (plain untimed cue text, no per-word timing tags, which the script's VTT parser filters out entirely). Captions were genuinely available, so the same VTT file was pulled manually via the pinned `Machine/Scripts/bin/yt-dlp` and parsed directly instead of falling back to Whisper.

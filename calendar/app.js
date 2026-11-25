@@ -7,17 +7,17 @@
    time the Practice Log recorded on each day, and the sessions themselves under the day.
 
    Where School's schedule comes from
-     School is built in its own repo (music-school) and keeps its scheduling to itself: lesson days,
-     homework and tests, first quizzes and course starts are all worked out by its app.js. So this
-     tab asks School rather than working it out a second time. It opens school/index.html out of
+     School keeps its scheduling to itself: lesson days, homework and tests, first quizzes and
+     course starts are all worked out by its app.js (school-src/Machine/Scripts/school-artifact/).
+     So this tab asks School rather than working it out a second time. It opens school/index.html out of
      sight with ?bridge=1 (School's own mode for being opened by another tool: it never touches the
      address, the history or the route School reopens on, and the Practice Log never counts it), and
      reads the Overview School draws, the same way School's Google Calendar sync reads it:
        - Schedule: one row per day, `.tl > .tl-d[data-date]`, holding that day's chips; the
          Overdue band `.tl > .tl-late`; the Completed lessons under it (`.tl-drow`, "Nov 20").
-       - The term: the month grids School still draws in its Overview's calendar section
-         (`.cal .cmo`, in-term days marked `.in`). Music hides that section on School's own page
-         (shared/settings.js), so School keeps drawing it and nobody sees it twice.
+       - The term: the month grids of School's Overview calendar section (`.cal .cmo`, in-term
+         days marked `.in`), which School draws only in this bridge copy now that its calendar
+         lives here.
      What was read is kept under calendar:school, so the tab opens at once. School is read again
      when its saved progress changed, on a new day, after a few hours, or with the refresh in the
      day's list. Signed in, School may pull newer progress from the account after it first draws,

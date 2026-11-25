@@ -1,0 +1,49 @@
+# ── School's source (school-src/, inside the public music repo) ──────────────
+# Paths below are relative to this folder. The repo is public. Two kinds of file must never be committed to it, and the
+# rules below are the second line of defence — the first is not putting them in
+# the working tree at all.
+
+# 1) LICENSED OR THIRD-PARTY MATERIAL. The app ships a named slot for each of
+#    these and every reader adds their own copy on their own device.
+00 Human/20 Music/School & Content/Books/
+00 Human/20 Music/School & Content/Song Library/Files/*.pdf
+# …except scores that are in the public domain (Satie's Gymnopédies, the IMSLP scan).
+!00 Human/20 Music/School & Content/Song Library/Files/Erick Satie - 3 Gymnopedies.pdf
+00 Human/20 Music/School & Content/Song Library/Images/
+00 Human/20 Music/School & Content/Song Library/Files/*.m4a
+00 Human/20 Music/School & Content/YouTube Notes/Transcripts/
+00 Human/20 Music/School & Content/Production/Manuals/
+# Plugins/Images/ is NOT ignored (owner's call, 2026-11-11): plain screenshots of a plugin's own
+# window, shown in the note about that plugin, ship. Video thumbnails and promo art do not — see
+# CLAUDE.md — and the annotation working files stay out.
+00 Human/20 Music/School & Content/Production/Plugins/Images/*.json
+00 Human/20 Music/School & Content/Production/Plugins/Images/*.annotated.*
+00 Human/20 Music/School & Content/Production/Plugins/_Source Screenshots/
+00 Human/20 Music/School & Content/Guitar/**/*.pdf
+00 Human/20 Music/School & Content/Theory/Files/*.pdf
+00 Human/20 Music/School & Content/Theory/Files/*.mp4
+Machine/School/song-covers/
+Machine/School/song-charts/
+Machine/School/soundslice-meta/
+Machine/School/video-thumbs/
+
+# 2) ANYONE'S PERSONAL DATA. Progress lives on each person's device (and in
+#    their own private gist if they turn sync on) — never here.
+Machine/School/progress-*.json
+Machine/School/local-user.json
+Machine/School/calendar.json
+00 Human/20 Music/Users/
+
+# Generated single-file pages (build.py --artifact / --out) and build caches.
+Machine/Scripts/school-artifact/*.html
+Machine/Scripts/school-artifact/shots/
+school-*.html
+Machine/School/book-pages/
+
+.obsidian/
+.trash/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+node_modules/

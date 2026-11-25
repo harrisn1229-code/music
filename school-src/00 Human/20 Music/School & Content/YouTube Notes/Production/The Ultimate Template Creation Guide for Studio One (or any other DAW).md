@@ -1,0 +1,49 @@
+---
+type: yt-note
+date: 2026-08-06
+source: youtube
+url: https://www.youtube.com/watch?v=eFMfip3CQcI
+channel: Max Konyi
+duration: "00:38:09"
+video_type: production
+music_enriched: true
+briefed: 2026-W32
+transcript_source: captions
+tags: [yt-note, music, production, workflow, template, session-setup, routing, studio-one]
+---
+
+# The Ultimate Template Creation Guide for Studio One (or any other DAW)
+
+![](https://www.youtube.com/watch?v=eFMfip3CQcI)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=eFMfip3CQcI)
+
+## Synopsis
+
+A full walkthrough of building one reusable "starting point" session — explicitly framed as DAW-agnostic even though the on-screen demo is Studio One: "all the general concepts will apply to whatever DAW you're using." Max works through a five-part checklist — session setup, instrument creation, routing, effects, organization — building a template live: mining his own recent sessions for what he actually uses, pre-creating far more instrument instances than any single song needs (then disabling nearly all of them), wiring a three-tier bus structure (instrument bus / drum bus / mix bus), pre-building send reverbs/delays and a sidechain-ready compressor all parked disabled, dropping a rough default insert chain (EQ + compressor) on every track, and a minimal always-on-limiter master chain. The back half is about *tidying* what was just built — hiding/collapsing what isn't in daily use so the visible surface stays manageable — and closes with a versioning discipline for revising the template itself over time rather than treating it as a one-and-done build. No mixing/mastering technique content here — the entire video is meta-workflow: how to structure a session so composing starts instantly, not what to do once you're composing.
+
+## Techniques
+
+- **Mine your own recent sessions before building anything.** Before touching a single setting, look back at the most recent finished projects and note what actually got used — which instruments, how many instances, what routing, what effects survived to the end. The template should reflect real habits observed after the fact, not a guess made in a vacuum; repeat this check whenever the template starts feeling out of date. → [[Session Templates]]
+- **Session-level defaults set once, ahead of any instrument.** Sample rate/bit depth (48 kHz / 32-bit float in the demo), quantize grid default (16ths), and — called out specifically as important — **relative grid/snap**: moving an off-grid event preserves its original offset from the grid instead of snapping it dead-on, so intentionally loose timing survives an edit rather than getting corrected away. Tempo/song-length defaults barely matter since they get overwritten per song. → [[Session Templates]]
+- **Go overkill on instrument instances, then disable nearly all of them.** Pre-create far more instances of go-to instruments than any one song needs — 10 instances of a favorite synth (Serum), 2 full instances of a multi-timbral workhorse (Omnisphere) — fully routed and default-patched, then power off all but the 2–3 actually reached for constantly. The payoff is never rebuilding routing mid-idea: a 4th/5th instance is a power-button click away instead of a new track + MIDI routing + output assignment. "Disable" in Studio One (and the target behavior in general) means the instrument doesn't load into RAM or use any CPU at all until re-enabled — distinct from merely bypassing/deactivating a plugin, which still occupies memory. → [[Session Templates]]
+- **Split a multi-output instrument's patches across two+ instances instead of maxing out one instance's channel count.** A multi-timbral plugin (Omnisphere, 8 possible internal outputs) runs its DSP mostly on a single CPU core no matter how many of its outputs are active — loading 8 sounds into one instance stresses that one core, while splitting the same 8 across two instances (4–5 outputs each) spreads the load across two cores. → [[Session Templates]]
+- **Set default patches on template instruments, not just routing.** Beyond wiring an instrument correctly, load it with a "universal" starting patch — not one intended to survive into the final track, just something immediately playable and a little inspiring the moment the instrument gets enabled, so there's no patch-diving delay before an idea can start. → [[Session Templates]]
+- **A three-tier bus structure as a template default: instrument bus, drum bus, mix bus.** Every non-drum instrument (synths, keys, audio tracks, and their sends) routes to one instrument bus; every drum instrument routes to a separate drum bus; both feed a shared mix bus before the master output — kept separate specifically so drums can be sidechained or processed independently of everything else. Reverb/delay sends default to the instrument bus too (so they inherit the same sidechain ducking as their sources) except dedicated drum reverbs, which route to the drum bus instead. → [[Session Templates]], [[2 Inst-Synth Group]], [[2 Drums Group]]
+- **Pre-build several send effects, disabled but fully routed and pre-set.** Three reverb sends and two delay sends get built ahead of time with workable starting presets, each disabled until needed, each pre-routed to the correct bus — so reaching for a send mid-idea costs one enable click, not a new channel + plugin + routing decision that breaks flow. Send/bus effect channels in Studio One default to staying audible while soloing another track ("permanent solo") — a behavior worth replicating deliberately if the DAW's return/bus tracks don't do it by default. → [[Session Templates]], [[Reverb]], [[Delay]]
+- **A default (disabled) EQ + compressor insert chain on every instrument track.** A highpass-only EQ position and a compressor on a plausible starting preset (14 ms attack, 4:1 ratio, auto-gain off in the demo) get parked, disabled, on every track — so mixing starts from "adjust something that's already there" instead of "build a chain from an empty browser." → [[Session Templates]], [[Gain Staging]]
+- **A pre-wired, disabled sidechain-ready compressor on the instrument bus, with the kick's sidechain send already routed to it.** A dedicated compressor for sidechain duty sits on the instrument bus, disabled; the kick track's send to that compressor's external sidechain input is already built and set to pre-fader/"preader" mode, so the only thing needed to activate a whole-group kick duck later is flipping the compressor on — none of the routing has to be rebuilt in the moment. → [[Session Templates]], [[Sidechaining]], [[2 Inst-Synth Group]]
+- **A minimal, mostly-disabled "rough master" chain, with only the limiter left active.** EQ, compressor, and saturation get parked disabled on the mix bus; only a limiter (ceiling ~−1 dB) stays on from the very first note of a new song, so nothing clips into the monitors while nothing else colors the sound until there's an actual mix to shape. Framed as a personal choice, not a rule — some producers deliberately mix into a fuller master chain from the start instead. → [[Session Templates]], [[Master Chain]]
+- **Hide/collapse what isn't in daily use instead of deleting it, keeping only the frequently-used tier visible.** Once everything is built and routed, go back through and hide the instrument instances, output stems, and audio tracks that exist "just in case" but aren't reached for often — visible again in one click when actually needed, but out of the way otherwise so the day-to-day view stays uncluttered rather than showing 30+ disabled tracks at all times. → [[Session Templates]]
+- **Treat the template as a living, versioned document — expect to revise it after real sessions expose gaps.** After actually composing on a freshly built template, expect to notice something missing or wrong; the fix is opening the template as a new song, making the change, and explicitly saving it back over the template (a deliberate "replace existing," not silent) so the fix benefits every future session, not just the one where it was noticed. Keep version-numbered copies (e.g. "Starting Point V2") rather than blindly overwriting, so a bad revision stays recoverable. → [[Session Templates]]
+
+## Routed to
+
+- [[Session Templates]] — new technique note created from this video (registered in [[Techniques Index]]); every technique bullet above lives there in full depth, cross-linked to [[Gain Staging]], [[2 Inst-Synth Group]], [[2 Drums Group]], [[Master Chain]], [[Sidechaining]], [[Reverb]], [[Delay]]
+- [[2 Inst-Synth Group]] — pre-wired disabled sidechain compressor tip added to From videos, ties directly to [[Final Mix & Master Studio One LoFi Tutorial Part 9|Part 9]]'s dialed-in version of the same routing
+- [[Techniques Index]] — [[Session Templates]] registered under *(workflow)*
+
+## Source
+
+[The Ultimate Template Creation Guide for Studio One (or any other DAW)](https://www.youtube.com/watch?v=eFMfip3CQcI) · Max Konyi · 38:09 · captions (high confidence — clean, single-speaker tutorial narration, no music passages to garble it) · transcript: [[The Ultimate Template Creation Guide for Studio One (or any other DAW) (transcript)]]
+
+**Note on DAW mapping:** Studio One-specific mechanics (the Console/mix-window UI, "effects channel" vs. "bus channel" distinction, the folder-pack/track-hide mechanism, Save As Template dialog) are Studio One's own menu paths and don't carry over literally. Every actual concept — disable-to-unload vs. bypass, multi-out instrument CPU-core spreading, the three-bus routing shape, pre-wired disabled sends/inserts/sidechain routing, hide-vs-delete organization, versioned template saving — is captured behaviorally in [[Session Templates]] and mapped to Ableton-native equivalents (track Activator power buttons, Return tracks, Groups, multi-out plugin routing via Audio From, Save Default Preset / Save Live Set as Default Set) rather than Studio One's own UI.

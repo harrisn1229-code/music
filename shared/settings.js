@@ -83,14 +83,6 @@
     ["playing", "count", "event", "record", "unrecord", "amend"].forEach(function (m) { self.MusicLog[m] = function () { q.push([m, arguments]); }; });
     inject("log.js");
   }
-  /* School's Overview calendar lives on the home screen's Calendar tab now (calendar/app.js). School
-     is built in its own repo, so it is hidden here rather than taken out there: School still draws
-     it, out of sight, because the Calendar tab reads the term from it. */
-  if (/\/school\/(index\.html)?$/.test(location.pathname)) {
-    var hide = document.createElement("style");
-    hide.textContent = '.ovsec[data-sec="calendar"]{display:none}';
-    (document.head || document.documentElement).appendChild(hide);
-  }
   /* The Timer (shared/timer.js) runs everywhere too: a running pomodoro shows its time in every
      tool's top bar, and finishes (chime, logged) wherever the musician is when it runs out. */
   if (!self.MusicTimer) inject("timer.js");

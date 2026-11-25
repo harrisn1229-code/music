@@ -1,0 +1,55 @@
+---
+type: yt-note
+date: 2026-08-12
+source: youtube
+url: https://www.youtube.com/watch?v=l50STznI55Y
+channel: Mix with the Masters
+duration: "00:09:06"
+video_type: production
+music_enriched: true
+transcript_source: captions
+tags: [yt-note, music, production, arrangement, strings, elastic-audio, reverb, layering, florence-and-the-machine]
+briefed: backlog
+---
+
+# Arrangement & Processing with Emile Haynie
+
+![](https://www.youtube.com/watch?v=l50STznI55Y)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=l50STznI55Y)
+
+## Synopsis
+
+A short, session-side Mix with the Masters breakdown with Emile Haynie (Lana Del Rey, Eminem, Florence + the Machine, Kid Cudi) covering two connected halves of his process: how a massive orchestral session gets turned into a finished arrangement, and how he uses Pro Tools' Elastic Audio/Elastic Time as a near-universal sound-shaping tool rather than a niche editing feature. On the arrangement side, the throughline is editing-as-composition — a huge string/brass session cut at AIR Studios London gets comped down "almost like sampling," picking the bits that work by feel rather than following a pre-written chart, and the whole point of the exercise (demonstrated on a Florence + the Machine-style session) is to build music that shows off a huge lead vocal rather than competes with it. On the processing side, Haynie describes keeping essentially everything — synths, samples, drum loops — in Elastic Time as a standing habit, then using that flexibility for two very different jobs: reshaping texture (reverb, including a spring reverb, run on already-warped material specifically to change its color, and reverb alone turning a piano pluck into a pad) and building pitched-duplicate stacks (copying a simple recorded element multiple times and pitching each copy to a different octave/interval — a third, a fifth — to grow a full chord or pad out of one source). The same warp-and-reprocess logic gets applied to drum grooves: stretch, half-time, double-time, bounce, reimport, repeat, then add plugins last. It's a short, dense video — no exact settings/numbers given anywhere, entirely qualitative — but the workflow habits (elastic-audio-as-default, comp-the-take arrangement, build-around-the-vocal) are all clearly stated and immediately reusable. Owned-lane note: Nate runs Ableton, not Pro Tools — every Elastic Audio/Elastic Time reference below maps to Ableton's clip **Warp** mode (Complex/Complex Pro for pitch-independent stretching), the same mapping already used elsewhere in this vault for Pro Tools/FL Studio warp-family tools.
+
+## Techniques
+
+- **String/brass arrangement decided in the edit, not on paper — comp the best bits out of a full through-played orchestral take, "almost like sampling."** Sessions were cut at **AIR Studios London**, "a very famous string room," with the strings/brass often "played all the way through" as a complete performance; Haynie then edits it down, going "almost like sampling and find[ing] the bits and pieces that I want to use and what make the most sense" — a stated inability to fully explain the process beyond "you just kind of go off feeling." Arrangement here is a post-performance editing decision, not a pre-written chart. AIR Studios is a physical room, not a purchasable unit — no [[Vintage Gear Worklist]] entry, same treatment as Capitol Chambers elsewhere in this vault. → [[Arrangement and Song Form]]
+- **Build the whole arrangement to accompany and show off a big lead vocal, not compete with it — stated as the guiding principle on a Florence + the Machine-style session.** "It's never really a[n] issue especially with someone like Florence whose vocal is so big and her main vocals and her BVs are so huge — it's just sort of trying to make the music accompany her in a way [that] shows off her vocal." The string/brass comping above is in direct service of this: pick the edit that supports the vocal, not the one that's most impressive on its own. → [[Arrangement and Song Form]], [[Vocal Stacks and Ad-libs]]
+- **"I use a lot of simple plugins in Pro Tools just to sort of achieve the sound that I want" — a stated minimal-tool philosophy, not tied to any one named plugin in this clip.** General workflow color: shaping sound is treated as a small number of simple, familiar tools applied repeatedly, not a large chain — consistent with the reverb-only pluck-to-pad move below.
+- **Turn a plain plucked sound into more of a pad using reverb alone — no other processing needed.** Demoed live on a piano pluck: "say we wanted to take this piano — [the] pluck sound's good, but what if we wanted to make it like more of a pad sound? It could just be done with reverb, sometimes." A one-device transformation, offered as a default first move before reaching for anything more elaborate. → [[Reverb]] (effect)
+- **Elastic Time/Elastic Audio treated as a near-default, not a special-case editing tool — "I've been lately keeping everything in elastic time."** Applies across synths, samples, and drum loops alike; the flexibility it buys (pitch/time manipulation without re-recording) is the enabling layer under every other technique on this page. Owned-lane equivalent: Ableton clip **Warp** mode (Complex/Complex Pro for pitch-independent stretching), left on by default rather than switched in only when a specific edit calls for it. → [[Sampling and Sound Selection]]
+- **Run reverb ON already-warped/elastic-audio material specifically to change a sound's texture, not to add space.** "I use reverbs in elastic time quite a [bit] just to um change what could be a basic sound... I have a spring reverb on this just to change the texture a little bit." The reverb's job here is coloration of a sound already in flux, not depth/placement — a distinct use-case from Reverb.md's usual space/glue framing. Owned-lane spring reverb: [[Ghz DC19 3]] (Goodhertz DC19's built-in Spring section). → [[Reverb]] (effect), [[Ghz DC19 3]]
+- **General love for Valhalla reverbs stated on camera, with one instance rejected — vendor/plugin unclear.** "I love these Valhalla um reverbs — not that one though" — a real endorsement of the Valhalla line generally, but the specific model shown/rejected isn't identifiable from captions. *(low confidence — no specific plugin name or setting attached; not enough to anchor to one owned [[ValhallaVintageVerb|Valhalla]] plugin note)*
+- **Build a full chord/pad out of ONE simple recorded or synth sound purely through elastic-audio pitch duplication — copy the clip, pitch each copy to a different octave.** Worked live: "maybe I'll do one down to one down one, one up one" — three duplicate copies of the same source clip, each independently pitched (two dropped an octave, one raised an octave), stacked together so the composite reads as a chord rather than a single note. No new performance or additional synth layer — the harmony comes entirely from pitch-shifted copies of the same take. → [[Layering and Stacking]], [[Pitch and Formant]]
+- **Extend the same duplicate-and-pitch move past octaves into real harmony: "you could tune it, you could change the key, you could add a third, a fifth — you could start making chords out of like a simple thing."** Confirms the octave-stacking bullet above generalizes to any interval, not just octaves — a basic synth sound recorded once becomes a full chord voicing by copying it and pitching each copy to a different scale degree, all while staying in elastic audio so every copy remains freely re-editable. → [[Layering and Stacking]], [[Pitch and Formant]]
+- **Apply the identical warp/elastic-audio manipulation to drum grooves — deliberately mess with an existing loop's timing to make new percussion out of material that's already in the session, rather than sourcing a new loop.** "I like messing with drum grooves a lot... messing with the timing and elastic audio — it's like, what is this, like making your own percussion out of stuff that's already there." → [[Rhythm and Groove]], [[Sampling and Sound Selection]]
+- **Fast bounce-and-reimport loop for iterating on a manipulated drum loop.** After stretching/warping a groove, bounce it to audio and reimport it, then repeat the process — called out as something that "could be done like so fast and simply now" in a modern DAW, i.e. treat the manipulated bounce as new raw material rather than a finished part. → [[Rhythm and Groove]], [[Committing and Printing]]
+- **A concrete drum-groove sound-design toolkit, stated as an ordered list, plugins added LAST.** "Making a different [sound] using what you already have — like speeding it up, slowing it down, making it half time, making it double time, [then] putting plugins on it." Stretch/speed manipulation happens before any plugin touches the sound — the groove's identity is established by warp-family moves first, processed second. → [[Rhythm and Groove]]
+- **Underlying philosophy tying the whole video together: get a different sound out of material you already have, rather than always reaching for something new.** Stated directly across both the melodic-layering and drum-groove sections — the same recorded synth take or the same drum loop already in the session is the raw material for radically different-sounding results, purely through elastic-audio pitch/time manipulation plus a small number of simple plugins. → [[Sampling and Sound Selection]]
+- **Sound picks for a string-heavy cinematic opening: upright piano, Mellotron horns, and a Prophet synth, alongside the full AIR Studios string session.** Named as the instrumentation for "this little end section" — a go-to ensemble combo (real piano + vintage-sampled brass + a classic analog synth pad) for opening a track that's about to bring in a massive string arrangement. → [[Sound Selection Guide]]
+
+## Routed to
+
+- [[Arrangement and Song Form]] — From videos (string/brass comping-as-arrangement; build around the vocal)
+- [[Reverb]] (effect) — From videos (pluck-to-pad via reverb; reverb-for-texture on elastic audio)
+- [[Ghz DC19 3]] — Techniques (spring reverb as a texture-change move on elastic-audio material)
+- [[Sampling and Sound Selection]] — From videos (Elastic Time as a default habit; "use what you already have" philosophy; drum-groove elastic manipulation)
+- [[Layering and Stacking]] — From videos (pitched-duplicate chord/pad build from one source)
+- [[Pitch and Formant]] (effect) — From videos (interval-specific duplicate-pitching for real chord voicings)
+- [[Rhythm and Groove]] — From videos (elastic-audio drum groove manipulation; bounce-reimport loop; stretch/half-time/double-time-then-plugins order)
+- [[Sound Selection Guide]] — Synths/Keys (upright piano + Mellotron horns + Prophet intro stack)
+
+## Source
+
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=l50STznI55Y) — Mix with the Masters, "Arrangement & Processing with Emile Haynie," 9:06.
+Transcript: captions, high confidence (spoken breakdown, no music garbling). Full transcript: [[Arrangement & Processing with Emile Haynie (transcript)]]

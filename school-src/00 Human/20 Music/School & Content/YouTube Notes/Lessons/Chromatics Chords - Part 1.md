@@ -1,0 +1,43 @@
+---
+type: yt-note
+date: 2026-08-11
+source: youtube
+url: https://www.youtube.com/watch?v=TCAZxJTXhpA
+channel: Jens Larsen
+duration: "00:10:56"
+video_type: lesson
+music_enriched: true
+transcript_source: captions
+tags: [yt-note, music, guitar, jazz, theory, chromaticism, passing-chords, comping, chord-tone-soloing]
+briefed: backlog
+---
+
+![](https://www.youtube.com/watch?v=TCAZxJTXhpA)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=TCAZxJTXhpA)
+
+# Chromatics Chords - Part 1
+
+## Synopsis
+An older (2015), short Jens Larsen lesson extending his existing "chromatic passing notes between scale tones" material — already covered for single-note lines in other lessons — to full chords: how to insert a chromatic *chord* into a chord solo or a comping line and resolve it cleanly. His framing throughout is deliberately anti-theoretical: he explicitly declines to analyze what the passing chord technically is ("I'm not going to go too much into the theory... it's not so relevant, we can approach this from more of a guitar point of view") and instead treats the whole device as melody-first — since a chord solo or a comping line is still playing a melody on top, a chromatic note in that melody needs a chord underneath it just like a chromatic note in a single-note solo line needs the right resolution. Part 1 works the idea entirely over a **G7** chord (deferring other chord qualities to a follow-up video), first as two isolated exercises building the "harmonize the chromatic melody note with the voicing of wherever it's about to resolve" device in both directions (up and down), then folded into three worked **2-5-1 lines in the key of C** (Dm7 → G7(alt) → Cmaj7) that put the device to direct musical use. **Transcript is captions-only and low confidence** — this is a 2015 auto-caption track riddled with music-lesson mis-transcriptions ("cord"/"code" for chord, "node" for note, and "C" apparently standing in for "chromatic" throughout, e.g. "chord soloing" transcribed as "C holding"); no on-screen chord diagrams or tab are described in speech, so exact voicings/fret positions below are inferred from the spoken description, not read off notation. Treat specific note names as reasonably solid (they're spoken directly) and treat any exact fingering/fret claim as absent rather than guessed.
+
+## What's taught
+- **The core device: identify the chromatic note in your melody line, then harmonize it with the SAME chord voicing you're about to (or just did) resolve to, rather than a chord that analyzes cleanly against the underlying harmony.** Working over a G7 chord (a rootless voicing, freeing up a finger for movement): the melody holds a 9th (A) then moves chromatically down through A♭ to the root (G) — the A♭ isn't harmonized with "the normal chord" a theory-first approach might reach for, but with the **destination G7 voicing itself, just slid down one fret**, resolving down a half step as the melody note resolves down a half step. Same device run in reverse (ascending) gives a passing chord roughly a half step *above* the target (reads as G♭/F♯) instead of below. → [[Passing Chords]] § 2 *Chromatic passing/approach chords*, [[Chord Voicings]] § *Voice leading is the actual point* (rule 3, "approach chromatically... slide the whole shape in" — this lesson is a melody-driven worked instance of that exact rule)
+- **Explicit "don't overthink the label" instruction: the specific harmonic identity of the passing chord barely matters — what matters is that the melody note it carries resolves correctly into the target.** Larsen names the A♭ voicing as readable as an A♭7 or a D7 altered (a tritone-sub relationship to the G7 target) but says outright "that's not so important... you can choose whatever you want for the chromatic chord, it's not really that important what it is" — a dominant-quality chord is called out as working especially well as the passing color, but the instruction is fundamentally ear-first: pick *a* chord that carries the chromatic melody note correctly into the target, don't derive it analytically first. → [[Chord Naming by Context]], [[Passing Chords]] (matches this vault's existing type-2 framing: "you don't need to name the passing chord to use it")
+- **A stated practical/technical payoff, not just a sound: because the passing chord is frequently the identical grip to the target chord just moved one fret, fast eighth-note chordal lines become a slide rather than a hand reshape.** Called out directly as solving a real technical problem — "playing chords fast can be kind of tricky for your right hand" — so this chromatic-approach device isn't purely decorative, it's also a fingering shortcut for eighth-note comping and chord-solo runs. → [[Chord Voicings]] § *Comping, practically*
+- **Deferred scope, stated on camera: this Part 1 only works the device over dominant (G7-type) chords, "because there it's really simple technically" and dominant shapes repeat themselves around the neck** — Larsen says explicitly he'll return to applying the same chromatic-approach-chord idea to other chord qualities (major, minor) in a follow-up lesson. No Part 2 is currently in the vault; flag as a candidate to watch for/queue if it surfaces later.
+- **Three worked 2-5-1 lines in C (Dm7 → G7[alt] → Cmaj7), each applying the chromatic-approach-chord device from the G7 exercises above inside an actual chord-solo/comping context:**
+  - **Line 1** — Dm7 voiced as a **drop-2 shape whose top three notes read as an F triad** (a direct instance of [[Triads as a Fretboard Map]]'s "any 7th-chord voicing contains a triad you can think of separately" logic — F triad = 3rd-5th-7th of Dm7). Melody moves **G → F** over the G7 (the chromatic move), harmonized with a **G7 altered** voicing, then resolves to a **drop-2 Cmaj7 voiced as an E minor triad/shape** — i.e. the same "Em7 grip reads as rootless Cmaj9 (or here, a bare Cmaj triad's upper structure)" relationship already documented on [[Chord Voicings]] § *A concrete "same shape, different chord" instance*, reused here as the actual resolution target rather than just an analytical curiosity.
+  - **Line 2** — same Dm7 area (described loosely as "drop-3 or drop-2 or a triad," left ambiguous in the audio), a melody-driven chromatic move on the next string, resolving again to the **same E minor voicing standing in for Cmaj7**.
+  - **Line 3** — Dm7 built from the **F triad**, melody moved up to a different inversion of the same F triad, then a **G7 altered**, explicitly generalizing the device to altered dominants: "you can do exactly the same... as long as you know what you're aiming for in the voicing, then you can just use that on the altered chord too" — closing on the same E-minor-voiced Cmaj7 resolution as lines 1–2.
+  - → [[The ii-V-I]] (three worked major 2-5-1 chord-solo lines in C, all sharing one resolution voicing), [[Chord Voicings]], [[Triads as a Fretboard Map]], [[Altered Chords]] (the G7-altered instances)
+- **Framing note for where this sits relative to soloing:** Larsen opens by pointing out that a chord solo/comping line "is still playing a melody" — the same discipline that governs single-note improvisation (a chromatic passing tone needs to resolve correctly) applies note-for-note when the melody is voiced as full chords, just with a chord underneath every melody note instead of a bare pitch. → [[Chord-Tone Soloing]] (the single-note-line version of "you're always playing a melody, chord tones or not")
+
+## Routed to
+- [[Passing Chords]] — added a bullet to § 2 *Chromatic passing/approach chords* (comping embellishment) generalizing the "harmonize the chromatic melody note with the destination voicing, slid a fret" device
+- [[Chord Voicings]] — added a `## From videos` bullet cross-linking the G7 chromatic-approach exercises and the Em-shape/Cmaj7 resolution voicing to this page's existing voice-leading and rootless-voicing material
+- [[The ii-V-I]] — added a `## From videos` bullet for the three worked 2-5-1 chord-solo lines in C
+- [[Chord-Tone Soloing]] — added a short cross-reference note tying the "comping/chord soloing is still playing a melody" framing back to this page's core premise
+
+## Source
+- [Watch on YouTube](https://www.youtube.com/watch?v=TCAZxJTXhpA) — Jens Larsen, "Chromatics Chords - Part 1," 00:10:56, uploaded 2015-03-26
+- Transcript: captions, **low confidence** — 2015 auto-caption track with heavy music-lesson mis-transcription (chord/code/cord confusion, "node" for note, likely "C" standing in for "chromatic"); note names taken as spoken, exact fret/finger positions not describable from audio alone — [[Chromatics Chords - Part 1 (transcript)]]

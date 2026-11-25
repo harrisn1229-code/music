@@ -1,0 +1,306 @@
+<title>Sample Library Map</title>
+<style>
+:root {
+  color-scheme: light;
+  --page:#f7f5f0; --card:#fffefb; --ink:#171512; --ink2:#5a5750; --muted:#8b877d;
+  --line:#e5e2d8; --accent:#eb6834; --accent-soft:#f8ddd0;
+  --ac:#008300; --el:#4a3aa7; --uk:#c9c5b8;
+  --chip-idx-bg:#e9f3e4; --chip-idx-tx:#1d5c1d; --chip-q-bg:#f0eee6; --chip-q-tx:#6b675c;
+  --flag:#d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page:#141311; --card:#1e1d1a; --ink:#f0eee6; --ink2:#b8b4a8; --muted:#8b877d;
+    --line:#2e2c27; --accent:#d95926; --accent-soft:#42281c;
+    --ac:#4caf50; --el:#9085e9; --uk:#4a483f;
+    --chip-idx-bg:#22371f; --chip-idx-tx:#9fd695; --chip-q-bg:#2a2822; --chip-q-tx:#a09b8d;
+    --flag:#e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page:#141311; --card:#1e1d1a; --ink:#f0eee6; --ink2:#b8b4a8; --muted:#8b877d;
+  --line:#2e2c27; --accent:#d95926; --accent-soft:#42281c;
+  --ac:#4caf50; --el:#9085e9; --uk:#4a483f;
+  --chip-idx-bg:#22371f; --chip-idx-tx:#9fd695; --chip-q-bg:#2a2822; --chip-q-tx:#a09b8d;
+  --flag:#e66767;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page:#f7f5f0; --card:#fffefb; --ink:#171512; --ink2:#5a5750; --muted:#8b877d;
+  --line:#e5e2d8; --accent:#eb6834; --accent-soft:#f8ddd0;
+  --ac:#008300; --el:#4a3aa7; --uk:#c9c5b8;
+  --chip-idx-bg:#e9f3e4; --chip-idx-tx:#1d5c1d; --chip-q-bg:#f0eee6; --chip-q-tx:#6b675c;
+  --flag:#d03b3b;
+}
+* { box-sizing:border-box }
+body { background:var(--page); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; margin:0; padding:0 20px 80px; }
+.wrap { max-width:960px; margin:0 auto }
+header { padding:44px 0 8px }
+.eyebrow { font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+h1 { font-size:clamp(28px,4.5vw,42px); font-weight:750; letter-spacing:-.02em; margin:.25em 0 .15em; text-wrap:balance }
+.sub { color:var(--ink2); margin:0 0 8px; max-width:64ch }
+.sub code { font:500 13px ui-monospace,Menlo,monospace; background:var(--card); border:1px solid var(--line); border-radius:5px; padding:1px 6px }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:22px 0 8px }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px }
+.tile .v { font-size:24px; font-weight:750; letter-spacing:-.01em }
+.tile .k { font:600 11px/1.3 ui-monospace,Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:2px }
+nav { position:sticky; top:0; background:var(--page); padding:10px 0; margin:8px 0 26px; border-bottom:1px solid var(--line); z-index:5; display:flex; gap:16px; flex-wrap:wrap }
+nav a { color:var(--ink2); text-decoration:none; font:600 13px ui-monospace,Menlo,monospace }
+nav a:hover, nav a:focus-visible { color:var(--accent) }
+section { margin:0 0 44px }
+h2 { font-size:21px; font-weight:720; letter-spacing:-.01em; margin:0 0 4px; scroll-margin-top:64px }
+.hint { color:var(--ink2); margin:0 0 16px; max-width:70ch; font-size:14.5px }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:6px 18px 14px; overflow-x:auto }
+/* tree */
+.tree details { border-top:1px solid var(--line); padding:6px 0 }
+.tree > details:first-of-type { border-top:none }
+.tree summary { cursor:pointer; display:flex; align-items:baseline; gap:10px; padding:6px 4px; list-style:none }
+.tree summary::before { content:"▸"; color:var(--muted); font-size:12px; transition:transform .12s }
+.tree details[open] > summary::before { transform:rotate(90deg) }
+.tree ul { list-style:none; margin:2px 0 6px; padding:0 0 0 26px }
+.tree li { display:flex; align-items:baseline; gap:10px; padding:3.5px 4px; border-top:1px dashed var(--line) }
+.tree li:first-child { border-top:none }
+.tree li > details { flex:1; border-top:none; padding:0 }
+.tlabel { }
+.tcount { margin-left:auto; font:600 13px ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; color:var(--ink2) }
+.tree summary .tcount { margin-left:auto }
+.note { font-size:12.5px; color:var(--muted); flex-basis:100%; padding-left:22px }
+/* tables */
+table { border-collapse:collapse; width:100%; min-width:640px }
+th { font:600 11px ui-monospace,Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-align:left; padding:10px 10px 6px; border-bottom:1px solid var(--line) }
+td { padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:middle }
+tr:last-child td { border-bottom:none }
+.lbl { font-weight:600; white-space:nowrap }
+.num { font:600 14px ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap }
+.barcell { width:26% } .track { background:var(--accent-soft); border-radius:3px; height:8px; min-width:60px }
+.bar { background:var(--accent); border-radius:3px; height:8px }
+.splitcell { white-space:nowrap }
+.split { display:inline-flex; width:84px; height:7px; border-radius:3px; overflow:hidden; gap:2px; vertical-align:middle; margin-right:8px; background:transparent }
+.split i { display:block; height:100% } .split .ac { background:var(--ac) } .split .el { background:var(--el) } .split .uk { background:var(--uk) }
+.splitlbl { font:500 12px ui-monospace,Menlo,monospace; color:var(--ink2) }
+.ac-t { color:var(--ac) } .el-t { color:var(--el) }
+.srcs { color:var(--ink2); font-size:13px }
+/* cards */
+.cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:10px }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px }
+.cardtop { display:flex; align-items:baseline; gap:8px }
+.card h4 { margin:0; font-size:14.5px; letter-spacing:-.01em }
+.cnum { margin-left:auto; font:650 14px ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; color:var(--accent) }
+.mix { margin:4px 0 8px; font-size:12.5px; color:var(--ink2) }
+.chip { font:600 10.5px ui-monospace,Menlo,monospace; letter-spacing:.05em; border-radius:20px; padding:2.5px 9px }
+.chip.idx { background:var(--chip-idx-bg); color:var(--chip-idx-tx) }
+.chip.queue { background:var(--chip-q-bg); color:var(--chip-q-tx) }
+/* flags */
+.flags { display:grid; gap:10px }
+.flag { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--flag); border-radius:10px; padding:12px 16px }
+.flag h4 { margin:0 0 3px; font-size:14.5px }
+.flag p { margin:0; color:var(--ink2); font-size:14px }
+.next { background:var(--card); border:1px solid var(--accent); border-radius:12px; padding:16px 20px }
+.next h3 { margin:0 0 6px; font-size:16px }
+.next ol { margin:0; padding-left:20px; color:var(--ink2) }
+.legend { display:flex; gap:18px; margin:0 0 10px; font:500 12.5px ui-monospace,Menlo,monospace; color:var(--ink2) }
+.legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px }
+@media (prefers-reduced-motion: reduce) { .tree summary::before { transition:none } }
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Report only — no files touched</div>
+  <h1>Sample Library Map</h1>
+  <p class="sub"><code>/Volumes/Production/Samples</code> on hyperion, classified by folder &amp; filename heuristics.
+  This is the proposed <b>By Type</b> browse layer — a symlink mirror; every pack stays exactly where it is.</p>
+  <div class="tiles">
+    <div class="tile"><div class="v">120,386</div><div class="k">audio files</div></div>
+    <div class="tile"><div class="v">49,578</div><div class="k">drum one-shots</div></div>
+    <div class="tile"><div class="v">7,777</div><div class="k">loops</div></div>
+    <div class="tile"><div class="v">44,952</div><div class="k">synth multisamples</div></div>
+    <div class="tile"><div class="v">37</div><div class="k">machines &amp; synths</div></div>
+    <div class="tile"><div class="v">4.3%</div><div class="k">unclassified</div></div>
+  </div>
+</header>
+<nav>
+  <a href="#map">The Map</a><a href="#drums">Drums</a><a href="#machines">Drum Machines</a>
+  <a href="#synths">Synths</a><a href="#loops">Loops</a><a href="#sources">Packs</a><a href="#flags">Flags</a>
+</nav>
+
+<section id="mapx"><h2 id="map">The proposed “By Type” layer</h2>
+<p class="hint">What you'd see in Finder and Ableton's browser. Click a group to expand. A file can live in more
+than one place (a TR-808 kick lands in <b>Kicks</b> and in <b>Drum Machines → TR-808</b>) — symlinks make that free.</p>
+<div class="panel tree">
+<details open><summary><b>Drums — One Shots</b><span class="tcount">49,578</span></summary><ul>
+<li><span class="tlabel">Kicks</span><span class="tcount">8,647</span></li>
+<li><details><summary><span class="tlabel">Snares</span><span class="tcount">7,714</span></summary><ul>
+<li><span class="tlabel">Acoustic</span><span class="tcount">549</span></li>
+<li><span class="tlabel">Electronic</span><span class="tcount">6,425</span></li>
+<li><span class="tlabel">Unsorted</span><span class="tcount">740</span></li>
+</ul></details></li>
+<li><span class="tlabel">Rims</span><span class="tcount">1,333</span></li>
+<li><span class="tlabel">Claps</span><span class="tcount">2,805</span></li>
+<li><span class="tlabel">Snaps</span><span class="tcount">124</span></li>
+<li><details><summary><span class="tlabel">Hats</span><span class="tcount">9,768</span></summary><ul>
+<li><span class="tlabel">Closed</span><span class="tcount">5,147</span></li>
+<li><span class="tlabel">Open</span><span class="tcount">3,097</span></li>
+<li><span class="tlabel">Unsorted</span><span class="tcount">1,524</span></li>
+</ul></details></li>
+<li><details><summary><span class="tlabel">Cymbals</span><span class="tcount">2,854</span></summary><ul>
+<li><span class="tlabel">Crashes</span><span class="tcount">946</span></li>
+<li><span class="tlabel">Rides</span><span class="tcount">1,136</span></li>
+<li><span class="tlabel">Unsorted</span><span class="tcount">772</span></li>
+</ul></details></li>
+<li><span class="tlabel">Toms</span><span class="tcount">7,537</span></li>
+<li><details><summary><span class="tlabel">Percussion</span><span class="tcount">8,651</span></summary><ul>
+<li><span class="tlabel">Congas &amp; Bongos</span><span class="tcount">2,990</span></li>
+<li><span class="tlabel">Shakers &amp; Tambs</span><span class="tcount">2,156</span></li>
+<li><span class="tlabel">Cowbells</span><span class="tcount">1,223</span></li>
+<li><span class="tlabel">Other perc</span><span class="tcount">2,282</span></li>
+</ul></details></li>
+<li><span class="tlabel">808s &amp; Subs</span><span class="tcount">145</span></li>
+</ul></details>
+<details open><summary><b>Melodic — One Shots</b><span class="tcount">7,749</span></summary><ul>
+<li><span class="tlabel">Bass</span><span class="tcount">2,911</span></li>
+<li><span class="tlabel">Keys &amp; Piano</span><span class="tcount">1,958</span></li>
+<li><span class="tlabel">Synth Leads &amp; Plucks</span><span class="tcount">1,367</span></li>
+<li><span class="tlabel">Synth Pads</span><span class="tcount">74</span></li>
+<li><span class="tlabel">Stabs &amp; Chords</span><span class="tcount">380</span></li>
+<li><span class="tlabel">Synth (other)</span><span class="tcount">966</span></li>
+<li><span class="tlabel">Guitar</span><span class="tcount">21</span></li>
+<li><span class="tlabel">Brass &amp; Strings</span><span class="tcount">72</span></li>
+</ul></details>
+<details open><summary><b>Loops</b><span class="tcount">7,777</span></summary><ul>
+<li><span class="tlabel">Drum Loops &amp; Fills</span><span class="tcount">2,384</span></li>
+<li><span class="tlabel">Breaks</span><span class="tcount">345</span></li>
+<li><span class="tlabel">Melodic Loops</span><span class="tcount">532</span></li>
+<li><span class="tlabel">Hat Loops</span><span class="tcount">132</span></li>
+<li><span class="tlabel">Perc Loops</span><span class="tcount">349</span></li>
+<li><span class="tlabel">Vocal Loops</span><span class="tcount">5</span></li>
+<li><span class="tlabel">Unsorted Loops</span><span class="tcount">4,030</span></li>
+</ul></details>
+<details><summary><b>Drum Machines</b><span class="tcount">46,243</span><span class="note">cross-cut — same files also live under Drums</span></summary><ul>
+<li><span class="tlabel">Linn LM-1</span><span class="tcount">5,078</span></li><li><span class="tlabel">Roland TR-909</span><span class="tcount">4,201</span></li><li><span class="tlabel">Roland TR-808</span><span class="tcount">4,026</span></li><li><span class="tlabel">Akai MPC60</span><span class="tcount">3,460</span></li><li><span class="tlabel">Oberheim DMX</span><span class="tcount">3,204</span></li><li><span class="tlabel">Roland TR-606</span><span class="tcount">3,012</span></li><li><span class="tlabel">Roland TR-505</span><span class="tcount">2,963</span></li><li><span class="tlabel">Synare</span><span class="tcount">2,893</span></li><li><span class="tlabel">Roland TR-707</span><span class="tcount">2,601</span></li><li><span class="tlabel">Simmons SDS-V</span><span class="tcount">2,584</span></li><li><span class="tlabel">E-mu SP-1200</span><span class="tcount">2,177</span></li><li><span class="tlabel">Linn/MPC60</span><span class="tcount">1,769</span></li><li><span class="tlabel">Roland TR-626</span><span class="tcount">1,615</span></li><li><span class="tlabel">Maestro Rhythm King</span><span class="tcount">1,372</span></li><li><span class="tlabel">Simmons SDS800</span><span class="tcount">1,272</span></li><li><span class="tlabel">Oberheim DX</span><span class="tcount">1,113</span></li><li><span class="tlabel">E-mu Drumulator</span><span class="tcount">1,046</span></li><li><span class="tlabel">Roland CR-78</span><span class="tcount">1,022</span></li><li><span class="tlabel">LinnDrum</span><span class="tcount">833</span></li><li><span class="tlabel">Casio RZ-1</span><span class="tcount">1</span></li><li><span class="tlabel">Sequential DrumTraks</span><span class="tcount">1</span></li>
+</ul></details>
+<details><summary><b>Synth Multisamples</b><span class="tcount">44,952</span><span class="note">pitched note banks — for building instruments, not browsing</span></summary><ul>
+<li><span class="tlabel">Roland SH-5</span><span class="tcount">5,825</span></li><li><span class="tlabel">Yamaha DX100</span><span class="tcount">4,514</span></li><li><span class="tlabel">ARP 2600</span><span class="tcount">4,429</span></li><li><span class="tlabel">Roland SH-101</span><span class="tcount">4,146</span></li><li><span class="tlabel">Soviet Synths</span><span class="tcount">3,970</span></li><li><span class="tlabel">Voyetra-8</span><span class="tcount">3,860</span></li><li><span class="tlabel">Minimoog</span><span class="tcount">3,738</span></li><li><span class="tlabel">Akai S612</span><span class="tcount">3,606</span></li><li><span class="tlabel">EDP Wasp</span><span class="tcount">3,377</span></li><li><span class="tlabel">C64 SID</span><span class="tcount">2,851</span></li><li><span class="tlabel">Roland System 100M</span><span class="tcount">2,761</span></li><li><span class="tlabel">Roland VP-330</span><span class="tcount">2,690</span></li><li><span class="tlabel">Korg MS-10</span><span class="tcount">2,164</span></li><li><span class="tlabel">Micromoog</span><span class="tcount">1,734</span></li><li><span class="tlabel">Roland TB-303</span><span class="tcount">1,093</span></li><li><span class="tlabel">Casio SK-1</span><span class="tcount">1,004</span></li>
+</ul></details>
+<details open><summary><b>FX, Vocals &amp; the rest</b><span class="tcount">10,330</span></summary><ul>
+<li><span class="tlabel">FX &amp; Textures</span><span class="tcount">4,105</span></li>
+<li><span class="tlabel">Vocals</span><span class="tcount">117</span></li>
+<li><span class="tlabel">One-shots (untyped)</span><span class="tcount">984</span></li>
+<li><span class="tlabel">_Unsorted (unclassified)</span><span class="tcount">5,124</span></li>
+</ul></details>
+</div></section>
+
+<section><h2 id="drums">Drum one-shots — 49,578</h2>
+<p class="hint">Acoustic vs. electronic comes from kit/machine names in the path; “?” means the name doesn't say — those land in the type folder unsplit.</p>
+<div class="legend"><span><i style="background:var(--ac)"></i>acoustic</span><span><i style="background:var(--el)"></i>electronic</span><span><i style="background:var(--uk)"></i>unknown</span></div>
+<div class="panel"><table>
+<tr><th>Type</th><th style="text-align:right">Files</th><th>Volume</th><th>Acoustic / Electronic</th><th>Top sources</th></tr>
+<tr><td class="lbl">Kick</td><td class="num">8,647</td><td class="barcell"><div class="track"><div class="bar" style="width:100.0%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:336"></i><i class="el" style="flex:7782"></i><i class="uk" style="flex:529"></i></div><span class="splitlbl"><b class="ac-t">336</b> ac · <b class="el-t">7,782</b> el · 529 ?</span></td><td class="srcs">Samples From Mars · Goldbaby · Splice</td></tr>
+<tr><td class="lbl">Snare</td><td class="num">7,714</td><td class="barcell"><div class="track"><div class="bar" style="width:89.2%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:549"></i><i class="el" style="flex:6425"></i><i class="uk" style="flex:740"></i></div><span class="splitlbl"><b class="ac-t">549</b> ac · <b class="el-t">6,425</b> el · 740 ?</span></td><td class="srcs">Samples From Mars · Splice · KOUNT</td></tr>
+<tr><td class="lbl">Rim</td><td class="num">1,333</td><td class="barcell"><div class="track"><div class="bar" style="width:15.4%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:17"></i><i class="el" style="flex:1271"></i><i class="uk" style="flex:45"></i></div><span class="splitlbl"><b class="ac-t">17</b> ac · <b class="el-t">1,271</b> el · 45 ?</span></td><td class="srcs">Samples From Mars · Splice · KOUNT</td></tr>
+<tr><td class="lbl">Clap</td><td class="num">2,805</td><td class="barcell"><div class="track"><div class="bar" style="width:32.4%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:99"></i><i class="el" style="flex:2526"></i><i class="uk" style="flex:180"></i></div><span class="splitlbl"><b class="ac-t">99</b> ac · <b class="el-t">2,526</b> el · 180 ?</span></td><td class="srcs">Samples From Mars · Splice · 🥇Quick Start</td></tr>
+<tr><td class="lbl">Snap</td><td class="num">124</td><td class="barcell"><div class="track"><div class="bar" style="width:1.4%"></div></div></td><td class="splitcell"><div class="split"><i class="el" style="flex:92"></i><i class="uk" style="flex:32"></i></div><span class="splitlbl"><b class="ac-t">0</b> ac · <b class="el-t">92</b> el · 32 ?</span></td><td class="srcs">Samples From Mars · Splice · 🥇Quick Start</td></tr>
+<tr><td class="lbl">Hat — Closed</td><td class="num">5,147</td><td class="barcell"><div class="track"><div class="bar" style="width:59.5%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:74"></i><i class="el" style="flex:5069"></i><i class="uk" style="flex:4"></i></div><span class="splitlbl"><b class="ac-t">74</b> ac · <b class="el-t">5,069</b> el · 4 ?</span></td><td class="srcs">Samples From Mars · KO-II · Splice</td></tr>
+<tr><td class="lbl">Hat — Open</td><td class="num">3,097</td><td class="barcell"><div class="track"><div class="bar" style="width:35.8%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:75"></i><i class="el" style="flex:2982"></i><i class="uk" style="flex:40"></i></div><span class="splitlbl"><b class="ac-t">75</b> ac · <b class="el-t">2,982</b> el · 40 ?</span></td><td class="srcs">Samples From Mars · Splice · KOUNT</td></tr>
+<tr><td class="lbl">Hat</td><td class="num">1,524</td><td class="barcell"><div class="track"><div class="bar" style="width:17.6%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:179"></i><i class="el" style="flex:674"></i><i class="uk" style="flex:671"></i></div><span class="splitlbl"><b class="ac-t">179</b> ac · <b class="el-t">674</b> el · 671 ?</span></td><td class="srcs">Samples From Mars · 🥇Quick Start · Splice</td></tr>
+<tr><td class="lbl">Cymbal — Crash</td><td class="num">946</td><td class="barcell"><div class="track"><div class="bar" style="width:10.9%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:11"></i><i class="el" style="flex:845"></i><i class="uk" style="flex:90"></i></div><span class="splitlbl"><b class="ac-t">11</b> ac · <b class="el-t">845</b> el · 90 ?</span></td><td class="srcs">Samples From Mars · KOUNT · Splice</td></tr>
+<tr><td class="lbl">Cymbal — Ride</td><td class="num">1,136</td><td class="barcell"><div class="track"><div class="bar" style="width:13.1%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:21"></i><i class="el" style="flex:1033"></i><i class="uk" style="flex:82"></i></div><span class="splitlbl"><b class="ac-t">21</b> ac · <b class="el-t">1,033</b> el · 82 ?</span></td><td class="srcs">Samples From Mars · KOUNT · Dead expansion</td></tr>
+<tr><td class="lbl">Cymbal</td><td class="num">772</td><td class="barcell"><div class="track"><div class="bar" style="width:8.9%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:24"></i><i class="el" style="flex:721"></i><i class="uk" style="flex:27"></i></div><span class="splitlbl"><b class="ac-t">24</b> ac · <b class="el-t">721</b> el · 27 ?</span></td><td class="srcs">Samples From Mars · Goldbaby · Splice</td></tr>
+<tr><td class="lbl">Tom</td><td class="num">7,537</td><td class="barcell"><div class="track"><div class="bar" style="width:87.2%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:210"></i><i class="el" style="flex:7154"></i><i class="uk" style="flex:173"></i></div><span class="splitlbl"><b class="ac-t">210</b> ac · <b class="el-t">7,154</b> el · 173 ?</span></td><td class="srcs">Samples From Mars · KOUNT · Dead vol 2</td></tr>
+<tr><td class="lbl">Conga — Bongo</td><td class="num">2,990</td><td class="barcell"><div class="track"><div class="bar" style="width:34.6%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:86"></i><i class="el" style="flex:2900"></i><i class="uk" style="flex:4"></i></div><span class="splitlbl"><b class="ac-t">86</b> ac · <b class="el-t">2,900</b> el · 4 ?</span></td><td class="srcs">Samples From Mars · Ghost Note · Goldbaby</td></tr>
+<tr><td class="lbl">Shaker — Tamb</td><td class="num">2,156</td><td class="barcell"><div class="track"><div class="bar" style="width:24.9%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:66"></i><i class="el" style="flex:2043"></i><i class="uk" style="flex:47"></i></div><span class="splitlbl"><b class="ac-t">66</b> ac · <b class="el-t">2,043</b> el · 47 ?</span></td><td class="srcs">Samples From Mars · Ghost Note · KOUNT</td></tr>
+<tr><td class="lbl">Cowbell</td><td class="num">1,223</td><td class="barcell"><div class="track"><div class="bar" style="width:14.1%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:38"></i><i class="el" style="flex:1157"></i><i class="uk" style="flex:28"></i></div><span class="splitlbl"><b class="ac-t">38</b> ac · <b class="el-t">1,157</b> el · 28 ?</span></td><td class="srcs">Samples From Mars · Ghost Note · KOUNT</td></tr>
+<tr><td class="lbl">Perc</td><td class="num">2,282</td><td class="barcell"><div class="track"><div class="bar" style="width:26.4%"></div></div></td><td class="splitcell"><div class="split"><i class="ac" style="flex:60"></i><i class="el" style="flex:1918"></i><i class="uk" style="flex:304"></i></div><span class="splitlbl"><b class="ac-t">60</b> ac · <b class="el-t">1,918</b> el · 304 ?</span></td><td class="srcs">Samples From Mars · Splice · KOUNT</td></tr>
+<tr><td class="lbl">808s &amp; Subs</td><td class="num">145</td><td class="barcell"><div class="track"><div class="bar" style="width:1.7%"></div></div></td><td class="splitcell"><div class="split"><i class="el" style="flex:137"></i><i class="uk" style="flex:8"></i></div><span class="splitlbl"><b class="ac-t">0</b> ac · <b class="el-t">137</b> el · 8 ?</span></td><td class="srcs">Samples From Mars · Splice · KO-II</td></tr>
+</table></div></section>
+
+<section><h2 id="machines">Drum machines — 46,243 hits</h2>
+<p class="hint">Matched against your <b>Vintage Gear Index</b> (hyperion vault). Nearly all of this is Samples From Mars —
+multiple recording chains per machine (clean, tape, processed).</p>
+<div class="cards"><div class="card"><div class="cardtop"><h4>Linn LM-1</h4><span class="cnum">5,078</span></div><p class="mix">closed 1,780 · tom 739 · kick 569</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TR-909</h4><span class="cnum">4,201</span></div><p class="mix">kick 1,420 · other 920 · snare 510</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TR-808</h4><span class="cnum">4,026</span></div><p class="mix">kick 867 · snare 689 · tom 567</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Akai MPC60</h4><span class="cnum">3,460</span></div><p class="mix">kick 886 · snare 708 · clap 327</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Oberheim DMX</h4><span class="cnum">3,204</span></div><p class="mix">tom 674 · snare 458 · kick 453</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TR-606</h4><span class="cnum">3,012</span></div><p class="mix">kick 731 · snare 701 · tom 597</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TR-505</h4><span class="cnum">2,963</span></div><p class="mix">tom 414 · bongo 390 · kick 308</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Synare</h4><span class="cnum">2,893</span></div><p class="mix">fx 1,160 · unclassified 803 · tom 398</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TR-707</h4><span class="cnum">2,601</span></div><p class="mix">tom 752 · snare 390 · kick 274</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Simmons SDS-V</h4><span class="cnum">2,584</span></div><p class="mix">multisample 1,513 · snare 395 · tom 240</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>E-mu SP-1200</h4><span class="cnum">2,177</span></div><p class="mix">kick 400 · closed 254 · snare 244</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Linn/MPC60</h4><span class="cnum">1,769</span></div><p class="mix">snare 265 · tamb 206 · clap 177</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TR-626</h4><span class="cnum">1,615</span></div><p class="mix">tom 259 · bongo 250 · snare 160</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Maestro Rhythm King</h4><span class="cnum">1,372</span></div><p class="mix">perc 302 · tom 296 · kick 204</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Simmons SDS800</h4><span class="cnum">1,272</span></div><p class="mix">snare 407 · tom 302 · multisample 257</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Oberheim DX</h4><span class="cnum">1,113</span></div><p class="mix">tom 200 · hat 174 · snare 157</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>E-mu Drumulator</h4><span class="cnum">1,046</span></div><p class="mix">tom 289 · kick 263 · snare 101</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Roland CR-78</h4><span class="cnum">1,022</span></div><p class="mix">perc 180 · bongo 119 · snare 114</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>LinnDrum</h4><span class="cnum">833</span></div><p class="mix">tom 121 · bongo 87 · unclassified 79</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Casio RZ-1</h4><span class="cnum">1</span></div><p class="mix">perc 1</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Sequential DrumTraks</h4><span class="cnum">1</span></div><p class="mix">kick 1</p><span class="chip idx">in Vintage Gear Index</span></div></div></section>
+
+<section><h2 id="synths">Vintage synth libraries — 51,762 files</h2>
+<p class="hint">Mostly pitched multisample banks (every note sampled) — best loaded as instruments, not browsed as one-shots.
+The “not in index yet” ones are candidates for the <code>/gear-enrich</code> queue.</p>
+<div class="cards"><div class="card"><div class="cardtop"><h4>Roland SH-5</h4><span class="cnum">5,825</span></div><p class="mix">multisample 5,579 · tom 121 · stab 97</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Yamaha DX100</h4><span class="cnum">4,514</span></div><p class="mix">multisample 4,070 · bass 444</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>ARP 2600</h4><span class="cnum">4,429</span></div><p class="mix">multisample 4,092 · fx 107 · tom 86</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Roland SH-101</h4><span class="cnum">4,146</span></div><p class="mix">piano 1,540 · bass 885 · lead 758</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Soviet Synths</h4><span class="cnum">3,970</span></div><p class="mix">multisample 3,258 · bass 380 · lead 120</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Voyetra-8</h4><span class="cnum">3,860</span></div><p class="mix">multisample 3,567 · synth 189 · bass 104</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Minimoog</h4><span class="cnum">3,738</span></div><p class="mix">multisample 3,447 · bass 286 · synth 2</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Akai S612</h4><span class="cnum">3,606</span></div><p class="mix">multisample 2,114 · tom 186 · kick 186</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>EDP Wasp</h4><span class="cnum">3,377</span></div><p class="mix">multisample 3,353 · synth 24</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>C64 SID</h4><span class="cnum">2,851</span></div><p class="mix">multisample 2,632 · lead 146 · fx 73</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Roland System 100M</h4><span class="cnum">2,761</span></div><p class="mix">multisample 2,599 · other 162</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Roland VP-330</h4><span class="cnum">2,690</span></div><p class="mix">multisample 2,560 · other 122 · other 8</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Korg MS-10</h4><span class="cnum">2,164</span></div><p class="mix">multisample 2,164</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Micromoog</h4><span class="cnum">1,734</span></div><p class="mix">multisample 1,728 · fx 6</p><span class="chip queue">not in index yet</span></div>
+<div class="card"><div class="cardtop"><h4>Roland TB-303</h4><span class="cnum">1,093</span></div><p class="mix">unclassified 508 · synth 325 · other 155</p><span class="chip idx">in Vintage Gear Index</span></div>
+<div class="card"><div class="cardtop"><h4>Casio SK-1</h4><span class="cnum">1,004</span></div><p class="mix">multisample 884 · piano 32 · strings 32</p><span class="chip queue">not in index yet</span></div></div></section>
+
+<section><h2 id="loops">Loops — 7,777</h2>
+<p class="hint">The loop shelf you wanted exists in the data, just scattered. “Unsorted” = named like a loop (has a BPM) but no genre/type tag in its name.</p>
+<div class="panel"><table>
+<tr><th>Kind</th><th style="text-align:right">Files</th><th>Volume</th><th>Lives mostly in</th></tr>
+<tr><td class="lbl">Other</td><td class="num">4,030</td><td class="barcell"><div class="track"><div class="bar" style="width:100.0%"></div></div></td><td class="srcs">Splice · Acid Loops · 02. Apple Loops</td></tr>
+<tr><td class="lbl">Drum</td><td class="num">2,384</td><td class="barcell"><div class="track"><div class="bar" style="width:59.2%"></div></div></td><td class="srcs">Splice · Drum Loops · 100 BPM CRAZY FILLS</td></tr>
+<tr><td class="lbl">Melodic</td><td class="num">532</td><td class="barcell"><div class="track"><div class="bar" style="width:13.2%"></div></div></td><td class="srcs">Splice · Splice · KOUNT</td></tr>
+<tr><td class="lbl">Perc</td><td class="num">349</td><td class="barcell"><div class="track"><div class="bar" style="width:8.7%"></div></div></td><td class="srcs">Splice · Percussion Loops · Splice</td></tr>
+<tr><td class="lbl">Break</td><td class="num">345</td><td class="barcell"><div class="track"><div class="bar" style="width:8.6%"></div></div></td><td class="srcs">Breaks · Breaks · Splice</td></tr>
+<tr><td class="lbl">Hat</td><td class="num">132</td><td class="barcell"><div class="track"><div class="bar" style="width:3.3%"></div></div></td><td class="srcs">Splice · High Hat Loops · Percussion Loops</td></tr>
+<tr><td class="lbl">Vocal</td><td class="num">5</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">Splice</td></tr>
+</table></div></section>
+
+<section><h2 id="sources">Packs &amp; sources</h2>
+<div class="panel"><table>
+<tr><th>Source</th><th style="text-align:right">Files</th><th>Share</th><th>Top content</th></tr>
+<tr><td class="lbl">Samples From Mars</td><td class="num">106,739</td><td class="barcell"><div class="track"><div class="bar" style="width:100.0%"></div></div></td><td class="srcs">multisample 44,740 · kick 7,677 · tom 7,234 · snare 6,622</td></tr>
+<tr><td class="lbl">Splice</td><td class="num">5,214</td><td class="barcell"><div class="track"><div class="bar" style="width:4.9%"></div></div></td><td class="srcs">unclassified 1,155 · drum 615 · other 608 · fx 364</td></tr>
+<tr><td class="lbl">KOUNT</td><td class="num">2,225</td><td class="barcell"><div class="track"><div class="bar" style="width:2.1%"></div></div></td><td class="srcs">drum 277 · break 266 · perc 204 · snare 170</td></tr>
+<tr><td class="lbl">Dead vol 2</td><td class="num">1,909</td><td class="barcell"><div class="track"><div class="bar" style="width:1.8%"></div></div></td><td class="srcs">other 821 · drum 671 · snare 144 · hat 118</td></tr>
+<tr><td class="lbl">🥇Quick Start</td><td class="num">1,072</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">drum 218 · hat 208 · snare 170 · kick 150</td></tr>
+<tr><td class="lbl">Dead expansion</td><td class="num">1,005</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">other 498 · drum 310 · hat 160 · ride 26</td></tr>
+<tr><td class="lbl">Goldbaby</td><td class="num">872</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">kick 292 · snare 107 · hat 104 · perc 92</td></tr>
+<tr><td class="lbl">Ghost Note</td><td class="num">567</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">other 155 · bongo 78 · snare 76 · drum 67</td></tr>
+<tr><td class="lbl">KO-II</td><td class="num">279</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">unclassified 66 · snare 30 · kick 30 · hat 21</td></tr>
+<tr><td class="lbl">Frank Dukes</td><td class="num">259</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">lead 99 · piano 80 · pad 51 · strings 29</td></tr>
+<tr><td class="lbl">Alchemist Secret Sauce</td><td class="num">212</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">kick 42 · fx 38 · snare 37 · unclassified 33</td></tr>
+<tr><td class="lbl">DECAP</td><td class="num">30</td><td class="barcell"><div class="track"><div class="bar" style="width:1.2%"></div></div></td><td class="srcs">hat 5 · snare 5 · hat 4 · melodic 4</td></tr>
+</table></div></section>
+
+<section><h2 id="flags">Flags</h2>
+<div class="flags">
+<div class="flag"><h4>🥇Quick Start / Loops is empty</h4><p>The curated loops shelf was created but never filled. The By Type → Loops layer would replace it (or feed it).</p></div>
+<div class="flag"><h4>~18,286 files share a name with another file</h4><p>Much is intentional — Essential WAV From Mars ships 24-bit and 16-bit mirrors (5,328 each), and the KOUNT Splice files exist at the pack root <em>and</em> under KOUNT DRUMS/Splice. Worth a dedupe pass later, not urgent.</p></div>
+<div class="flag"><h4>5,124 files unclassified (4.3%)</h4><p>Mostly creatively-named one-shots (Splice loose files, “Funky Crunch”, “Haus Baby”…). They'd land in <b>_Unsorted</b> so nothing gets lost.</p></div>
+<div class="flag"><h4>Left out of the map on purpose</h4><p><b>Grooves/</b> is MIDI groove templates (no audio) and <b>Song Samples/</b> is Ableton project folders — both stay as-is.</p></div>
+</div></section>
+
+<section><div class="next"><h3>Next step — when you approve</h3>
+<ol>
+<li>Build the symlink mirror at <code>/Volumes/Production/Samples/By Type/</code> (packs untouched, reversible by deleting one folder)</li>
+<li>Test one folder in Ableton's browser to confirm symlinks resolve over SMB</li>
+<li>Add it as a Place in Live's sidebar — browse Snares → Acoustic, Loops → Breaks, Drum Machines → TR-808…</li>
+</ol></div></section>
+</div>

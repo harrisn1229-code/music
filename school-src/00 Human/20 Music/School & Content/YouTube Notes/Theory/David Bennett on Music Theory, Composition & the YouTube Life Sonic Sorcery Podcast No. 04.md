@@ -1,0 +1,47 @@
+---
+type: yt-note
+date: 2026-08-06
+source: youtube
+url: https://www.youtube.com/watch?v=gPSyl8pEdJU
+channel: Max Konyi
+duration: "01:26:15"
+video_type: theory
+music_enriched: true
+transcript_source: captions
+tags: [yt-note, music, theory, interview, songwriting, ear-training, harmony]
+briefed: backlog
+---
+
+# David Bennett on Music Theory, Composition & the YouTube Life | Sonic Sorcery Podcast #04
+
+![](https://www.youtube.com/watch?v=gPSyl8pEdJU)
+📺 [Watch on YouTube](https://www.youtube.com/watch?v=gPSyl8pEdJU)
+
+## Synopsis
+
+Long-form interview (86 minutes) between Max Konyi and fellow music-YouTuber David Bennett, ranging across the philosophy of music/harmony, music education pedagogy, YouTube teaching craft, and — most usefully for practice — David Bennett's actual songwriting and composition workflow, his ear-training background, and concrete craft observations about harmony and just intonation. Much of the runtime is philosophical/interview material (what is music, why humans respond to harmony, the tension between academic and popular music, the "toolbox not guidebook" framing of theory) that doesn't reduce to actionable technique; this page pulls out the concrete, reusable craft advice specifically, per the depth standard, rather than synopsizing the whole conversation. Confidence: high (clean creator captions, two-person conversational interview, no played-example transcription ambiguity).
+
+## What's taught
+
+- **The "Wall-E sound" — 7th scale degree over the IV chord, a specific favorite harmonic sound**: in the key of C major, an F chord (IV) with a B natural (the leading tone, the key's 7) sounding on top — a tritone against the chord's own root that's still fully diatonic. Reads as a strong Lydian-flavored, "longing" sound whether it resolves the B up (toward C, more Lydian-feeling) or down (toward A, back toward the F chord) — David Bennett cites this as one of the harmonic sounds that "gives him goosebumps without fail," and traces his own harmony obsession back to first hearing it (unknowingly) in a Wall-E cue as a kid. A concrete, learnable "ear candy" move: hold the 7th degree over the subdominant chord as a suspension-like color tone, independent of which way it eventually resolves.
+- **Songwriting/production workflow — compose away from the DAW, then build a full home demo before ever booking a studio**: David Bennett never writes IN a DAW — composition happens only at piano or guitar, and a song is considered "written" once melody + lyric + chords (the full "pure composition," possibly with a motif/riff) exists as a standalone unit, independent of arrangement or production. Only after that does he move to a DAW to build a completely fleshed-out, near-release-quality demo arrangement — every layer, on his own, with total freedom to scrap and restart since there's no session cost yet. Only once THAT arrangement is genuinely settled does he go into a studio with real musicians to re-record it — walking in with a fully realized reference turns the expensive studio time into execution rather than discovery, while still leaving room for musicians to bring parts nobody could have written in a DAW.
+- **Idea capture habit: voice-memo every new musical idea in the moment, revisit and curate days later.** Songs are very rarely written in one sitting — a small idea gets voice-memoed immediately, then returned to a few days later with fresh ears to judge whether it's still good; only the ideas that hold up on a fresh listen get developed further. When there's no obvious next move for a kept idea, music theory becomes a deliberate problem-solving tool at that point ("I know I've used these chords — maybe I go here instead"), rather than something imposed from the start.
+- **Odd meters — learn each one as its own individual "vocabulary item," not from a general theory of odd meters.** Getting comfortable in 5/4 doesn't automatically transfer to 7/8; each odd meter needs its own dedicated repetition and exposure the same way 4/4 and 3/4 did over years of ordinary listening, before it develops its own recognizable felt character (7/8, e.g., has been described as an eighth-note "record-skip" feeling once internalized). A related composing habit: odd meters sometimes come out instinctively while writing without knowing in the moment what the meter actually is — only counting it back afterward reveals it's actually in 7 or 5. Treating the discovery-after-the-fact as normal (rather than needing to consciously plan an odd meter in advance) is a legitimate way to end up writing in one.
+- **Just intonation vs. equal temperament — the major 3rd is the interval that suffers most from tempering** (roughly 14–16 cents sharp of pure/just intonation — a meaningfully audible amount, comparable to a guitar string being noticeably out of tune). A cappella/choral vocal music is one of the few contexts that can use genuinely pure (untempered) intonation, since voices aren't locked to a fixed-pitch instrument — producing an audibly "beatless," locked-in ring that equal-tempered instruments can't fully replicate. Practical way to feel the difference directly: find a natural harmonic near the 5th fret of a guitar string (the major-3rd/5th-partial harmonic), play the open string underneath it, and sing the harmonic's exact pitch against the open string — when the sung pitch locks in perfectly, the beating disappears and the interval "rings like a bell," an audible demonstration of what pure intonation actually sounds like relative to the tempered version used on every fretted/fixed-pitch instrument.
+- **Genre-fusion principle: change only ONE defining "pillar" of a genre at a time to stay recognizable.** New genres/subgenres tend to form by altering a single foundational element of an established style (tempo, drum groove, harmonic vocabulary, or primary instrumentation) while holding everything else to genre-standard — changing several pillars simultaneously reads as unrelated noise rather than a legible new style listeners can place. Worked example: Led Zeppelin's hard-rock-to-folk-rock songs swap only the guitar (electric → acoustic); song structure, vocal delivery, and everything else stays put, which is exactly why those songs still read as recognizably Led Zeppelin rather than a different band.
+- **Scale-degree hearing over named-interval recognition, corroborating [[Scale Degree Ear Training]] independently**: David Bennett's own practical ear-training experience converges with Max Konyi's — hearing "the fifth moving to the sixth" translates directly onto an instrument in a way that "oh, that's a perfect fifth" doesn't, because a raw interval heard in isolation sounds nothing like the same interval heard inside a real tonal context (a minor 6th "doesn't sound like a minor 6th floating in free space" once it's actually the 3rd-to-root distance inside a major chord).
+- **The "familiar-with-a-twist" principle for what keeps music engaging**: referencing David Huron's book *Sweet Anticipation* (recommended as one of the most influential music books either host has read) — the mere-exposure effect is reframed as a correct-prediction reward: the brain is a prediction machine that derives pleasure from successfully anticipating what comes next, and the MORE familiar material is, the more of that reward is available; genuinely surprising material triggers an initial startle response, followed by relief/pleasure once it resolves as "okay." Practical takeaway for songwriting/arranging: repeat motifs/sections/progressions enough for the listener to build correct predictions, but not so much they become boring — establish a pattern, then diverge from it; "something old, something new" is treated as close to a universal requirement for music (or any art) to stay both accessible and interesting.
+- **Video-teaching pacing craft (secondary, more channel-specific, but relevant to any instructional content)**: front-load the essentials a viewer needs to follow the core idea, push exceptions/caveats/nuance to the end of a video rather than the middle, and accept that some viewers will find the basics too slow — as long as the essential caveats get addressed by the end, that's sufficient (rather than trying to preempt every possible objection up front, which bogs down the core explanation).
+
+## Routed to
+
+- [[Time Signatures & Note Values]] — the "learn each odd meter as its own feeling state" section, already routed here from this video.
+- [[Intervals]] — the just-intonation/equal-temperament and the interval-in-isolation-vs-in-context points, already routed here.
+- [[Scale Degree Ear Training]] — the scale-degree-over-interval corroboration bullet, already routed here.
+- [[Genres Index]] — the "change one pillar at a time" genre-fusion principle, already routed here.
+- [[Arrangement and Song Form]] — the DAW-free composition + full-demo-before-studio workflow and voice-memo capture habit, already routed here.
+- [[Melody Writing]] — cross-linked from the Arrangement note as the companion home for the compose-away-from-DAW workflow.
+
+## Source
+
+[David Bennett on Music Theory, Composition & the YouTube Life | Sonic Sorcery Podcast #04](https://www.youtube.com/watch?v=gPSyl8pEdJU) · Max Konyi, with guest David Bennett · 1:26:15 · captions (high confidence — clean creator captions, two-person conversational interview) · transcript: [[David Bennett on Music Theory, Composition & the YouTube Life Sonic Sorcery Podcast No. 04 (transcript)]]

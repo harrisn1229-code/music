@@ -1,0 +1,404 @@
+---
+type: index
+title: Plugin Index
+tags: [plugin, index]
+---
+
+# Plugin Index
+
+Full reference wiki of every Ableton Live plugin/device in the collection, grouped by role. Source screenshots archived in `_Source Screenshots/`.
+
+Notes are being progressively upgraded with a **Manual** section (instruction-manual PDF in `Manuals/` + high-level points; hardware-original manuals for emulations; community sources when no manual exists) and a **Key Parameters** table (what each control does + technique + artist examples) — done by the manual-enrich sweep member (`Machine/Workflows/manual-enrich.md`), tracked via `manual_enriched: true` frontmatter. Hardware lives in [[Gear Index]]. Patch pages (per-sound settings) live in [[Patch Index]].
+
+## EQ (21)
+
+- [[Clariphonic DSP MKII|Clariphonic DSP MKII]] — Adding smooth top-end lift and vocal/instrument presence
+- [[EQ Eight|EQ Eight]] — General-purpose tonal shaping and surgical cuts
+- [[EQ Three|EQ Three]] — Ableton's stock 3-band EQ for quick tonal shaping and band-kill moves
+- [[FabFilter Micro|FabFilter Micro]] — Quick single-node tonal correction when a full
+- [[FabFilter One|FabFilter One]] — Fast low-pass filtering for simple tone-shaping
+- [[Fresh Air|Fresh Air]] — Quick top-end 'air' and presence boost
+- [[Ghz Tiltshift 3|Ghz Tiltshift 3]] — Fast overall tonal balance adjustments (brighter/darker)
+- [[Ghz Tone Control 3|Ghz Tone Control 3]] — Quick, musical broad-strokes tonal shaping
+- [[Gullfoss|Gullfoss]] — Fast, intelligent overall clarity and balance improvements
+- [[Gullfoss Master|Gullfoss Master]] — Adaptive clarity and tonal balancing specifically
+- [[kHs 3-Band EQ|kHs 3-Band EQ]] — Quick, lightweight tonal shaping when a full
+- [[kHs Comb Filter|kHs Comb Filter]] — Metallic, phaser-adjacent resonant textures and creative sound
+- [[Ozone 9 Equalizer|Ozone 9 Equalizer]] — Mastering-grade broad tonal shaping and surgical correction
+- [[Ozone 9 Low End Focus|Ozone 9 Low End Focus]] — Cleaning up muddy or undefined low end
+- [[Ozone 9 Match EQ|Ozone 9 Match EQ]] — Matching a master's tonal balance
+- [[Ozone 9 Spectral Shaper|Ozone 9 Spectral Shaper]] — Targeted dynamic EQ moves on a master
+- [[Ozone 9 Vintage EQ|Ozone 9 Vintage EQ]] — Musical, characterful tonal shaping on a master
+- [[Pro-Q 4|Pro-Q 4]] — Same corrective and tonal EQ role
+- [[Sie-Q|Sie-Q]] — Musical, characterful EQ moves as an alternative
+- [[SurferEQ|SurferEQ]] — EQ moves that need to follow
+- [[UAD Pultec EQP-1A|UAD Pultec EQP-1A]] — Passive tube tone-shaping and the classic boost+attenuate low-end trick
+
+## Pan/Imaging (16)
+
+- [[Auto Pan|Auto Pan]] — Rhythmic auto-pan/tremolo movement, synced or free-running
+- [[Ghz Midside 3|Ghz Midside 3]] — Independent EQ/dynamics processing of the center vs
+- [[Ghz Midside Matrix 3|Ghz Midside Matrix 3]] — Advanced mid/side routing and width manipulation
+- [[Ghz Panpot 3|Ghz Panpot 3]] — Precise, law-accurate panning decisions when the stock
+- [[kHs Haas|kHs Haas]] — Psychoacoustic stereo widening without true stereo modulation
+- [[kHs Stereo|kHs Stereo]] — Stereo width adjustments within a modular effects
+- [[Little MicroShift|Little MicroShift]] — Fast, simple stereo widening via subtle pitch-shifted
+- [[MicroShift|MicroShift]] — Widening mono vocals, guitars, and synths using
+- [[ml.circular.doppler|ml.circular.doppler]] — Creating rotating, doppler-style panning motion effects
+- [[Ozone 9 Imager|Ozone 9 Imager]] — Adjusting a master's stereo width by frequency
+- [[PanMan|PanMan]] — Rhythmic auto-pan and tremolo movement effects
+- [[S1 Imager|S1 Imager]] — Adjusting the perceived stereo width
+- [[S1 MS Matrix|S1 MS Matrix]] — Splitting a stereo signal for independent mid/side
+- [[S1 Shuffler|S1 Shuffler]] — Natural-feeling stereo widening that avoids over-widening
+- [[Stereo Tool|Stereo Tool]] — Verifying and correcting a mix's stereo/mono compatibility
+- [[Wider|Wider]] — Widening mono or narrow-stereo synths, guitars
+
+## Compressor/Limiter (44)
+
+- [[API-2500|API-2500]] — Bus/glue compression with an aggressive, punchy analog
+- [[BitterSweet|BitterSweet]] — Adding or removing punch and sustain
+- [[CLA Drums|CLA Drums]] — Fast, musical drum-bus compression with a proven
+- [[Color Limiter|Color Limiter]] — Free Creative-Extensions brickwall limiter with a built-in saturation/Color stage
+- [[Compressor|Compressor]] — Level control and glue on individual tracks
+- [[Devil-Loc|Devil-Loc]] — Extreme, characterful compression for drum room mics
+- [[Devil-Loc Deluxe|Devil-Loc Deluxe]] — Same extreme character-compression role as Devil-Loc
+- [[Drum Bus|Drum Bus]] — All-in-one drum-glue: drive, compression, and transient/tone shaping for busses and kits
+- [[Duck_Buddy|Duck_Buddy]] — Simple sidechain pumping effects (e.g
+- [[FETish|FETish]] — Fast, punchy compression on drums, bass
+- [[Gate|Gate]] — Killing room noise between vocal phrases and tightening amp hiss between parts
+- [[Ghz Faraday Limiter 3|Ghz Faraday Limiter 3]] — Clean peak limiting on tracks, busses
+- [[Glue Compressor|Glue Compressor]] — Bus and master glue compression — pulling
+- [[Gold Clip|Gold Clip]] — Adding aggressive, controlled clipping distortion for extra
+- [[Gold Clip Track|Gold Clip Track]] — Adding clipping-based loudness/character to individual tracks (drums
+- [[kHs Clipper|kHs Clipper]] — Aggressive loudness/distortion character on drum busses
+- [[kHs Compactor|kHs Compactor]] — Fast compression duty inside a modular Snap
+- [[kHs Compressor|kHs Compressor]] — General-purpose compression duty within a modular Snap
+- [[kHs Dynamics|kHs Dynamics]] — Flexible dynamics shaping combining gating and compression
+- [[kHs Gate|kHs Gate]] — Cleaning up noise/bleed within a modular effects
+- [[kHs Limiter|kHs Limiter]] — Final peak/loudness control within a Snap Heap
+- [[kHs Transient Shaper|kHs Transient Shaper]] — Adding or reducing punch and sustain
+- [[Kickstart 2|Kickstart 2]] — Classic EDM/house sidechain 'pump' effect on pads
+- [[LALA|LALA]] — Smooth, musical vocal and bass leveling
+- [[Limiter|Limiter]] — Final safety limiting on a track
+- [[MTransformer|MTransformer]] — Frequency-specific transient shaping — punching up
+- [[Multiband Dynamics|Multiband Dynamics]] — Frequency-specific glue/dynamics control — a gentler multiband alternative to OTT
+- [[OTT|OTT]] — Aggressive multiband dynamic leveling for a dense
+- [[Ozone 9 Maximizer|Ozone 9 Maximizer]] — Final loudness maximization on a master
+- [[Ozone 9 Vintage Compressor|Ozone 9 Vintage Compressor]] — Adding vintage-style glue compression across a master
+- [[Ozone 9 Vintage Limiter|Ozone 9 Vintage Limiter]] — Adding vintage character while maximizing loudness
+- [[Pro-C 2|Pro-C 2]] — The go-to all-purpose compressor across the whole
+- [[Pro-G|Pro-G]] — Cleaning up bleed on drum mics, tightening
+- [[Pro-L 2|Pro-L 2]] — Master-bus loudness maximization and true-peak-safe limiting
+- [[Pro-MB|Pro-MB]] — Frequency-specific dynamics control — taming boomy low
+- [[RVox|RVox]] — Quick, automatic vocal leveling and gating
+- [[Solid Bus Comp|Solid Bus Comp]] — Bus/glue compression on drum busses, groups
+- [[TL EasyComp|TL EasyComp]] — Quick, straightforward compression on tracks and busses
+- [[Transient Master|Transient Master]] — Adding or reducing punch and sustain
+- [[Transient Shaper|Transient Shaper]] — Adding or removing punch and sustain
+- [[UAD Teletronix LA-2A|UAD Teletronix LA-2A]] — Gentle opto leveling on the way in — vocals, acoustic guitar, bass
+- [[UAD Tube-Tech CL 1B mkII|UAD Tube-Tech CL 1B mkII]] — The go-to opto leveler for lead and stacked vocals; 2–4 dB of glue
+- [[UAD UA 1176LN|UAD UA 1176LN]] — FET peak control and attitude on drums, aggressive vocals and strummed acoustic
+- [[XMLimiter|XMLimiter]] — Final loudness maximization and peak safety
+
+## Drive/Color (53)
+
+- [[Airline V15|Airline V15]] — Classic British chime-style guitar amp tone
+- [[Archetype- John Mayer X|Archetype: John Mayer X]] — Studio-quality guitar tone matching John Mayer's clean-to-driven
+- [[Cassette|Cassette]] — Lo-fi cassette warmth, saturation and tape imperfection on drums, vocals or a full mix
+- [[Cassotto|Cassotto]] — Rotary-speaker-style horn resonance and coloration
+- [[Corrosion|Corrosion]] — Adding harmonic saturation or aggressive distortion
+- [[Decapitator|Decapitator]] — Adding punchy analog-style saturation and harmonic drive
+- [[Decimort 2|Decimort 2]] — Classic lo-fi/bitcrushed textures on drums, vocals
+- [[Dynamic Tube|Dynamic Tube]] — Adding responsive, level-dependent tube warmth to vocals
+- [[Erosion|Erosion]] — Lo-fi degradation via noise or tunable sine tone for grit, hiss, or metallic ring
+- [[Gem Dopamine|Gem Dopamine]] — Guitar fuzz and boost tone on DI
+- [[Ghz Loh1 3|Ghz Loh1 3]] — Adding gentle analog gain character
+- [[Ghz Lossy 3|Ghz Lossy 3]] — Deliberately degrading audio to sound like
+- [[Ghz Tupe 3|Ghz Tupe 3]] — Adding analog tape warmth and gentle compression/saturation
+- [[Ghz Vulf Compressor 3|Ghz Vulf Compressor 3]] — Lo-fi, retro-degraded compression character on drums, keys
+- [[Ghz Wow Control 3|Ghz Wow Control 3]] — Adding vintage tape pitch-wobble character
+- [[Guitar Rig 7 FX|Guitar Rig 7 FX]] — Building custom guitar/bass tone chains from amps
+- [[Guitar Rig 7 MFX|Guitar Rig 7 MFX]] — Same guitar/bass amp and effects chain building
+- [[High School Crush 1.2|High School Crush 1.2]] — Creative lo-fi/character processing on a track
+- [[kHs Bitcrush|kHs Bitcrush]] — Lo-fi digital grit and crushed textures
+- [[kHs Distortion|kHs Distortion]] — Harmonic saturation to full-on distortion character
+- [[kHs Phase Distortion|kHs Phase Distortion]] — Classic phase-distortion synth tones and harmonic coloration
+- [[kHs Shaper|kHs Shaper]] — Custom-shaped harmonic distortion and saturation character
+- [[kHs Tape Stop|kHs Tape Stop]] — Tape-stop transition effects at drops and section
+- [[Kramer Tape|Kramer Tape]] — Analog tape warmth, glue, and gentle compression
+- [[Lair|Lair]] — Gentle analog-style warming on individual tracks
+- [[Little Radiator|Little Radiator]] — Fast analog saturation/coloration on any track
+- [[Mark Studio 2|Mark Studio 2]] — Full guitar/bass amp and cabinet tone shaping
+- [[Morgan Amps Suite|Morgan Amps Suite]] — Boutique amp tone for clean and overdriven
+- [[Overdrive|Overdrive]] — Guitar and synth overdrive, adding edge
+- [[Oxford Inflator|Oxford Inflator]] — Adding perceived loudness and glue
+- [[Ozone 9 Exciter|Ozone 9 Exciter]] — Adding brightness, warmth, or harmonic 'sparkle'
+- [[Ozone 9 Vintage Tape|Ozone 9 Vintage Tape]] — Adding tape warmth and glue
+- [[Pedal|Pedal]] — Guitar-stompbox distortion/fuzz with per-band gain, on any source
+- [[Pusher|Pusher]] — Adding console-style 'glue' and punch to individual
+- [[Radiator|Radiator]] — Analog-style warmth and harmonic saturation across vocals
+- [[RBass|RBass]] — Adding low-end weight and harmonic reinforcement
+- [[RC-20 Retro Color|RC-20 Retro Color]] — Fast, one-stop retro/lo-fi character — tape warble
+- [[Redux|Redux]] — Bit-depth/sample-rate reduction with jitter for lo-fi, "video-game" digital character
+- [[Roar|Roar]] — Multi-stage saturation/distortion with serial/parallel/multiband/mid-side/feedback routing
+- [[Saturator|Saturator]] — Adding harmonic warmth, grit, or aggressive distortion
+- [[Saturn 2|Saturn 2]] — Adding character, warmth, or aggressive harmonic distortion
+- [[Sausage Fattener|Sausage Fattener]] — One-knob saturation/loudness for aggressive fatness
+- [[TapeStop 2.0|TapeStop 2.0]] — Tape-stop transition effects at drops, breakdowns
+- [[Tonelib-BassDrive|Tonelib-BassDrive]] — Amp-sim tone shaping on DI-recorded bass guitar
+- [[UAD Ampeg SVT-VR Classic|UAD Ampeg SVT-VR Classic]] — Amp'd bass tone from clean tube warmth to driven rock growl; reamp a clean DI
+- [[UAD Century Tube Channel Strip|UAD Century Tube Channel Strip]] — One-stop tracking front-end — tube weight, tone-shaping and level in a single pass
+- [[UAD Marshall Plexi Classic|UAD Marshall Plexi Classic]] — Electric guitar crunch and lead tones; classic-rock grit and sustain on a clean DI
+- [[UAD Neve 1073|UAD Neve 1073]] — Body and silk on anything — vocals, acoustic/electric guitar, bass DI (owned)
+- [[UAD Raw Distortion|UAD Raw Distortion]] — Guitar and bass grit; also a parallel color distortion on drums, synths and vocals
+- [[UAD UA 610-A|UAD UA 610-A]] — Warm tube weight on vocals, guitars and bass DI; drive the input for harmonic push
+- [[UAD UA 610-B|UAD UA 610-B]] — Warm, round tube color on the way in — the Unison pick for acoustic guitar and vocals
+- [[Varispeed 3.0|Varispeed 3.0]] — Classic varispeed pitch/tempo effects for transitions
+- [[Vinyl Distortion|Vinyl Distortion]] — Vinyl tracking noise/crackle character — the only stock effect that generates noise with no input
+
+## Reverb/Delay (41)
+
+- [[ADAPTIVERB|ADAPTIVERB]] — Musically 'in-tune' reverb tails that follow
+- [[Crystallizer|Crystallizer]] — Shimmer-reverb-style pitched delay textures on vocals, pads
+- [[Delay|Delay]] — Clean, simple stock delay (Re-Pitch modulation character, feedback-extremes trick) when Echo's full character section isn't needed
+- [[Echo|Echo]] — Rhythmic delay effects, tape-echo character, and dub-style
+- [[Echobode|Echobode]] — Metallic, evolving delay/frequency-shift textures for sound design
+- [[EchoBoy|EchoBoy]] — The primary creative delay across a huge
+- [[EchoBoy Jr|EchoBoy Jr]] — Fast, simple delay effects when EchoBoy's full
+- [[Filter Delay|Filter Delay]] — Independent L/R/center filtered delay lines for asymmetric stereo delay treatment
+- [[Gated Delay|Gated Delay]] — Sequenced reverse/gate delay patterning with a one-click randomize dice (Creative Extensions pack)
+- [[Ghz Megaverb 3|Ghz Megaverb 3]] — Adding smooth, easy-to-dial-in reverb space to vocals
+- [[Grain Delay|Grain Delay]] — Granular-texture delay (grain snippets, Spray/Feedback) distinct from a plain echo
+- [[H-Delay|H-Delay]] — Hybrid analog/digital-style delay with tape character
+- [[Hybrid Reverb|Hybrid Reverb]] — Convolution (any sample as an IR) + algorithmic reverb for space, freezes, and drop FX
+- [[kHs Delay|kHs Delay]] — Rhythmic delay effects on vocals, synths
+- [[kHs Dual Delay|kHs Dual Delay]] — Complex, layered rhythmic delay effects (e.g
+- [[kHs Reverb|kHs Reverb]] — Adding space and ambience within a modular
+- [[kHs Reverser|kHs Reverser]] — Reverse-swell and reverse-crash effects (classic reverse cymbal/riser
+- [[Little Plate|Little Plate]] — Quick, classic plate reverb character on vocals
+- [[Little PrimalTap|Little PrimalTap]] — Fast, characterful lo-fi delay effects
+- [[Note Echo|Note Echo]] — Creating rhythmic MIDI note repeats/echoes that trigger
+- [[Permut8|Permut8]] — Glitchy, granular, bitcrushed delay and buffer-manipulation effects
+- [[Pitch Hack|Pitch Hack]] — Reversed, pitch-shifting delay with self-feeding Recycle for compounding pitch drift (Creative Extensions pack)
+- [[Pitch Loop 89|Pitch Loop 89]] — Stereo pitch/delay/filter device with independent, genuinely different L/R pitch-delay character
+- [[PrimalTap|PrimalTap]] — Gritty, characterful lo-fi delay effects distinct
+- [[Pro-R 2|Pro-R 2]] — Natural vocal and instrument reverb where tonal
+- [[Replika|Replika]] — General-purpose rhythmic delay effects across vocals, synths
+- [[Reverb|Reverb]] — Adding spatial depth and ambience to any
+- [[Spectral Blur|Spectral Blur]] — Instant clear ambient freeze on a vocal or lead layer
+- [[Spectral Time|Spectral Time]] — Frequency-bin delay smear ("laser"), transitions, and time-synced harmonic freeze
+- [[Timeless 3|Timeless 3]] — Advanced tempo-synced, filtered, and modulated delay effects
+- [[UAD Cooper Time Cube Mk II|UAD Cooper Time Cube Mk II]] — Vintage slapback and thickening delays that sit behind a source
+- [[UAD Pure Plate Reverb|UAD Pure Plate Reverb]] — Vocal and snare sheen; lush, forward plate tails that sit up in a mix
+- [[UAD RealVerb-Pro|UAD RealVerb-Pro]] — Flexible rooms, halls and plates from one tweakable engine; design a bespoke space
+- [[ValhallaDelay|ValhallaDelay]] — General-purpose creative delay duty across nearly any
+- [[ValhallaFreqEcho|ValhallaFreqEcho]] — Shifting, metallic, evolving delay textures distinct
+- [[ValhallaPlate|ValhallaPlate]] — Classic plate reverb character on vocals, drums
+- [[ValhallaRoom|ValhallaRoom]] — General-purpose natural-sounding room and hall reverb across
+- [[ValhallaShimmer|ValhallaShimmer]] — Ambient, ethereal shimmer-reverb pads and atmospheric textures
+- [[ValhallaSupermassive|ValhallaSupermassive]] — Huge ambient pad textures, massive reverb-like tails
+- [[ValhallaVintageVerb|ValhallaVintageVerb]] — Vintage-flavored reverb character across vocals, drums
+- [[Vector Delay|Vector Delay]] — Physics/magnet-style XY-map delay modulation, bounce/wrap edge behavior (Inspired by Nature pack)
+
+## Modulation (40)
+
+- [[AM-Bird|AM-Bird]] — Sound-design texture layers and ambient ear candy
+- [[Auto Filter|Auto Filter]] — Filter sweeps and LFO-driven filter movement, including per-ear phase-offset drift
+- [[Chorus-Ensemble|Chorus-Ensemble]] — Widening mono synths, guitars, and vocals
+- [[Corpus|Corpus]] — Physical-modeling resonant texture on drums/percussion, macro-mapped as a rack
+- [[Drift (SoundGhost)|Drift]] — Adding subtle pitch/timing drift character
+- [[FilterFreak1|FilterFreak1]] — Creative resonant filter sweeps and rhythmic filter
+- [[FilterFreak2|FilterFreak2]] — Same creative filtering role as FilterFreak1
+- [[Frequency Shifter|Frequency Shifter]] — Ableton's stock linear frequency-shifting for inharmonic, metallic modulation
+- [[Ghz Trem Control 3|Ghz Trem Control 3]] — Classic amplitude tremolo effects on guitars, keys
+- [[Gradient|Gradient]] — Sound-design/texture device for mutating and resampling synth presets
+- [[GrainFreeze|GrainFreeze]] — Creating frozen-pad and glitchy granular textures
+- [[kHs Chorus|kHs Chorus]] — Widening synths, guitars, and vocals with classic
+- [[kHs Ensemble|kHs Ensemble]] — Thick, lush widening on pads, synths
+- [[kHs Filter|kHs Filter]] — Core filtering duty and filter-sweep automation within
+- [[kHs Flanger|kHs Flanger]] — Classic sweeping flange effects on guitars, drums
+- [[kHs Frequency Shifter|kHs Frequency Shifter]] — Metallic, robotic, or dissonant texture effects distinct
+- [[kHs Ladder Filter|kHs Ladder Filter]] — Classic analog-style resonant filtering and filter-sweep sound
+- [[kHs Nonlinear Filter|kHs Nonlinear Filter]] — Filter tones with built-in harmonic drive/character rather
+- [[kHs Phaser|kHs Phaser]] — Sweeping phaser effects on guitars, keys
+- [[kHs Resonator|kHs Resonator]] — Adding metallic, bell-like, or tuned resonant character
+- [[kHs Ring Mod|kHs Ring Mod]] — Robotic, bell-like, and dissonant textures for sound
+- [[kHs Trance Gate|kHs Trance Gate]] — Rhythmic gating/chopping effects on pads and synths
+- [[LFO Tool|LFO Tool]] — Pumping/ducking, rhythmic gating and creative volume shaping
+- [[LFOTool|LFOTool]] — Custom rhythmic pumping/ducking and modulation effects beyond
+- [[Morph|Morph]] — Spectral XY-blend of two sound sources into one hybrid texture, with formant control
+- [[PhaseMistress|PhaseMistress]] — Classic sweeping phaser effects on guitars, keys
+- [[Phaser-Flanger|Phaser-Flanger]] — Stock phaser/flanger with an envelope follower that can auto-modulate its own parameters from the incoming signal
+- [[Portal|Portal]] — Glitch/transition texture effects for drops and creative transitions
+- [[Ring Shifter|Ring Shifter]] — Logic's combined ring modulator and frequency shifter for metallic modulation
+- [[Serum 2 FX|Serum 2 FX]] — Applying Serum's signature effects processing to any
+- [[Shifter|Shifter]] — Harmonic pitch-shift and inharmonic frequency-shift in one device
+- [[Simplon|Simplon]] — Quick filtering effects and DJ-style filter sweeps
+- [[Spectral Resonator|Spectral Resonator]] — Robotic resonant/vocoder-like texture, MIDI-drivable from another track's chords
+- [[TAL-Chorus-LX|TAL-Chorus-LX]] — Classic analog-style chorus thickening on synths, guitars
+- [[Tremolator|Tremolator]] — Rhythmic, patterned amplitude-tremolo effects on guitars, keys
+- [[Turnado|Turnado]] — Live-performance-style glitch/mangling effects and creative transition/build-up sound
+- [[UAD Brigade Chorus|UAD Brigade Chorus]] — Width and shimmer on guitars, keys, synths and backing vocals
+- [[ValhallaSpaceModulator|ValhallaSpaceModulator]] — Lush, spacious modulation effects (chorus/flanger/phaser hybrids)
+- [[ValhallaUberMod|ValhallaUberMod]] — Broad modulation-effect duty across chorus, flange, phase
+- [[Volcano 3|Volcano 3]] — Advanced filter sweeps, modulation-driven texture design
+
+## Pitch/Vocal (23)
+
+- [[Auto Shift|Auto Shift]] — Scale-aware pitch correction — also used to scale-quantize non-vocal sound design
+- [[Auto-Tune Pro|Auto-Tune Pro]] — Correcting vocal pitch subtly for natural tuning
+- [[Bitspeek|Bitspeek]] — Robotic vocal effects and retro speech-synthesizer-style vocal
+- [[Clear|Clear]] — Cleaning up noisy vocal recordings (room noise
+- [[Doubler2|Doubler2]] — Fast artificial double-tracking on vocals or instruments
+- [[Doubler4|Doubler4]] — Thicker artificial doubling/unison effects than Doubler2 provides
+- [[kHs Formant Filter|kHs Formant Filter]] — Vowel-sweep, talk-box-style effects on synths and vocals
+- [[kHs Pitch Shifter|kHs Pitch Shifter]] — Harmonizing, octave-doubling, or creative pitch effects within
+- [[Little AlterBoy|Little AlterBoy]] — Creative vocal pitch/formant effects — robotic voices
+- [[Melodyne|Melodyne]] — Deep pitch and timing correction on vocals
+- [[PitchDrop|PitchDrop]] — Classic pitch-drop transition/riser effects at drops
+- [[Pro-DS|Pro-DS]] — Controlling harsh 's', 'sh', and 't' sounds
+- [[RX 11 Voice De-noise|RX 11 Voice De-noise]] — Removing background noise from vocal recordings while preserving tone
+- [[RX Breath Control|RX Breath Control]] — Reducing distracting breath sounds in vocal takes
+- [[RX De-ess|RX De-ess]] — Controlling harsh 's'/'sh' sounds as part
+- [[RX De-plosive|RX De-plosive]] — Cleaning up plosive pops in vocal takes
+- [[RX Dialogue Isolate|RX Dialogue Isolate]] — Extracting clean dialogue from a noisy
+- [[RX Mouth De-click|RX Mouth De-click]] — Removing distracting mouth noise from vocal takes
+- [[RX Voice De-noise|RX Voice De-noise]] — Removing background noise from vocal recordings while
+- [[Soothe2|Soothe2]] — Smoothing harsh vocal resonances, taming brash cymbals/guitars
+- [[Vocoder|Vocoder]] — Cleanup/de-washing, pitch-tracking color, noise texture design, and chord-driven watery pads/rhythms
+- [[VocAlign Project 5 AU|VocAlign Project 5 AU]] — Aligning doubled vocal takes or ADR dialogue
+- [[VocAlign Ultra AU|VocAlign Ultra AU]] — Same automatic timing-alignment role as VocAlign Project
+
+## Instrument (58)
+
+- [[Analog|Analog]] — Warm analog-style bass, pads, and leads
+- [[AnalogKick.amxd|AnalogKick.amxd]] — Synthesized analog-style kick drums as an alternative
+- [[Bloom Bass Impulse|Bloom Bass Impulse]] — Fast access to production-ready bass sounds
+- [[Collision|Collision]] — Bells, mallets, plucked/struck percussive tones, and hybrid
+- [[Drift|Drift]] — General-purpose analog-style synth duty — basses, leads
+- [[Drum Rack|Drum Rack]] — The standard way to build and play
+- [[Drum Sampler|Drum Sampler]] — Per-pad Drum Rack instrument with a built-in 9-effect FX section (stretch/grain, FM) and MPE-driven modulation
+- [[DS Clang|DS Clang]] — Industrial-style metallic percussion accents and texture hits
+- [[DS Clap|DS Clap]] — Programmed claps for house/pop beats, or layering
+- [[DS Cymbal|DS Cymbal]] — Synthesized crash/cymbal accents for electronic drum programming
+- [[DS FM|DS FM]] — Percussive FM tones and hybrid drum layers
+- [[DS HH|DS HH]] — Fully synthesized hi-hat patterns for house/techno-style beats
+- [[DS Kick|DS Kick]] — Building fully synthesized kick drums for electronic
+- [[DS Snare|DS Snare]] — Synthesized snare/clap-adjacent sounds for electronic beats
+- [[DS Tom|DS Tom]] — Synthesized toms for fills and percussive melodic
+- [[DUNE 3|DUNE 3]] — Modern EDM and electronic leads, basses
+- [[Exhale|Exhale]] — Granular vocal-texture instrument built from a curated vocal library
+- [[EXS24|EXS24]] — Logic's legacy sampler, also usable with no sample for pure synthesized tones
+- [[External Instrument|External Instrument]] — Integrating hardware synths/modules into the Live session
+- [[Granulator 3|Granulator 3]] — Redesigned single-device granular sampler replacing the Granulator II/Input/Follow trio
+- [[Granulator II|Granulator II]] — Granular synthesis — turning samples into evolving
+- [[GranulatorFollow II|GranulatorFollow II]] — Modulating granular playback position/parameters dynamically from another
+- [[GranulatorInput II|GranulatorInput II]] — Real-time granular processing of an incoming signal
+- [[HALion Sonic|HALion Sonic]] — Fast access to a broad general-purpose instrument
+- [[Hand Clap Studio|Hand Clap Studio]] — Building custom, layered hand-clap sounds for beats
+- [[Impulse|Impulse]] — Fast drum sampling and beat programming
+- [[Keyscape|Keyscape]] — Studio-quality acoustic and electric piano/keys sounds across
+- [[Kick 3|Kick 3]] — Building custom electronic kick drums by layering
+- [[Kontakt 7|Kontakt 7]] — Same sampled-instrument playback role as Kontakt
+- [[Massive|Massive]] — Growling basses, aggressive leads, and classic 2010s-EDM-style
+- [[Max Instrument|Max Instrument]] — Running community or custom-built Max for Live
+- [[Meld|Meld]] — Dual-engine synth with a Spread/Stack voice-stacking modulation matrix
+- [[Microtonic|Microtonic]] — Fully synthesized electronic drum kits for techno
+- [[Microtonic Multi|Microtonic Multi]] — Same synthesized drum-kit role as Microtonic
+- [[Model 84 Polyphonic Synthesizer|Model 84 Polyphonic Synthesizer]] — Classic analog polysynth sounds — lush pads
+- [[Monark|Monark]] — Disclosure's go-to mono bass and lead synth — their favourite Moog emulation
+- [[Nexus|Nexus]] — Fast access to production-ready synth, pad
+- [[Oberheim OB-Xa|Oberheim OB-Xa]] — Vintage analog polysynth, referenced via plugin emulations
+- [[Omnisphere|Omnisphere]] — Wide-ranging synth duty — pads, atmospheres, basses
+- [[Operator|Operator]] — FM basses, electric-piano and bell tones, aggressive
+- [[PadShop|PadShop]] — Granular ear-candy and the go-to for hiding synths inside vocals
+- [[Poly6|Poly6]] — Disclosure's main pad/chord synth; with Monark, one of the two most-used on *ENERGY*
+- [[Ramzoid 808 Cooker|Ramzoid 808 Cooker]] — Fast 808 bass sound design for trap
+- [[Reaktor 6|Reaktor 6]] — Deep modular synthesis and running community-built instruments/effects
+- [[Reaktor 6 MFX|Reaktor 6 MFX]] — Same modular synthesis/ensemble-running role as Reaktor 6
+- [[Repro-1|Repro-1]] — Analog-modeled recreation of the Sequential Prophet-5
+- [[Roland TR-8|Roland TR-8]] — AIRA-line analog-modeling recreation of the TR-808/909, referenced via emulation
+- [[Sampler|Sampler]] — Building velocity-layered and round-robin instruments from multi-sampled
+- [[Serato Sample|Serato Sample]] — Fast sample chopping and flipping — classic
+- [[Serum 2|Serum 2]] — Modern electronic sound design across basses, leads
+- [[Simpler|Simpler]] — Turning any audio sample or loop
+- [[Splice INSTRUMENT|Splice INSTRUMENT]] — Turning Splice-sourced samples into playable instruments directly
+- [[Synplant|Synplant]] — Quickly generating new synth patches by 'planting'
+- [[Tension|Tension]] — Physically-modeled string synthesis for plucked/struck string-like tones
+- [[Twin 3|Twin 3]] — Flexible synth duty spanning classic subtractive tones
+- [[Uberloud|Uberloud]] — Sound design and instrument duty within
+- [[Wavetable|Wavetable]] — Modern electronic leads, basses, pads, and evolving
+- [[XO|XO]] — Fast browsing and auditioning of one-shot drum
+
+## Utility (70)
+
+- [[Align Delay|Align Delay]] — Time-aligning mic'd sources (e.g
+- [[Arpeggiator|Arpeggiator]] — Turning held notes/chords into rhythmic, patterned sequences — generative when randomized
+- [[Audio Effect Rack|Audio Effect Rack]] — Wrapping devices into one unit with macro knobs and parallel chains
+- [[Auto-Key|Auto-Key]] — Quickly identifying the key of a recording
+- [[Beat Repeat|Beat Repeat]] — Grid-locked stutter/glitch repeats with pitch decay across the repeats
+- [[BIP for L9|BIP for L9]] — Hotkey-mapped instant resampling of the currently focused/selected track, no manual track setup needed
+- [[Chord|Chord]] — Learn-mode/preset chord voicings with built-in strum, tension, and crescendo
+- [[Chord Generator|Chord Generator]] — Quickly auditioning chord progressions or turning single-note
+- [[ClipGain|ClipGain]] — Quick per-clip gain riding without opening
+- [[EffectRack|EffectRack]] — Combining several Soundtoys effects (e.g
+- [[Envelope Follower|Envelope Follower]] — Driving other parameters (filter cutoff, effect mix)
+- [[Envelope MIDI|Envelope MIDI]] — Translating dynamic audio movement into MIDI-controllable modulation
+- [[Euclidean|Euclidean]] — Generating polyrhythmic, evenly-spaced rhythm patterns for drums
+- [[Expression Control|Expression Control]] — Fine-tuning MPE controller expression mapping into synths
+- [[Ghz CanOpener Studio 3|Ghz CanOpener Studio 3]] — Checking how a mix translates on headphones
+- [[Ghz DC19 3|Ghz DC19 3]] — Removing DC offset from recordings (common
+- [[Ghz Good Dither 3|Ghz Good Dither 3]] — Correct bit-depth reduction at the final export/bounce
+- [[Ghz Loudness 3|Ghz Loudness 3]] — Checking a master's loudness against streaming platform
+- [[Group Humanizer|Group Humanizer]] — Humanizing quantized MIDI/audio groups so multiple tracks
+- [[jo.Oscilloscope|jo.Oscilloscope]] — Visually inspecting waveform shape, clipping, and phase
+- [[kHs Channel Mixer|kHs Channel Mixer]] — Custom stereo-channel routing tricks within a Snap
+- [[kHs Gain|kHs Gain]] — Gain staging between snap-ins in a Snap
+- [[Kilohearts Spiff|Kilohearts Spiff]] — Transient/spectral shaper snapin with a Delta listen mode
+- [[Komplete Kontrol|Komplete Kontrol]] — Browsing and loading Kontakt, Massive, Reaktor
+- [[LFO|LFO]] — Adding rhythmic or free-running modulation to filter
+- [[Looper|Looper]] — Live looping/overdub with speed, reverse, and feedback-decay for generative and blending tricks
+- [[LWT - Auto Track Colors|LWT - Auto Track Colors]] — Keeping large sessions visually organized automatically instead
+- [[MIDI Monitor|MIDI Monitor]] — Troubleshooting MIDI routing and controller mapping issues
+- [[MIDI Monitor Sharps|MIDI Monitor Sharps]] — Same MIDI-debugging role as MIDI Monitor
+- [[Mix Matcher|Mix Matcher]] — A/B'ing a mix-in-progress against a reference commercial
+- [[MMultiAnalyzer|MMultiAnalyzer]] — Detailed spectral and loudness analysis during mixing
+- [[MPE Control|MPE Control]] — Setting up and troubleshooting MPE controller-to-instrument routing
+- [[mvMeter2nogpu|mvMeter2nogpu]] — Loudness and true-peak metering during mixing
+- [[Notepad|Notepad]] — Leaving in-session notes (mix decisions, TODOs, credits)
+- [[Ozone 9|Ozone 9]] — Mastering suite; modules documented individually (see the parent note)
+- [[Ozone 9 Master Rebalance|Ozone 9 Master Rebalance]] — Fixing an already-mixed/mastered file's balance issues (e.g
+- [[Pomodoro|Pomodoro]] — Session time management while producing — not
+- [[Random|Random]] — Randomly re-transposing notes by a set interval (e.g. occasional octave jumps)
+- [[Relay|Relay]] — Level-matching a bypass comparison so A/B decisions
+- [[Remote Pitch|Remote Pitch]] — Routing external pitch control data
+- [[Remote Pitch - MPE|Remote Pitch - MPE]] — Routing per-note MPE pitch data into mapped
+- [[RX Connect|RX Connect]] — Sending a problem section of audio
+- [[RX De-click|RX De-click]] — Cleaning up clicks/pops from vinyl-sourced samples, vocal
+- [[RX De-clip|RX De-clip]] — Repairing overloaded/clipped recordings that can't be re-tracked
+- [[RX De-crackle|RX De-crackle]] — Cleaning up crackly, aged, or noisy source
+- [[RX De-hum|RX De-hum]] — Removing ground-loop or electrical hum picked up
+- [[RX De-reverb|RX De-reverb]] — Drying out a vocal or instrument take
+- [[RX Guitar De-noise|RX Guitar De-noise]] — Cleaning up noisy DI or amp recordings
+- [[RX Monitor|RX Monitor]] — Catching audio problems in real time while
+- [[RX Music Rebalance|RX Music Rebalance]] — Rebalancing an already-mixed stereo file (e.g
+- [[RX Repair Assistant|RX Repair Assistant]] — Fast first-pass automated cleanup on a problematic
+- [[RX Spectral De-noise|RX Spectral De-noise]] — Removing broadband background noise (hiss, room tone
+- [[RX Spectral Editor|RX Spectral Editor]] — Manually removing coughs, chair squeaks, or other
+- [[Scale|Scale]] — Snapping incoming MIDI notes to the song's defined scale
+- [[Shaper|Shaper]] — Custom modulation curves for parameters that need
+- [[Shaper MIDI|Shaper MIDI]] — Custom modulation curves applied to MIDI-controlled parameters
+- [[Shortcut Buddy 3.0.2|Shortcut Buddy 3.0.2]] — Speeding up repetitive workflow actions during production
+- [[Splice Bridge|Splice Bridge]] — Drag-and-drop sample browsing/auditioning from the Splice library
+- [[Splice Sounds|Splice Sounds]] — Browsing and dragging in samples/loops
+- [[Splice Sounds Listener|Splice Sounds Listener]] — Supporting the Splice Sounds browsing workflow
+- [[Sting 2022 by Iftah|Sting 2022 by Iftah]] — Transition stab/hit effects at section changes
+- [[Swiss Army Meter|Swiss Army Meter]] — General-purpose level/loudness metering across mixing and mastering
+- [[Tombola|Tombola]] — Generative/randomized parameter or note triggering for experimental
+- [[Tonal Balance Control 2|Tonal Balance Control 2]] — Checking a mix or master's tonal balance
+- [[Tuner|Tuner]] — Reading a monophonic part's exact note — live instrument tuning, or diagnosing an arrangement's root-note/key mismatches
+- [[UAD Precision Mix Rack|UAD Precision Mix Rack]] — Surgical EQ, glue compression and de-essing where precision beats color
+- [[Utility|Utility]] — Gain staging before/after other devices, correcting stereo
+- [[Velocity|Velocity]] — Setting or randomizing note velocity — including as an instrument-selector signal
+- [[Velocity Shaper|Velocity Shaper]] — Correcting or stylizing velocity response
+- [[Volume Buddy 2.5.2|Volume Buddy 2.5.2]] — Fast volume riding and quick-access level control
