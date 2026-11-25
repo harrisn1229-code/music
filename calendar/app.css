@@ -1,0 +1,117 @@
+/* Calendar tab (calendar/app.js), drawn inside the home screen: it uses the home screen's own
+   tokens (--paper, --surface, --ink, --muted, --rule, --sh, --display) and adds its own few. */
+:root{
+  --cal-term:rgb(245 169 59 / .17);
+  --cal-act:#0B7FA6;
+  --d-theory:#33449E; --d-instrument:#9C2F4F; --d-production:#0E7361; --d-teacher:#6A3AA8;
+  --cal-late:#B3261E;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --cal-term:rgb(245 169 59 / .14); --cal-act:#54A5C1;
+    --d-theory:#97A6FF; --d-instrument:#F2879F; --d-production:#4EC9A7; --d-teacher:#C3A4F2;
+    --cal-late:#FF8A7A;
+  }
+}
+:root[data-theme="dark"]{
+  --cal-term:rgb(245 169 59 / .14); --cal-act:#54A5C1;
+  --d-theory:#97A6FF; --d-instrument:#F2879F; --d-production:#4EC9A7; --d-teacher:#C3A4F2;
+  --cal-late:#FF8A7A;
+}
+
+.cal{flex:1;padding-top:.5rem;padding-bottom:1.5rem}
+
+/* ---------- month heading ---------- */
+.cal-top{display:flex;align-items:center;gap:.5rem;min-height:2.75rem}
+.cal-m{margin:0 auto 0 .125rem;font:800 2rem/1 var(--display);letter-spacing:.005em;white-space:nowrap}
+.cal-m span{color:var(--muted)}
+.cal-pill{height:2.25rem;padding:0 .85rem;border-radius:999px;display:inline-flex;align-items:center;gap:.35rem;flex:none;
+  font-size:.875rem;font-weight:600;color:var(--ink);background:var(--surface);box-shadow:var(--sh)}
+.cal-pill svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cal-arrows{display:flex;gap:.25rem;flex:none}
+.cal-arr{width:2.25rem;height:2.25rem;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--sh);color:var(--ink)}
+.cal-arr svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cal-pill:active,.cal-arr:active{transform:scale(.95)}
+/* Activity: a switch under the month, with the month's practice time beside it when it is on. */
+.cal-opts{display:flex;align-items:center;gap:.75rem;margin-top:.5rem;min-height:2rem}
+.cal-tog{display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:600;color:var(--muted)}
+.cal-tog[aria-checked="true"]{color:var(--ink)}
+.sw{position:relative;width:2.25rem;height:1.375rem;border-radius:999px;background:var(--rule);transition:background .15s;flex:none}
+.sw i{position:absolute;top:.1875rem;left:.1875rem;width:1rem;height:1rem;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0 / .25);transition:transform .15s}
+.cal-tog[aria-checked="true"] .sw{background:var(--cal-act)}
+.cal-tog[aria-checked="true"] .sw i{transform:translateX(.875rem)}
+.cal-sum{margin-left:auto;font-size:.8125rem;font-weight:700;color:var(--cal-act);white-space:nowrap}
+@media (max-width:22rem){ .cal-m{font-size:1.65rem} .cal-pill{padding:0 .6rem} }
+
+/* ---------- the month ---------- */
+.cal-card{margin-top:.75rem;padding:.5rem .5rem .6rem;border-radius:1.25rem;background:var(--surface);box-shadow:var(--sh)}
+.cal-grid{touch-action:pan-y}
+.cal-row{display:grid;grid-template-columns:repeat(7, minmax(0, 1fr));gap:2px}
+.has-gut .cal-row{grid-template-columns:1.1rem repeat(7, minmax(0, 1fr))}
+.cal-row + .cal-row{margin-top:2px}
+.dh{padding:.35rem 0 .3rem;text-align:center;font-size:.75rem;font-weight:600;color:var(--muted)}
+/* The school week a row's Sunday falls in, as School's calendar numbered it. */
+.cw{display:grid;place-items:center;font-size:.6875rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.cw.now{color:var(--ink)}
+.cd{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:.2rem;
+  min-height:3.35rem;padding:.3rem 0 .25rem;border-radius:.7rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.cd .n{display:grid;place-items:center;min-width:1.75rem;height:1.75rem;padding:0 .2rem;border-radius:999px;font-size:.9375rem;line-height:1}
+.cd.in{background:var(--cal-term)}
+.cd.now .n{font-weight:700}
+.cd.out{color:var(--muted);opacity:.45}
+.cd.today .n{background:var(--ink);color:var(--paper);font-weight:700}
+.cd.sel:not(.today){box-shadow:inset 0 0 0 2px var(--ink)}
+.cd:active{transform:scale(.95)}
+.dots{display:flex;align-items:center;justify-content:center;gap:3px;height:.4rem}
+.dots i{width:.375rem;height:.375rem;border-radius:50%;background:var(--muted)}
+.dots i.done{background:none;box-shadow:inset 0 0 0 1.5px var(--muted)}
+.dots i.d-theory{background:var(--d-theory)} .dots i.d-instrument{background:var(--d-instrument)}
+.dots i.d-production{background:var(--d-production)} .dots i.d-teacher{background:var(--d-teacher)}
+.dots i.done.d-theory{background:none;box-shadow:inset 0 0 0 1.5px var(--d-theory)}
+.dots i.done.d-instrument{background:none;box-shadow:inset 0 0 0 1.5px var(--d-instrument)}
+.dots i.done.d-production{background:none;box-shadow:inset 0 0 0 1.5px var(--d-production)}
+.dots i.done.d-teacher{background:none;box-shadow:inset 0 0 0 1.5px var(--d-teacher)}
+.dots b{font-size:.625rem;line-height:1;font-weight:700;color:var(--muted)}
+.am{height:.85rem;font-size:.6875rem;line-height:.85rem;font-weight:700;color:var(--cal-act);white-space:nowrap}
+
+/* ---------- the day ---------- */
+.cal-day{margin-top:1.25rem}
+.ag-head{display:flex;align-items:baseline;gap:.6rem;margin:0 .125rem .6rem}
+.ag-head h3{margin:0;font:800 1.5rem/1 var(--display);letter-spacing:.01em}
+.ag-date{font-size:.875rem;color:var(--muted)}
+.ag-h{display:flex;justify-content:space-between;margin:1rem .125rem .45rem;font-size:.8125rem;font-weight:700;color:var(--muted)}
+.ag-head + .ag-h{margin-top:0}
+.ag-h.late{color:var(--cal-late)}
+.ag-over{margin-bottom:.25rem}
+.ag-over summary{list-style:none;cursor:pointer;justify-content:flex-start;gap:.4rem;align-items:center;margin-top:0}
+.ag-over summary::-webkit-details-marker{display:none}
+.ag-over summary::before{content:"";width:.4rem;height:.4rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin:0 .15rem 0 .1rem;transition:transform .15s}
+.ag-over[open] summary::before{transform:rotate(45deg)}
+.ag-over summary span{display:inline-grid;place-items:center;min-width:1.25rem;height:1.25rem;padding:0 .35rem;border-radius:999px;background:var(--cal-late);color:var(--surface);font-size:.6875rem}
+.ag-over + .ag-h{margin-top:.75rem}
+.ag-h.act{color:var(--cal-act)}
+.ag-list{list-style:none;margin:0;padding:0;border-radius:1rem;background:var(--surface);box-shadow:var(--sh);overflow:hidden}
+.ag-list li + li{border-top:1px solid var(--rule)}
+.ag-it,.ag-ses{display:flex;align-items:center;gap:.75rem;padding:.7rem .9rem;text-decoration:none;color:var(--ink)}
+.ag-it:active,.ag-ses:active{background:var(--paper)}
+.ag-bar{align-self:stretch;width:.25rem;border-radius:999px;background:var(--muted);flex:none}
+.d-theory .ag-bar{background:var(--d-theory)} .d-instrument .ag-bar{background:var(--d-instrument)}
+.d-production .ag-bar{background:var(--d-production)} .d-teacher .ag-bar{background:var(--d-teacher)}
+.ag-it.done .ag-bar,.ag-it.pending .ag-bar{opacity:.4}
+.ag-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1rem}
+.ag-k{font-size:.75rem;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-t{font-size:.9375rem;font-weight:600;line-height:1.3}
+.ag-s{font-size:.8125rem;color:var(--muted);line-height:1.3}
+.ag-r{flex:none;font-size:.75rem;font-weight:700;color:var(--muted)}
+.ag-it.late .ag-r{color:var(--cal-late)}
+.ag-ses{flex-wrap:wrap;gap:.3rem .75rem}
+.ag-when{flex:1;font-size:.9375rem;font-weight:600}
+.ag-len{font-size:.875rem;font-weight:700;color:var(--cal-act)}
+.ag-apps{flex-basis:100%;display:flex;flex-wrap:wrap;gap:.25rem .75rem;font-size:.8125rem;color:var(--muted)}
+.ag-app{display:inline-flex;align-items:center;gap:.35rem}
+.ag-app i{width:.5rem;height:.5rem;border-radius:50%;background:var(--c)}
+.ag-ev{flex-basis:100%;font-size:.8125rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-empty{margin:.25rem .125rem 0;font-size:.9375rem;color:var(--muted)}
+.ag-more{margin:.6rem .125rem 0;font-size:.875rem}
+.ag-more a{color:var(--ink);font-weight:600}
+.ag-retry{font-weight:600;text-decoration:underline;text-underline-offset:2px}

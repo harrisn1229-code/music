@@ -24,7 +24,7 @@ const SHELL = [
   "icon-maskable-512.png",
   "apple-touch-icon.png",
   "fonts/big-shoulders-display.woff2"
-].concat(self.MUSIC.shared || [], ...self.MUSIC.apps.map((app) => app.files.map((file) => app.id + "/" + file)));
+].concat(self.MUSIC.shared || [], ...(self.MUSIC.tabs || []).map((tab) => tab.files), ...self.MUSIC.apps.map((app) => app.files.map((file) => app.id + "/" + file)));
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

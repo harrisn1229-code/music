@@ -1,6 +1,7 @@
 # Music
 
-One music app with several tools inside it. Open Music, pick a tool.
+One music app with several tools inside it. Open Music, pick a tool. Along the bottom of the
+home screen are two tabs: Home (the tools) and Calendar.
 
 Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 `main`).
@@ -31,7 +32,8 @@ older GitHub sync on devices that have not signed in yet.
 ## What's in here
 
 ```
-index.html             Home screen: one app icon per tool, in the order of apps.js
+index.html             Home screen: one app icon per tool, in the order of apps.js, and the tab bar (Home, Calendar)
+calendar/              The home screen's Calendar tab (app.js, app.css), loaded into index.html
 apps.js                The list of tools (read by the home screen and by sw.js)
 sw.js                  Service worker: keeps every file available offline
 manifest.webmanifest   Name, icon and shortcuts for the installed app
@@ -105,6 +107,37 @@ one exception to "no service worker of its own": `school/sw.js` looks after `sch
 file by file. `apps.js` says so with `worker: "sw.js"`; Music's worker then leaves that folder
 alone, and the home screen starts School's worker in the background so School is saved for
 offline use as well. School does not need `version` raised when only `school/` changes.
+
+School's Overview no longer shows its calendar: that is the home screen's Calendar tab now. School
+still draws the section (the Calendar tab reads the term from it); `shared/settings.js` hides
+`.ovsec[data-sec="calendar"]` on School's own page. If the section is ever taken out in
+music-school, give the Calendar another way to read the term first (see Calendar).
+
+## Calendar
+
+The home screen's second tab (`calendar/app.js`, `calendar/app.css`; listed under `tabs` in
+`apps.js` so they are kept offline). A month at a time, Sunday first: the School term tinted, its
+school weeks numbered down the side and the current week in bold, today filled in. Days carry a dot
+for each thing School has on them (colour = theory, instrument, production or teacher; a ring = a
+lesson finished that day). Tapping a day lists them under the month, and each opens in School
+(`school/#course:25`, `#homework:01:4`, `#drill`). Today also has School's Overdue, folded to one line.
+Instrument lessons that stay open for the week show under "Still open" until they close.
+
+**Activity** (a switch under the month, off by default, `calendar:prefs`) adds the Practice Log:
+time per day on each date, the month's total, and that day's sessions (times, tools, what was done)
+under the day. A session opens Practice Log on that day (`log/#day=YYYY-MM-DD`). With an account it
+fetches other devices' practice (`MusicLog.sync`) at most every 5 minutes.
+
+School works out its own schedule, so the Calendar asks School instead of doing it a second time:
+it opens `school/index.html?bridge=1#overview` out of sight (School's bridge mode: no history, no
+change to the page School reopens on, never counted by the Practice Log) and reads what the Overview
+draws, the same contract School's Google Calendar sync relies on: Schedule rows
+`.tl > .tl-d[data-date]` and their chips (kind from the chip's data attributes, `open through` from a
+lane's title), the Overdue band `.tl > .tl-late`, Completed lessons `.tl-done .tl-drow`, and the term
+from the month grids `.cal .cmo` (in-term days are `.in`). The result is kept under `calendar:school`
+and read again when `school:progress` changes, on a new day, after 3 hours, or with Try again. Signed
+in, School may pull newer progress after it first draws, so the frame is read again on each redraw
+for 8 seconds.
 
 ### Library's shelves
 

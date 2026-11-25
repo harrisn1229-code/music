@@ -182,7 +182,18 @@
     return out;
   };
 
+  // A link to one day (log/#day=2026-11-24, from the home screen's Calendar) opens on that day's sessions.
+  function openDay() {
+    var m = /^#day=(\d{4})-(\d\d)-(\d\d)$/.exec(location.hash);
+    if (!m) return false;
+    view.pick = new Date(+m[1], +m[2] - 1, +m[3]).getTime();
+    try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e) {}
+    return true;
+  }
+  var jump = openDay();
   render();
+  if (jump) { var h = main.querySelector(".dhead, .empty:last-child"); if (h) h.scrollIntoView({ block: "start" }); }
+  window.addEventListener("hashchange", function () { if (openDay()) render(); });
   if (window.MusicLog) {
     MusicLog.onChange(function () { render(); });
     MusicLog.sync().then(render, function () {});
