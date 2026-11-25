@@ -103,7 +103,9 @@ The bar along the bottom (`shared/tabbar.js`) is on the home screen and on Schoo
 else: the tools are opened from Home and go back to it. Home and Calendar are two views of the
 home page, switched in place; School is its own page (`school/`), so its tab is a link, and School's
 Calendar tab links to `../#tab=calendar` (Calendar in whichever view was used last). The bar
-carries its own colours and draws nothing inside a frame. School has no tile on Home (`home: false`
+carries its own colours and draws nothing inside a frame. Every page with it must run edge to edge
+(`viewport-fit=cover` in its viewport tag), or the bar loses its strip over the phone's home
+indicator there and shrinks when you switch to that tab. School has no tile on Home (`home: false`
 in `apps.js`) and no home button in its header; the bar is the way between them. `library.html`
 (the Library shelves) is built without it.
 
