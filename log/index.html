@@ -4,55 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Practice Log</title>
-<meta name="description" content="Time spent practicing and what you did, recorded on its own. Works offline.">
+<!-- The Practice Log is the Calendar tab's Activity view now (calendar/app.js). This page only
+     forwards old links there: log/ to ../#activity, log/#day=2026-11-21 to that day. -->
 <meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D0E12" media="(prefers-color-scheme: dark)">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Music">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="format-detection" content="telephone=no">
-<!-- Practice Log is one of the apps inside Music, so it installs and works offline through the files one folder up. -->
 <link rel="manifest" href="../manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<script src="../shared/settings.js"></script>
-<link rel="stylesheet" href="app.css">
+<script>
+  (function () {
+    var day = /^#day=(\d{4}-\d\d-\d\d)$/.exec(location.hash);
+    location.replace("../#activity" + (day ? "=" + day[1] : ""));
+  })();
+</script>
 </head>
 <body>
-
-<header class="bar">
-  <div class="bar-in wrap">
-    <a class="icon-btn" id="nav" href="../" aria-label="Music home, all apps"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 9.200 10 3.600l6.500 5.600"/><path d="M5.200 8.200v7.300h9.600V8.200"/></svg></a>
-    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.mll{stroke:#0B7FA6}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .mll{stroke:#54A5C1}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .mll{stroke:#54A5C1}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="mll" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M10 3h4M12 3v3.5M12 13.5V9.5M12 13.5l2.75 2M18.2 6.8l1.3-1.3"/></g></svg>
-    <h1 class="brand">Practice Log</h1>
-    <a class="icon-btn" id="add-btn" href="../timer/#add&amp;back=log" aria-label="Add time" style="margin-left:auto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg></a>
-    <button class="icon-btn" id="ai-btn" type="button" data-assistant aria-label="Assistant"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.5l1.7 4.8 4.8 1.7-4.8 1.7L9 15.5l-1.7-4.8L2.5 9l4.8-1.7z"/><path d="M15.5 12.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
-  </div>
-</header>
-
-<main class="wrap" id="main"></main>
-<noscript><p class="wrap">Practice Log needs JavaScript turned on.</p></noscript>
-
-<script src="../apps.js"></script>
-<script src="../shared/ai.js"></script>
-<script src="../shared/assistant.js"></script>
-<script src="../shared/cloud-config.js"></script>
-<script src="../shared/cloud.js"></script>
-<script src="../shared/log.js"></script>
-<script src="../shared/timer.js"></script>
-<script src="app.js"></script>
-<script>
-(function () {
-  if (window.MusicAssistant) MusicAssistant.mount({
-    app: "log", button: document.getElementById("ai-btn"),
-    context: function () { return window.__logContext ? window.__logContext() : "In Practice Log."; }
-  });
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
-    window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js").catch(function () {}); });
-  }
-})();
-</script>
+<p><a href="../#activity">Open the Calendar</a></p>
 </body>
 </html>

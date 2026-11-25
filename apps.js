@@ -15,7 +15,7 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.43.0",
+  version: "1.44.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // The home screen's tabs along the bottom, after Home itself. A tab is part of the home page, not an app:
@@ -45,14 +45,16 @@ self.MUSIC = {
   ],
   apps: [
     {
+      // The Practice Log is the Calendar tab's Activity view now (calendar/app.js); log/ only
+      // forwards old links there. Its sync runs on the home screen itself (shared/log.js).
       id: "log",
+      home: false,
       section: "practice",
       name: "Practice Log",
       about: "Time spent and what you did, recorded on its own",
       color: "#0B7FA6",
-      icon: "icon-192.png",
-      sync: { at: "log:syncedAt" },
-      files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
+      sync: { at: "log:syncedAt", here: true },
+      files: ["index.html"]
     },
     {
       id: "timer",
