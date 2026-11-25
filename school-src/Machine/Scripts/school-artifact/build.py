@@ -2871,8 +2871,10 @@ def emit_app(d):
     # links to (songs, drills, the idea board, the reader's files). See LIBMODE in app.js.
     lib = (index.replace(f"<title>{html.escape(TITLE)}</title>", "<title>Library</title>")
                 .replace('window.MS_APP = {build: "' + STAMP + '"};', 'window.MS_APP = {build: "' + STAMP + '", mode: "library"};')
-                .replace('<div class="boot"><h1>School</h1>', '<div class="boot"><h1>Library</h1>'))
+                .replace('<div class="boot"><h1>School</h1>', '<div class="boot"><h1>Library</h1>')
+                .replace('<script src="../shared/tabbar.js" data-tab="school"></script>\n', ''))
     assert 'mode: "library"' in lib and "<title>Library</title>" in lib, "library.html: the shell template changed"
+    assert "tabbar.js" not in lib, "library.html: the Library shelves are tools, without Music's tab bar"
     (d / "library.html").write_text(lib, encoding="utf-8")
     # The service worker carries a list of every file and a hash of each, so an update fetches
     # only what changed — the 114 Hanon pages are downloaded once, ever.

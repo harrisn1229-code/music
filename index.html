@@ -126,22 +126,9 @@ main{flex:1;padding-top:1rem;padding-bottom:1.5rem}
 .foot p{margin:0}
 
 /* ---------- tabs ----------
-   Home and Calendar, along the bottom like a phone app's tab bar. Each tab is a view of this page;
-   the bar stays put and the page under it scrolls. */
-body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom, 0px))}
+   Home and Calendar are two views of this page; the bar along the bottom (shared/tabbar.js, the
+   same bar School's page shows) switches between them and links to School. */
 .view{flex:1;display:flex;flex-direction:column}
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;padding-bottom:env(safe-area-inset-bottom, 0px);
-  background:var(--paper);background:color-mix(in srgb, var(--paper) 88%, transparent);
-  -webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);
-  box-shadow:0 -1px 0 var(--rule)}
-.tabbar-in{display:flex;max-width:28rem;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
-.tab{flex:1;height:3.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;
-  color:var(--muted);font-size:.6875rem;font-weight:600;letter-spacing:.01em}
-.tab svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.tab[aria-selected="true"]{color:var(--ink)}
-.tab[aria-selected="true"] svg{stroke-width:2.1}
-.tab:active svg{transform:scale(.9)}
-.tab:focus-visible{outline-offset:-3px;border-radius:.75rem}
 
 /* ---------- install sheet ---------- */
 dialog{
@@ -236,7 +223,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   </div>
 </header>
 
-<div class="view" id="view-home" role="tabpanel" aria-labelledby="tab-home">
+<div class="view" id="view-home">
 <main class="wrap">
   <div id="tiles"></div>
   <noscript>Music needs JavaScript turned on to list its apps.</noscript>
@@ -248,16 +235,9 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 </footer>
 </div>
 
-<div class="view" id="view-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
+<div class="view" id="view-calendar" hidden>
   <div class="wrap cal" id="cal"></div>
 </div>
-
-<nav class="tabbar" aria-label="Music">
-  <div class="tabbar-in" role="tablist">
-    <button class="tab" id="tab-home" type="button" role="tab" data-tab="home" aria-controls="view-home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 3.8l8.5 7.2"/><path d="M5.8 9.300V20h4.400v-5.500h3.600V20h4.400V9.300"/></svg>Home</button>
-    <button class="tab" id="tab-calendar" type="button" role="tab" data-tab="calendar" aria-controls="view-calendar" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.500" rx="2.500"/><path d="M3.5 9.800h17M8 3v4M16 3v4"/><path d="M7.600 13.500h.01M12 13.500h.01M16.400 13.500h.01M7.600 17h.01M12 17h.01"/></svg>Calendar</button>
-  </div>
-</nav>
 
 <dialog id="sheet" aria-labelledby="sheet-title">
   <h2 id="sheet-title"></h2>
@@ -286,6 +266,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 <script src="shared/cloud-config.js"></script>
 <script src="shared/cloud.js"></script>
 <script src="calendar/app.js"></script>
+<script src="shared/tabbar.js"></script>
 <script>
 (function () {
   "use strict";
@@ -344,11 +325,13 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
   window.addEventListener("storage", render);
 
-  /* ---------- tabs: Home and Calendar ----------
-     Two views of this one page, switched by the bar along the bottom. The address carries
+  /* ---------- tabs: Home, School, Calendar ----------
+     Home and Calendar are two views of this one page, switched by the bar along the bottom
+     (shared/tabbar.js); School is its own page, which shows the same bar. The address carries
      #calendar (or #activity, for the Calendar's Activity view) while Calendar is showing (replaced,
      not pushed: switching tabs is not a step back can undo), so a reload or a link to ../#calendar,
-     ../#activity or ../#activity=2026-11-21 opens on it. Tapping the tab you are on goes back to
+     ../#activity or ../#activity=2026-11-21 opens on it (../#tab=calendar, School's Calendar tab,
+     opens it in whichever view was used last). Tapping the tab you are on goes back to
      the top. Calendar draws itself and keeps the address in step with its view (calendar/app.js). */
   const TABS = ["home", "calendar"];
   const tabScroll = {};
@@ -360,24 +343,20 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     if (id === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     tabScroll[tab] = window.scrollY;
     tab = id;
-    TABS.forEach((t) => {
-      $("view-" + t).hidden = t !== id;
-      $("tab-" + t).setAttribute("aria-selected", String(t === id));
-    });
+    TABS.forEach((t) => { $("view-" + t).hidden = t !== id; });
+    if (self.MusicTabbar) MusicTabbar.set(id);
     if (cal) { if (id === "calendar") cal.show(); else cal.hide(); }
     window.scrollTo(0, tabScroll[id] || 0);
     if (id === "home" || !cal) try { history.replaceState(history.state, "", id === "home" ? location.pathname + location.search : "#" + id); } catch (e) {}
   }
   const CAL_LINK = /^#(calendar|activity)(=[\d-]+)?$/;
   function openLink() {
+    if (location.hash === "#tab=calendar") { showTab("calendar"); return; }
     if (!CAL_LINK.test(location.hash)) return;
     if (cal) cal.route(location.hash);
     if (tab === "calendar") { if (cal) cal.show(); } else showTab("calendar");
   }
-  document.querySelector(".tabbar").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-tab]");
-    if (b) showTab(b.dataset.tab);
-  });
+  if (self.MusicTabbar) MusicTabbar.mount("home", { inPage: TABS, onTab: showTab });
   openLink();
   window.addEventListener("hashchange", openLink);
   // Back on this page (from an app, or the phone woke up): Calendar checks whether School or the day moved on.
