@@ -249,15 +249,16 @@
     ui.sheet = null;
     if (ui.back) goBack();
   }
-  /* Practice Log links here to add time (#add) or change a block (#edit=<id>), with back=log so
-     closing the sheet goes straight back there. */
+  /* The Calendar's Activity view (the Practice Log) links here to add time (#add) or change a
+     block (#edit=<id>), with back=calendar so closing the sheet goes straight back there. back=log
+     is the same (the old Practice Log page, which forwards to it). */
   function route() {
     var h = location.hash.slice(1);
     if (!h) return;
     var q = {};
     h.split("&").forEach(function (kv) { var i = kv.indexOf("="); q[i < 0 ? kv : kv.slice(0, i)] = i < 0 ? "1" : decodeURIComponent(kv.slice(i + 1)); });
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
-    ui.back = q.back === "log" ? "log" : null;
+    ui.back = q.back === "calendar" || q.back === "log" ? "calendar" : null;
     if (q.add) openEntry(null);
     else if (q.edit && find(q.edit)) openEntry(find(q.edit));
     else if (ui.back) goBack();
@@ -266,8 +267,9 @@
     ui.back = null;
     var ref = "";
     try { ref = new URL(document.referrer).pathname; } catch (e) {}
-    if (/\/log\/(index\.html)?$/.test(ref) && history.length > 1) history.back();
-    else location.replace("../log/");
+    // Came from the home screen's Calendar: step back to it as it was; otherwise open it.
+    if (ref && new URL("../", location.href).pathname === ref.replace(/index\.html$/, "") && history.length > 1) history.back();
+    else location.replace("../#activity");
   }
   $("scrim").addEventListener("click", function (e) { if (e.target === $("scrim")) closeSheet(); });
   function closeBtn() { return '<button class="icon-btn" type="button" data-close aria-label="Close">' + ICON.x + "</button>"; }

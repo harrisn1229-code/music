@@ -2,19 +2,19 @@
    tokens (--paper, --surface, --ink, --muted, --rule, --sh, --display) and adds its own few. */
 :root{
   --cal-term:rgb(245 169 59 / .17);
-  --cal-act:#0B7FA6;
+  --cal-act:#0B7FA6; --cal-well:#F0F1F5; --cal-del:#C23A3A;
   --d-theory:#33449E; --d-instrument:#9C2F4F; --d-production:#0E7361; --d-teacher:#6A3AA8;
   --cal-late:#B3261E;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --cal-term:rgb(245 169 59 / .14); --cal-act:#54A5C1;
+    --cal-term:rgb(245 169 59 / .14); --cal-act:#54A5C1; --cal-well:#21242C; --cal-del:#FF8A7A;
     --d-theory:#97A6FF; --d-instrument:#F2879F; --d-production:#4EC9A7; --d-teacher:#C3A4F2;
     --cal-late:#FF8A7A;
   }
 }
 :root[data-theme="dark"]{
-  --cal-term:rgb(245 169 59 / .14); --cal-act:#54A5C1;
+  --cal-term:rgb(245 169 59 / .14); --cal-act:#54A5C1; --cal-well:#21242C; --cal-del:#FF8A7A;
   --d-theory:#97A6FF; --d-instrument:#F2879F; --d-production:#4EC9A7; --d-teacher:#C3A4F2;
   --cal-late:#FF8A7A;
 }
@@ -32,15 +32,12 @@
 .cal-arr{width:2.25rem;height:2.25rem;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--sh);color:var(--ink)}
 .cal-arr svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cal-pill:active,.cal-arr:active{transform:scale(.95)}
-/* Activity: a switch under the month, with the month's practice time beside it when it is on. */
-.cal-opts{display:flex;align-items:center;gap:.75rem;margin-top:.5rem;min-height:2rem}
-.cal-tog{display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:600;color:var(--muted)}
-.cal-tog[aria-checked="true"]{color:var(--ink)}
-.sw{position:relative;width:2.25rem;height:1.375rem;border-radius:999px;background:var(--rule);transition:background .15s;flex:none}
-.sw i{position:absolute;top:.1875rem;left:.1875rem;width:1rem;height:1rem;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0 / .25);transition:transform .15s}
-.cal-tog[aria-checked="true"] .sw{background:var(--cal-act)}
-.cal-tog[aria-checked="true"] .sw i{transform:translateX(.875rem)}
-.cal-sum{margin-left:auto;font-size:.8125rem;font-weight:700;color:var(--cal-act);white-space:nowrap}
+/* Schedule | Activity, under the month; Activity adds a + for time added by hand. */
+.cal-opts{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
+.cal-seg{display:inline-flex;padding:3px;border-radius:999px;background:var(--surface);box-shadow:var(--sh)}
+.cal-seg button{height:2rem;padding:0 1rem;border-radius:999px;font-size:.875rem;font-weight:600;color:var(--muted)}
+.cal-seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.cal-add{margin-left:auto}
 @media (max-width:22rem){ .cal-m{font-size:1.65rem} .cal-pill{padding:0 .6rem} }
 
 /* ---------- the month ---------- */
@@ -73,6 +70,15 @@
 .dots i.done.d-teacher{background:none;box-shadow:inset 0 0 0 1.5px var(--d-teacher)}
 .dots b{font-size:.625rem;line-height:1;font-weight:700;color:var(--muted)}
 .am{height:.85rem;font-size:.6875rem;line-height:.85rem;font-weight:700;color:var(--cal-act);white-space:nowrap}
+/* Activity: a day shaded by how long was practiced (the old Practice Log's squares). */
+.is-act .cd{gap:.15rem}
+.is-act .cd.h1{background:color-mix(in srgb, var(--cal-act) 12%, transparent)}
+.is-act .cd.h2{background:color-mix(in srgb, var(--cal-act) 22%, transparent)}
+.is-act .cd.h3{background:color-mix(in srgb, var(--cal-act) 34%, transparent)}
+.is-act .cd.h4{background:color-mix(in srgb, var(--cal-act) 48%, transparent)}
+.is-act .cd.h4 .am,.is-act .cd.h3 .am{color:var(--ink)}
+.is-act .cd.dim{opacity:.35}
+.is-act .cd.out.dim{opacity:.2}
 
 /* ---------- the day ---------- */
 .cal-day{margin-top:1.25rem}
@@ -89,11 +95,10 @@
 .ag-over[open] summary::before{transform:rotate(45deg)}
 .ag-over summary span{display:inline-grid;place-items:center;min-width:1.25rem;height:1.25rem;padding:0 .35rem;border-radius:999px;background:var(--cal-late);color:var(--surface);font-size:.6875rem}
 .ag-over + .ag-h{margin-top:.75rem}
-.ag-h.act{color:var(--cal-act)}
 .ag-list{list-style:none;margin:0;padding:0;border-radius:1rem;background:var(--surface);box-shadow:var(--sh);overflow:hidden}
 .ag-list li + li{border-top:1px solid var(--rule)}
-.ag-it,.ag-ses{display:flex;align-items:center;gap:.75rem;padding:.7rem .9rem;text-decoration:none;color:var(--ink)}
-.ag-it:active,.ag-ses:active{background:var(--paper)}
+.ag-it{display:flex;align-items:center;gap:.75rem;padding:.7rem .9rem;text-decoration:none;color:var(--ink)}
+.ag-it:active{background:var(--paper)}
 .ag-bar{align-self:stretch;width:.25rem;border-radius:999px;background:var(--muted);flex:none}
 .d-theory .ag-bar{background:var(--d-theory)} .d-instrument .ag-bar{background:var(--d-instrument)}
 .d-production .ag-bar{background:var(--d-production)} .d-teacher .ag-bar{background:var(--d-teacher)}
@@ -104,14 +109,89 @@
 .ag-s{font-size:.8125rem;color:var(--muted);line-height:1.3}
 .ag-r{flex:none;font-size:.75rem;font-weight:700;color:var(--muted)}
 .ag-it.late .ag-r{color:var(--cal-late)}
-.ag-ses{flex-wrap:wrap;gap:.3rem .75rem}
-.ag-when{flex:1;font-size:.9375rem;font-weight:600}
-.ag-len{font-size:.875rem;font-weight:700;color:var(--cal-act)}
-.ag-apps{flex-basis:100%;display:flex;flex-wrap:wrap;gap:.25rem .75rem;font-size:.8125rem;color:var(--muted)}
-.ag-app{display:inline-flex;align-items:center;gap:.35rem}
-.ag-app i{width:.5rem;height:.5rem;border-radius:50%;background:var(--c)}
-.ag-ev{flex-basis:100%;font-size:.8125rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ag-empty{margin:.25rem .125rem 0;font-size:.9375rem;color:var(--muted)}
 .ag-more{margin:.6rem .125rem 0;font-size:.875rem}
 .ag-more a{color:var(--ink);font-weight:600}
 .ag-retry{font-weight:600;text-decoration:underline;text-underline-offset:2px}
+
+/* ---------- Activity: what was practiced ---------- */
+.act{margin-top:.75rem;display:grid;gap:.75rem}
+.act-scope{display:flex;gap:.3rem;padding:3px;border-radius:999px;background:var(--surface);box-shadow:var(--sh)}
+.act-scope button{flex:1;height:2rem;border-radius:999px;font-size:.8125rem;font-weight:600;color:var(--muted)}
+.act-scope button[aria-pressed="true"]{background:var(--cal-act);color:#fff}
+.act-pick{display:flex;align-items:center;justify-content:space-between;gap:.5rem;min-height:2.375rem;padding:0 .25rem 0 .75rem;
+  border-radius:999px;background:color-mix(in srgb, var(--cal-act) 14%, var(--surface));font-size:.875rem;font-weight:600}
+.act-pick .cal-pill{height:1.875rem;box-shadow:none}
+.act-card{min-width:0;padding:1rem;border-radius:1.25rem;background:var(--surface);box-shadow:var(--sh);display:grid;gap:.85rem}
+.act .lbl{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act .num{font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
+/* The total takes what room there is; average and streak sit beside it, or under it when it is long. */
+.act-stats{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.75rem 1.25rem}
+.act-stats .st{display:grid;gap:.35rem;min-width:0;flex:none}
+.act-stats .st.big{flex:1 0 auto}
+.act-stats .st-pair{display:flex;gap:1.25rem;flex:none}
+.act-stats .num{font-size:1.375rem}
+.act-stats .big .num{font-size:2.25rem}
+
+/* a bar per day (per week over long ranges), stacked by tool */
+.act-bars{display:grid;grid-template-columns:repeat(var(--n), minmax(0, 1fr));gap:.4rem;align-items:end;height:7.5rem}
+.act-bars.thin{gap:2px}
+.act-bars .bar{display:grid;grid-template-rows:1fr auto;gap:.3rem;height:100%;min-width:0;text-align:center}
+.act-bars .col{display:flex;flex-direction:column-reverse;align-self:end;min-height:.3rem;border-radius:.4rem;overflow:hidden;background:var(--cal-well)}
+.act-bars.thin .col{border-radius:2px}
+.act-bars .col i{display:block}
+.act-bars .d{height:1rem;font-size:.6875rem;font-weight:700;color:var(--muted);white-space:nowrap;overflow:visible}
+.act-bars .bar.now .d{color:var(--ink)}
+.act-bars .bar.on .col{outline:2px solid var(--ink);outline-offset:1px}
+
+/* half a year of days, Sunday at the top */
+.act-heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7, auto);grid-template-columns:repeat(var(--w), minmax(0, 1fr));gap:2px}
+.act-heat > *{aspect-ratio:1;border-radius:2px;background:var(--cal-well);min-width:0}
+.act-heat .fut{visibility:hidden}
+.act-heat .l1{background:color-mix(in srgb, var(--cal-act) 30%, var(--cal-well))}
+.act-heat .l2{background:color-mix(in srgb, var(--cal-act) 55%, var(--cal-well))}
+.act-heat .l3{background:color-mix(in srgb, var(--cal-act) 80%, var(--cal-well))}
+.act-heat .l4{background:var(--cal-act)}
+.act-heat .now{outline:1.5px solid var(--ink);outline-offset:1px}
+
+/* one day, midnight to midnight */
+.act-tl{display:grid;gap:.35rem}
+.act-tl-track{position:relative;height:2rem;border-radius:.5rem;background:var(--cal-well);overflow:hidden}
+.act-tl-track i{position:absolute;top:0;bottom:0;border-radius:3px;opacity:.9}
+.act-tl-ax{position:relative;height:1rem;font-size:.6875rem;font-weight:700;color:var(--muted)}
+.act-tl-ax span{position:absolute;top:0;white-space:nowrap}
+.act-tl-ax span:not(:first-child){transform:translateX(-50%)}
+
+/* time by tool, and the Timer's blocks by activity */
+.act-tools{display:grid;gap:.55rem}
+.act-tools .tool{display:grid;grid-template-columns:7rem 1fr auto;gap:.6rem;align-items:center;font-size:.9375rem}
+.act-tools .n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-tools .b{height:.55rem;border-radius:999px;background:var(--cal-well);overflow:hidden}
+.act-tools .b i{display:block;height:100%;border-radius:999px}
+.act-tools .t{min-width:3.2rem;text-align:right;font-size:.875rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* sessions, by day */
+.act-list{display:grid;gap:.6rem}
+.act-dh{display:flex;align-items:baseline;justify-content:space-between;padding:.5rem .25rem 0}
+.act-dh h4{margin:0;font:800 1.25rem/1 var(--display);letter-spacing:.01em}
+.act-dh span{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.act-sess{padding:.9rem 1rem;border-radius:1.25rem;background:var(--surface);box-shadow:var(--sh);display:grid;gap:.6rem}
+.act-top{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;width:100%;text-align:left}
+.act-top .when{font-weight:700}
+.act-top .len{font-weight:800;font-variant-numeric:tabular-nums;color:var(--cal-act)}
+.act-sess .chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.act-sess .chip{display:inline-flex;align-items:center;gap:.35rem;height:1.75rem;padding:0 .6rem;border-radius:999px;background:var(--cal-well);font-size:.8125rem;font-weight:700;white-space:nowrap}
+.act-sess i{width:.55rem;height:.55rem;border-radius:50%;flex:none;background:var(--c, var(--muted))}
+.act-sess .chip .m{color:var(--muted);font-variant-numeric:tabular-nums}
+.act-sess .evs{list-style:none;margin:0;padding:.6rem 0 0;display:grid;gap:.3rem;border-top:1px solid var(--rule)}
+.act-sess .ev{display:grid;grid-template-columns:auto 1fr auto;gap:.55rem;align-items:center;font-size:.9375rem;color:var(--ink);text-decoration:none}
+.act-sess .ev .x{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-sess .ev .r{color:var(--muted);font-size:.8125rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.act-sess .ev.more{color:var(--muted);font-size:.8125rem}
+.act-sess .ev.link{margin:-.2rem -.4rem;padding:.2rem .4rem;border-radius:.5rem}
+.act-sess .ev.link:active{background:var(--cal-well)}
+.act-sess .acts{display:flex;justify-content:flex-end}
+.act-sess .del{height:2rem;padding:0 .8rem;border-radius:999px;font-size:.8125rem;font-weight:700;color:var(--cal-del);background:color-mix(in srgb, var(--cal-del) 12%, transparent)}
+.act-more{justify-self:center}
+.act .ag-empty{text-align:center;padding:1.5rem 1rem}
+@media (max-width:23rem){ .act-stats .big .num{font-size:2rem} .act-tools .tool{grid-template-columns:5.5rem 1fr auto} .cal-seg button{padding:0 .8rem} }

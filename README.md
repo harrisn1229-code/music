@@ -8,8 +8,8 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 
 | Tool | Folder | What it does |
 | --- | --- | --- |
-| Practice Log | `log/` | Time spent in each tool and what was done, recorded on its own (no timers to start) |
-| Timer | `timer/` | Pomodoro, timer and stopwatch for time outside the other tools (production sessions), and time added by hand; logs to Practice Log by activity |
+| Calendar (Activity) | `calendar/` | The Practice Log: time spent in each tool and what was done, recorded on its own (no timers to start), in the home screen's Calendar tab. `log/` only forwards old links there |
+| Timer | `timer/` | Pomodoro, timer and stopwatch for time outside the other tools (production sessions), and time added by hand; logs to the Practice Log by activity |
 | Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
@@ -127,17 +127,39 @@ shows it.
 ## Calendar
 
 The home screen's second tab (`calendar/app.js`, `calendar/app.css`; listed under `tabs` in
-`apps.js` so they are kept offline). A month at a time, Sunday first: the School term tinted, its
+`apps.js` so they are kept offline). A month at a time, Sunday first, in one of two views picked
+under the month, Schedule or Activity (remembered in `calendar:prefs`, and in the address:
+`#calendar` or `#activity`).
+
+**Schedule** is School's: the School term tinted, its
 school weeks numbered down the side and the current week in bold, today filled in. Days carry a dot
 for each thing School has on them (colour = theory, instrument, production or teacher; a ring = a
 lesson finished that day). Tapping a day lists them under the month, and each opens in School
 (`school/#course:25`, `#homework:01:4`, `#drill`). Today also has School's Overdue, folded to one line.
 Instrument lessons that stay open for the week show under "Still open" until they close.
 
-**Activity** (a switch under the month, off by default, `calendar:prefs`) adds the Practice Log:
-time per day on each date, the month's total, and that day's sessions (times, tools, what was done)
-under the day. A session opens Practice Log on that day (`log/#day=YYYY-MM-DD`). With an account it
-fetches other devices' practice (`MusicLog.sync`) at most every 5 minutes.
+**Activity** is the Practice Log (once a page of its own; `log/` now only forwards to
+`../#activity`, and `log/#day=YYYY-MM-DD` to `../#activity=YYYY-MM-DD`). Each day of the month is
+shaded by how long was practiced (under 15 minutes, 30, an hour, more) with its time on it. Under the
+month, what to add up: **Day** (the one tapped; tapping a day picks Day), **Week** (Sunday to
+Saturday, the week of the day picked), **Month** (the one on screen), **All**, or **Range** (tap the
+first day, then the last; days outside a week or range fade back). For that span:
+
+- the total, the daily average (over the days of it that have happened) or, for a day, its number of
+  sessions, and the streak (days in a row with 5 minutes or more, today not yet counted against it);
+- a chart that fits: a day's timeline midnight to midnight with each session where it happened; a
+  bar per day stacked by tool (a week, a month, a range up to 62 days); a bar per week over longer
+  ranges; and for All, half a year or more of squares, Sunday at the top. Tapping a bar or square
+  opens that day (or week);
+- By tool, and Timed (the Timer's blocks by activity, whole blocks);
+- the sessions, newest first by day: tools with their time and the last few things done; tapping a
+  session shows everything and Delete (tap twice). A Timer line opens in the Timer to change or
+  delete (`timer/#edit=<id>&back=calendar`), and + beside Schedule | Activity adds time by hand
+  (`timer/#add&back=calendar`); either way closing the Timer comes back here.
+
+With an account it merges with the account (`MusicLog.sync`) when Activity opens and at most every 5
+minutes after; the home screen's Sync now does the same, right there (`sync.here` on the `log` entry
+in `apps.js`, which is otherwise only the forwarding page).
 
 School works out its own schedule, so the Calendar asks School instead of doing it a second time:
 it opens `school/index.html?bridge=1#overview` out of sight (School's bridge mode: no history, no
@@ -236,13 +258,13 @@ note (newest change wins, deletions kept as tombstones for 120 days).
 
 ## Practice Log
 
-`shared/log.js` runs on every page in Music, because `shared/settings.js` (which every tool loads,
+What it records is shown in the Calendar's Activity view (see Calendar). `shared/log.js` runs on every page in Music, because `shared/settings.js` (which every tool loads,
 School included) loads it. Nothing has to be started:
 
 - A tool's time counts while it is on screen and was touched in the last 8 minutes, or while it
   is making sound. A chart left open on the stand keeps counting while you play; a locked phone
-  stops the clock. Hidden frames (the assistant's bridges, the home screen's sync) never count,
-  and neither does Practice Log itself.
+  stops the clock. Hidden frames (the assistant's bridges, the home screen's sync, the Calendar's
+  read of School) never count, and neither does the home screen (Calendar included).
 - Time goes into sessions; moving between tools stays in one session, a 15-minute gap starts a
   new one.
 - What was done comes from small calls in each tool: `MusicLog.playing(key, on, {text})` for
@@ -252,7 +274,7 @@ School included) loads it. Nothing has to be started:
   tempos (`library:practice`) and the School page open for 30 seconds are picked up without
   School being changed.
 
-Saved under `log:v1`; with an account Practice Log merges it with the `log` document (sessions by
+Saved under `log:v1`; with an account the Calendar's Activity view merges it with the `log` document (sessions by
 id, deletions kept). The assistant reads it with `practice_log`.
 
 ## Timer
@@ -270,16 +292,16 @@ Mixing, Songwriting, Guitar, Bass, Piano, or your own), picked from a row of chi
   computer finishes on time.
 - Focus time is logged, breaks are not. A block goes into the log with `MusicLog.record` as one line
   ("Production · Pomodoro", 25m) with its activity in `tag`. Time other tools counted while it ran is
-  left out of the Timer's share of the session (`covered`), so nothing is counted twice; the Practice
-  Log's "Timed" card shows whole blocks by activity. Stretches under a minute are not logged.
+  left out of the Timer's share of the session (`covered`), so nothing is counted twice; the Calendar's
+  Activity view's "Timed" card shows whole blocks by activity. Stretches under a minute are not logged.
 - A block that ran out while nobody was looking is logged with the time it really ended, without a
   late chime, and a pomodoro never starts its next focus block on its own unless someone is there.
 - After logging: Undo or Edit (length, when, activity, a note). Today's blocks are listed under the dial
   and can be edited or deleted. A stopwatch stopped after more than 3 hours asks how much to log.
-- Add time (+ in the Timer's bar, or in Practice Log's): time spent away from the phone, entered by
+- Add time (+ in the Timer's bar, or beside the Calendar's Schedule | Activity): time spent away from the phone, entered by
   hand with its length, day, start time, activity and note (`MusicTimer.add`). It goes into the session
   it falls in, or one of its own on that day, so it counts toward that day's total and streak. Tapping a
-  Timer line in Practice Log opens it in the Timer to change or delete (`timer/#edit=<id>&back=log`).
+  Timer line in the Calendar's Activity view opens it in the Timer to change or delete (`timer/#edit=<id>&back=calendar`).
 - Settings (`timer:prefs:v1`): pomodoro lengths and rounds, starting breaks / focus on their own,
   sound, keep the screen on (on by default, so a phone on the stand chimes), notifications, and the
   activity list. Tapping the time when stopped types its minutes.

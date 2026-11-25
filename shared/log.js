@@ -72,6 +72,7 @@
   })();
   var path = location.pathname.indexOf(root) === 0 ? location.pathname.slice(root.length) : location.pathname;
   var app = (path.split("/")[0] || "").toLowerCase();
+  if (app === "index.html") app = "";   // the home screen (and its Calendar) by its file name: not a tool
   if (app === "school" && /library\.html$/.test(location.pathname)) app = "library";
   var embedded = false;
   try { embedded = self !== self.top; } catch (e) { embedded = true; }

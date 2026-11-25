@@ -346,9 +346,10 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
   /* ---------- tabs: Home and Calendar ----------
      Two views of this one page, switched by the bar along the bottom. The address carries
-     #calendar while Calendar is showing (replaced, not pushed: switching tabs is not a step back
-     can undo), so a reload or a link to ../#calendar opens on it. Tapping the tab you are on goes
-     back to the top. Calendar draws itself (calendar/app.js). */
+     #calendar (or #activity, for the Calendar's Activity view) while Calendar is showing (replaced,
+     not pushed: switching tabs is not a step back can undo), so a reload or a link to ../#calendar,
+     ../#activity or ../#activity=2026-11-21 opens on it. Tapping the tab you are on goes back to
+     the top. Calendar draws itself and keeps the address in step with its view (calendar/app.js). */
   const TABS = ["home", "calendar"];
   const tabScroll = {};
   let tab = "home";
@@ -365,14 +366,20 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     });
     if (cal) { if (id === "calendar") cal.show(); else cal.hide(); }
     window.scrollTo(0, tabScroll[id] || 0);
-    try { history.replaceState(history.state, "", id === "home" ? location.pathname + location.search : "#" + id); } catch (e) {}
+    if (id === "home" || !cal) try { history.replaceState(history.state, "", id === "home" ? location.pathname + location.search : "#" + id); } catch (e) {}
+  }
+  const CAL_LINK = /^#(calendar|activity)(=[\d-]+)?$/;
+  function openLink() {
+    if (!CAL_LINK.test(location.hash)) return;
+    if (cal) cal.route(location.hash);
+    if (tab === "calendar") { if (cal) cal.show(); } else showTab("calendar");
   }
   document.querySelector(".tabbar").addEventListener("click", (e) => {
     const b = e.target.closest("[data-tab]");
     if (b) showTab(b.dataset.tab);
   });
-  if (location.hash === "#calendar") showTab("calendar");
-  window.addEventListener("hashchange", () => { if (location.hash === "#calendar") showTab("calendar"); });
+  openLink();
+  window.addEventListener("hashchange", openLink);
   // Back on this page (from an app, or the phone woke up): Calendar checks whether School or the day moved on.
   window.addEventListener("pageshow", (e) => { if (e.persisted && tab === "calendar" && cal) cal.show(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && tab === "calendar" && cal) cal.show(); });
@@ -490,8 +497,13 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     return res.json();
   }
 
-  // Open one tool out of sight and wait for it to finish its own sync.
+  // Open one tool out of sight and wait for it to finish its own sync. A tool whose sync runs on
+  // every page (sync.here: the Practice Log, shared/log.js) is synced right here instead.
   function syncTool(app) {
+    if (app.sync.here) {
+      const run = app.id === "log" && self.MusicLog ? MusicLog.sync() : null;
+      return run ? run.then(() => true, () => false) : Promise.resolve(false);
+    }
     return new Promise((resolve) => {
       const started = Date.now();
       const frame = document.createElement("iframe");
