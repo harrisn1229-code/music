@@ -15,10 +15,11 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.44.0",
+  version: "1.45.0",
   // Files more than one app uses. Kept available offline like everything else.
-  shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
-  // The home screen's tabs along the bottom, after Home itself. A tab is part of the home page, not an app:
+  shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/tabbar.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
+  // The home screen's own tabs along the bottom, besides Home itself (the bar is shared/tabbar.js: Home,
+  // School, Calendar; School is its own page). A tab here is part of the home page, not an app:
   // index.html loads its files and draws it in place of the tiles. Saved for offline like everything else.
   tabs: [
     { id: "calendar", name: "Calendar", files: ["calendar/app.js", "calendar/app.css"] }
@@ -119,6 +120,7 @@ self.MUSIC = {
     },
     {
       id: "school",
+      home: false,                          // in the bar along the bottom (shared/tabbar.js) instead of a tile
       section: "learn",
       name: "School",
       about: "Classes, lessons, quizzes, tests and a song library",

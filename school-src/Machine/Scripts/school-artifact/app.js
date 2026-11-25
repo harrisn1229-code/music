@@ -2214,7 +2214,7 @@ function rail() {
   const logoSvg = id => { const [c, lt, dk, d] = LOGO[id];
     return `<svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><style>.mlt{fill:#fff;stroke:rgb(20 24 44/.1);stroke-width:8}.${c}{stroke:${lt}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root:not([data-theme="light"]) .${c}{stroke:${dk}}}:root[data-theme="dark"] .mlt{fill:#000;stroke:rgb(255 255 255/.14)}:root[data-theme="dark"] .${c}{stroke:${dk}}</style><rect class="mlt" x="4" y="4" width="504" height="504" rx="110"/><g class="${c}" transform="translate(107.5 107.5) scale(12.04)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</g></svg>`; };
   const bar = (name, logo, href, label, icon, noMenu) => `<div class="mbar">
-      <a class="icon-btn" href="${href}" aria-label="${label}">${icon}</a>
+      ${href ? `<a class="icon-btn" href="${href}" aria-label="${label}">${icon}</a>` : ''}
       ${logoSvg(logo)}<span class="brand">${name}</span>
       ${LOCAL ? `<button class="icon-btn" type="button" data-assistant aria-label="Assistant">${ICO.ai}</button>` : ''}
       ${noMenu ? '' : `<button class="icon-btn rail-toggle" data-sec-toggle="rail" aria-expanded="${open}"
@@ -2227,8 +2227,10 @@ function rail() {
     return `<aside class="rail covers-rail">${bar(LIB_APPS[a], a, '../', 'Music home, all apps', ICO.home, true)}</aside>`; }
   /* School inside Music: the curriculum and your progress, nothing else. The shelves are the
      Library tool's (see SHELF_HEADS). */
+  /* 2026-11-25 — Nate: School is a tab in Music's bar along the bottom (Home, School, Calendar;
+     music/shared/tabbar.js), so its header has no way home of its own: the bar is that. */
   if (LOCAL) return `<aside class="rail${open ? '' : ' shut'}">
-    ${bar('School', 'school', '../', 'Music home, all apps', ICO.home)}
+    ${bar('School', 'school', null, 'Music home, all apps', ICO.home)}
     <div class="sem">${kn ? `${kn} ${kn === 1 ? 'class' : 'classes'} enrolled` : 'No classes enrolled'}</div>
     <nav>
       ${item('overview','Overview')}

@@ -1,7 +1,7 @@
 # Music
 
 One music app with several tools inside it. Open Music, pick a tool. Along the bottom of the
-home screen are two tabs: Home (the tools) and Calendar.
+home screen and School is a bar of three tabs: Home (the tools), School and Calendar.
 
 Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 `main`).
@@ -32,7 +32,7 @@ older GitHub sync on devices that have not signed in yet.
 ## What's in here
 
 ```
-index.html             Home screen: one app icon per tool, in the order of apps.js, and the tab bar (Home, Calendar)
+index.html             Home screen: one app icon per tool, in the order of apps.js, and its Calendar tab
 calendar/              The home screen's Calendar tab (app.js, app.css), loaded into index.html
 apps.js                The list of tools (read by the home screen and by sw.js)
 sw.js                  Service worker: keeps every file available offline
@@ -45,6 +45,7 @@ shared/ai.js           The one Claude connection (your Anthropic API key) every 
 shared/assistant.js    The one AI assistant: a sheet opened from the home screen and every tool's top bar
 shared/log.js          The practice log: loaded by settings.js on every page, counts time and records what was done
 shared/timer.js        The Timer's clock: loaded by settings.js on every page, so a running timer shows and finishes anywhere
+shared/tabbar.js       The bar along the bottom (Home, School, Calendar), on the home screen and School's page
 shared/cloud.js        The one email account: sign-in, saved data, private files
 shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
 shared/vendor/         The Supabase browser library, and marked (Markdown for Library's chain notes)
@@ -95,6 +96,16 @@ ratings, so do not change how a key is built.
    one tool go in `shared/` and are listed under `shared` in `apps.js`.
 4. Raise `version` in `apps.js`.
 5. Optional: add a shortcut for it in `manifest.webmanifest`.
+
+## Tabs
+
+The bar along the bottom (`shared/tabbar.js`) is on the home screen and on School's page, nowhere
+else: the tools are opened from Home and go back to it. Home and Calendar are two views of the
+home page, switched in place; School is its own page (`school/`), so its tab is a link, and School's
+Calendar tab links to `../#tab=calendar` (Calendar in whichever view was used last). The bar
+carries its own colours and draws nothing inside a frame. School has no tile on Home (`home: false`
+in `apps.js`) and no home button in its header; the bar is the way between them. `library.html`
+(the Library shelves) is built without it.
 
 ## School
 
