@@ -1,6 +1,6 @@
-/* The bar along the bottom of Music's main pages: Home, School, Calendar.
+/* The bar along the bottom of Music's main pages: Home, School, Calendar, Library.
 
-   Home and Calendar are two views of the home page (index.html switches between them in place,
+   Home, Calendar and Library are views of the home page (index.html switches between them in place,
    without loading anything); School is its own page (school/), which shows the same bar, so going
    from one to another feels like switching tabs in a phone app. The tools themselves (Metronome,
    Barline...) have no bar: they are opened from Home and go back to it.
@@ -8,10 +8,11 @@
    A page shows the bar with
      <script src="../shared/tabbar.js" data-tab="school"></script>
    (at the end of <body>; data-tab is the tab that page is). The home page mounts it itself so it
-   can switch its own two views:
-     MusicTabbar.mount("home", { inPage: ["home", "calendar"], onTab: showTab });  MusicTabbar.set("calendar");
+   can switch its own views:
+     MusicTabbar.mount("home", { inPage: ["home", "calendar", "library"], onTab: showTab });  MusicTabbar.set("calendar");
    Links: Home is Music's root, School is school/, Calendar is the root with #tab=calendar (the home
-   page opens its Calendar in whichever view, Schedule or Activity, was used last).
+   page opens its Calendar in whichever view, Schedule or Activity, was used last), Library is the root
+   with #library.
    Nothing is drawn inside a frame (School opened out of sight by the Calendar, for one). */
 (function () {
   "use strict";
@@ -20,7 +21,9 @@
   var TABS = [
     { id: "home", name: "Home", href: "", icon: '<path d="M3.5 11 12 3.8l8.5 7.2"/><path d="M5.8 9.3V20h4.4v-5.5h3.6V20h4.4V9.3"/>' },
     { id: "school", name: "School", href: "school/", icon: '<path d="M2.5 9.2 12 4.6l9.5 4.6-9.5 4.6z"/><path d="M6.5 11.3v4.4c1.6 1.5 3.4 2.2 5.5 2.2s3.9-.7 5.5-2.2v-4.4"/><path d="M21.5 9.2v5.3"/>' },
-    { id: "calendar", name: "Calendar", href: "#tab=calendar", icon: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.8h17M8 3v4M16 3v4"/><path d="M7.6 13.5h.01M12 13.5h.01M16.4 13.5h.01M7.6 17h.01M12 17h.01"/>' }
+    { id: "calendar", name: "Calendar", href: "#tab=calendar", icon: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.8h17M8 3v4M16 3v4"/><path d="M7.6 13.5h.01M12 13.5h.01M16.4 13.5h.01M7.6 17h.01M12 17h.01"/>' },
+    // Books on a shelf: the same drawing as Library's tile icon (shared/icons.js)
+    { id: "library", name: "Library", href: "#library", icon: '<path d="M3 20.5h18"/><rect x="4.5" y="5" width="3.5" height="15.5" rx=".5"/><rect x="8" y="3.5" width="3.5" height="17" rx=".5"/><path d="M8 7.5h3.5M8 16.5h3.5"/><path d="m13.6 6.4 3.4-.9 3.9 14.6-3.4.9z"/>' }
   ];
   // Its own colours (Music's), so it looks the same on every page whatever that page's stylesheet.
   var CSS =

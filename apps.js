@@ -15,34 +15,36 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.45.0",
+  version: "1.46.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/tabbar.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // The home screen's own tabs along the bottom, besides Home itself (the bar is shared/tabbar.js: Home,
-  // School, Calendar; School is its own page). A tab here is part of the home page, not an app:
+  // School, Calendar, Library; School is its own page). A tab here is part of the home page, not an app:
   // index.html loads its files and draws it in place of the tiles. Saved for offline like everything else.
+  // Library has no files of its own: index.html draws the tiles of the sections below marked tab: "library".
   tabs: [
-    { id: "calendar", name: "Calendar", files: ["calendar/app.js", "calendar/app.css"] }
+    { id: "calendar", name: "Calendar", files: ["calendar/app.js", "calendar/app.css"] },
+    { id: "library", name: "Library", files: [] }
   ],
-  // Home screen sections, in order. Each app names its section; within a section apps keep the order below.
+  // Tile sections, in order. Each app names its section. A section shows on Home unless it names
+  // another tab. Within a section, tiles follow its "order" (ids of apps and shortcuts); any it
+  // leaves out follow, in the order below.
   sections: [
+    { id: "apps", name: "Apps", order: ["looper", "playalong", "note-cards", "ear", "scratchpad", "barline"] },
     { id: "practice", name: "Tools" },
-    { id: "learn", name: "Learn" },
-    { id: "songs", name: "Songs" },
-    { id: "write", name: "Write" },
-    { id: "reference", name: "Reference" }
+    { id: "library", name: "Library", tab: "library", order: ["originals", "covers", "circle", "modes", "chords", "arps", "chains", "drills", "files"] }
   ],
-  // Home-screen tiles that open a page inside another app rather than an app of their own.
+  // Tiles that open a page inside another app rather than an app of their own.
   // Not saved for offline here (the app they open does that). "icon" is a Library shelf icon.
   shortcuts: [
-    { id: "covers", name: "Covers", href: "school/library.html#songs", section: "songs", color: "#2C7BD6", icon: "covers" },
-    // Library's shelves, each a tile of its own in Reference (Library itself has no front page now).
-    { id: "modes", name: "Modes", href: "library/#/modes", section: "reference", color: "#1E8A5A", icon: "modes" },
-    { id: "chords", name: "Chords", href: "library/#/chords", section: "reference", color: "#0D9488", icon: "chords" },
-    { id: "arps", name: "Arpeggios", href: "library/#/arps", section: "reference", color: "#C2417A", icon: "arps" },
-    { id: "chains", name: "Chains", href: "library/#/chains", section: "reference", color: "#9F2D3F", icon: "chains" },
-    { id: "drills", name: "Drills", href: "school/library.html#drills", section: "reference", color: "#C26A06", icon: "drills" },
-    { id: "files", name: "My files", href: "school/library.html#files", section: "reference", color: "#4B5563", icon: "files" }
+    { id: "covers", name: "Covers", href: "school/library.html#songs", section: "library", color: "#2C7BD6", icon: "covers" },
+    // Library's shelves, each a tile of its own in the Library tab (library/ itself has no front page).
+    { id: "modes", name: "Modes", href: "library/#/modes", section: "library", color: "#1E8A5A", icon: "modes" },
+    { id: "chords", name: "Chords", href: "library/#/chords", section: "library", color: "#0D9488", icon: "chords" },
+    { id: "arps", name: "Arpeggios", href: "library/#/arps", section: "library", color: "#C2417A", icon: "arps" },
+    { id: "chains", name: "Chains", href: "library/#/chains", section: "library", color: "#9F2D3F", icon: "chains" },
+    { id: "drills", name: "Drills", href: "school/library.html#drills", section: "library", color: "#C26A06", icon: "drills" },
+    { id: "files", name: "My files", href: "school/library.html#files", section: "library", color: "#4B5563", icon: "files" }
   ],
   apps: [
     {
@@ -68,7 +70,7 @@ self.MUSIC = {
     },
     {
       id: "scratchpad",
-      section: "write",
+      section: "apps",
       name: "Scratchpad",
       about: "A daily brain dump the assistant sorts into song ideas, lyrics and more",
       color: "#A8740F",
@@ -82,13 +84,13 @@ self.MUSIC = {
       about: "Your own songs: ideas, lyrics, notes and Barline charts",
       color: "#B3245B",
       icon: "icon-192.png",
-      section: "songs",                     // also a shelf in Library
+      section: "library",
       sync: { at: "originals:syncedAt" },
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
     },
     {
       id: "library",
-      section: "reference",
+      section: "library",
       home: false,                          // its shelves are tiles of their own (shortcuts above)
       name: "Library",
       about: "Songs, drills, production chains, and every mode, chord and voicing in any key",
@@ -98,7 +100,7 @@ self.MUSIC = {
     },
     {
       id: "barline",                       // folder name, also the link from the home screen
-      section: "write",
+      section: "apps",
       name: "Barline",
       about: "Chord charts with a click track",
       color: "#0F766E",                    // shown behind the icon while it loads
@@ -110,7 +112,7 @@ self.MUSIC = {
     },
     {
       id: "note-cards",
-      section: "learn",
+      section: "apps",
       name: "Note Cards",
       about: "Flashcards for modes, arpeggios, triads and 7th chords",
       color: "#4D45E3",
@@ -121,7 +123,6 @@ self.MUSIC = {
     {
       id: "school",
       home: false,                          // in the bar along the bottom (shared/tabbar.js) instead of a tile
-      section: "learn",
       name: "School",
       about: "Classes, lessons, quizzes, tests and a song library",
       color: "#33449E",
@@ -136,7 +137,7 @@ self.MUSIC = {
     },
     {
       id: "ear",
-      section: "learn",
+      section: "apps",
       name: "Ear Training",
       about: "Scale degrees over a drone: degrees, melodies, singing and hands-free listening",
       color: "#C2570C",
@@ -173,7 +174,7 @@ self.MUSIC = {
     },
     {
       id: "looper",
-      section: "practice",
+      section: "apps",
       name: "Looper",
       about: "A loop pedal: record a loop, trim it to time, layer parts on top",
       color: "#C02D8E",
@@ -182,7 +183,7 @@ self.MUSIC = {
     },
     {
       id: "playalong",
-      section: "practice",
+      section: "apps",
       name: "Transcribe",
       about: "Photograph sheet music or tab, then hear it and play along",
       color: "#A63DB8",
@@ -193,7 +194,7 @@ self.MUSIC = {
     },
     {
       id: "circle",
-      section: "reference",
+      section: "library",
       name: "Circle of Fifths",
       about: "Keys, signatures, scales, diatonic chords and progressions on the circle",
       color: "#5B3FA8",

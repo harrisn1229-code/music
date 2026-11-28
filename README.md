@@ -1,7 +1,8 @@
 # Music
 
 One music app with several tools inside it. Open Music, pick a tool. Along the bottom of the
-home screen and School is a bar of three tabs: Home (the tools), School and Calendar.
+home screen and School is a bar of four tabs: Home (the tools, in two sections: Apps, then Tools),
+School, Calendar and Library (songs and reference).
 
 Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 `main`).
@@ -10,11 +11,11 @@ Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 | --- | --- | --- |
 | Calendar (Activity) | `calendar/` | The Practice Log: time spent in each tool and what was done, recorded on its own (no timers to start), in the home screen's Calendar tab. `log/` only forwards old links there |
 | Timer | `timer/` | Pomodoro, timer and stopwatch for time outside the other tools (production sessions), and time added by hand; logs to the Practice Log by activity |
-| Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (opened from Library) |
+| Originals | `originals/` | Your own songs: ideas, lyrics, a notes thread, and Barline charts filed in Originals (a tile in the Library tab) |
 | Scratchpad | `scratchpad/` | A daily brain dump; the assistant sorts it into piles and sends song ideas on to Originals |
 | Barline | `barline/` | Chord charts with a click track |
 | Note Cards | `note-cards/` | Flashcards for modes, arpeggios, triads and 7th chords, plus scale degrees, intervals and progressions on the neck |
-| Library | `library/` | No home tile of its own: its shelves (Modes, Chords, Arpeggios, Chains, Drills, My files) are each a tile in Reference |
+| Library | `library/` | No tile of its own: its shelves (Modes, Chords, Arpeggios, Chains, Drills, My files) are each a tile in the Library tab |
 | School | `school/` | The curriculum and your progress: classes, lessons, quizzes and tests |
 | Ear Training | `ear/` | Scale degrees over a drone: degrees, melodies, singing and hands-free listening |
 | Tuner | `tuner/` | Microphone tuner for guitar, bass and ukulele, with reference tones |
@@ -32,7 +33,7 @@ older GitHub sync on devices that have not signed in yet.
 ## What's in here
 
 ```
-index.html             Home screen: one app icon per tool, in the order of apps.js, and its Calendar tab
+index.html             Home screen: one app icon per tool, in the sections of apps.js, and its Calendar and Library tabs
 calendar/              The home screen's Calendar tab (app.js, app.css), loaded into index.html
 apps.js                The list of tools (read by the home screen and by sw.js)
 sw.js                  Service worker: keeps every file available offline
@@ -45,7 +46,7 @@ shared/ai.js           The one Claude connection (your Anthropic API key) every 
 shared/assistant.js    The one AI assistant: a sheet opened from the home screen and every tool's top bar
 shared/log.js          The practice log: loaded by settings.js on every page, counts time and records what was done
 shared/timer.js        The Timer's clock: loaded by settings.js on every page, so a running timer shows and finishes anywhere
-shared/tabbar.js       The bar along the bottom (Home, School, Calendar), on the home screen and School's page
+shared/tabbar.js       The bar along the bottom (Home, School, Calendar, Library), on the home screen and School's page
 shared/cloud.js        The one email account: sign-in, saved data, private files
 shared/cloud-config.js Which Supabase project the account lives in (empty = no accounts)
 shared/vendor/         The Supabase browser library, and marked (Markdown for Library's chain notes)
@@ -90,9 +91,11 @@ ratings, so do not change how a key is built.
      so tools never overwrite each other;
    - if it syncs, load `../shared/account.js` and use `MusicAccount` for the
      token instead of keeping its own (see Sync between devices).
-3. Add an entry to `apps.js` (name, color, icon, and every file the tool needs). The home screen
-   shows the icon and the name, nothing else, in the order of that list. `home: false` keeps a
-   tool off the home screen (Originals is opened from Library) while it is still saved offline and synced. Files used by more than
+3. Add an entry to `apps.js` (name, color, icon, the section its tile goes in, and every file the
+   tool needs). The home screen shows the icon and the name, nothing else, grouped by `sections`:
+   Apps and Tools on Home, and Library, whose section is drawn on the Library tab (`tab: "library"`).
+   Within a section tiles follow its `order`, then the order of the list. `home: false` keeps a
+   tool off the home screen (School is in the tab bar) while it is still saved offline and synced. Files used by more than
    one tool go in `shared/` and are listed under `shared` in `apps.js`.
 4. Raise `version` in `apps.js`.
 5. Optional: add a shortcut for it in `manifest.webmanifest`.
@@ -100,9 +103,12 @@ ratings, so do not change how a key is built.
 ## Tabs
 
 The bar along the bottom (`shared/tabbar.js`) is on the home screen and on School's page, nowhere
-else: the tools are opened from Home and go back to it. Home and Calendar are two views of the
-home page, switched in place; School is its own page (`school/`), so its tab is a link, and School's
-Calendar tab links to `../#tab=calendar` (Calendar in whichever view was used last). The bar
+else: the tools are opened from Home or Library and go back to it. Home, Calendar and Library are
+views of the home page, switched in place; School is its own page (`school/`), so its tab is a link, and School's
+Calendar tab links to `../#tab=calendar` (Calendar in whichever view was used last) and its Library
+tab to `../#library`. Library is tiles like Home: Originals, Covers, Circle of Fifths and Library's
+shelves (the `library` section in `apps.js`). A tool's Home button is a plain link to `../`; the home
+page brings you back to the tab whose tile opened it (noted for that one return in `sessionStorage`). The bar
 carries its own colours and draws nothing inside a frame. Every page with it must run edge to edge
 (`viewport-fit=cover` in its viewport tag), or the bar loses its strip over the phone's home
 indicator there and shrinks when you switch to that tab. School has no tile on Home (`home: false`
@@ -198,8 +204,9 @@ the `practice` document in the account, merged drill by drill. School's Hanon le
 it too; School's own progress (`school:progress`) no longer holds it, and any copy found there (an
 older device, an old backup) is folded in on load.
 
-Library has no front page: each shelf is its own tile in the home screen's Reference section (`shortcuts`
-in `apps.js`): Modes, Chords and Arpeggios (`library/#/modes` etc.), Production chains, Drills and My files.
+Library has no front page of its own (`library/` with no shelf opens the home screen's Library tab): each
+shelf is its own tile in that tab (`shortcuts` in `apps.js`): Modes, Chords and Arpeggios (`library/#/modes`
+etc.), Production chains, Drills and My files.
 Each page's bar shows that shelf's name and icon, with Home. All of them, and School, share one look — School's
 is `school/music-skin.css`, built from `school-src/Machine/Scripts/school-artifact/app-shell/music-skin.css`.
 
@@ -338,7 +345,7 @@ that drill's setup (`drillSetups` in `metronome:prefs:v1`), so it comes back as 
 
 ## Transcribe (folder `playalong/`)
 
-Shown as "Transcribe" in the Tools section; the folder, app id and stored data keep the name `playalong` so saved pieces, sync and the Practice Log carry over.
+Shown as "Transcribe" in the home screen's Apps section; the folder, app id and stored data keep the name `playalong` so saved pieces, sync and the Practice Log carry over.
 
 Photograph (or pick) pages of sheet music, tab or a PDF; Claude reads them once and the piece then plays
 back from the app itself, as a practice player. Views: Score (notation and tab stacked, one staff per part),

@@ -126,7 +126,7 @@ main{flex:1;padding-top:1rem;padding-bottom:1.5rem}
 .foot p{margin:0}
 
 /* ---------- tabs ----------
-   Home and Calendar are two views of this page; the bar along the bottom (shared/tabbar.js, the
+   Home, Calendar and Library are views of this page; the bar along the bottom (shared/tabbar.js, the
    same bar School's page shows) switches between them and links to School. */
 .view{flex:1;display:flex;flex-direction:column}
 
@@ -239,6 +239,12 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   <div class="wrap cal" id="cal"></div>
 </div>
 
+<div class="view" id="view-library" hidden>
+<main class="wrap">
+  <div id="lib-tiles"></div>
+</main>
+</div>
+
 <dialog id="sheet" aria-labelledby="sheet-title">
   <h2 id="sheet-title"></h2>
   <ol class="steps" id="sheet-steps"></ol>
@@ -289,15 +295,21 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
 
-  /* ---------- tiles ---------- */
+  /* ---------- tiles ----------
+     Each section in apps.js is drawn on its tab: Home's in #tiles, the Library tab's in #lib-tiles. */
+  const BOXES = { home: "tiles", library: "lib-tiles" };
   function render() {
-    const box = $("tiles");
-    box.textContent = "";
+    Object.keys(BOXES).forEach((t) => { $(BOXES[t]).textContent = ""; });
     const apps = REG.apps.filter((app) => app.home !== false).concat(REG.shortcuts || []);
-    const secs = (REG.sections || []).concat([{ id: null, name: "" }]);   // anything without a known section goes last, untitled
+    const secs = (REG.sections || []).concat([{ id: null, name: "" }]);   // anything without a known section goes last on Home, untitled
     const known = new Set((REG.sections || []).map((x) => x.id));
     secs.forEach((sec) => {
-      const these = apps.filter((app) => (sec.id ? app.section === sec.id : !known.has(app.section)));
+      const box = $(BOXES[sec.tab || "home"]);
+      if (!box) return;
+      // The section's own order first; anything it leaves out keeps the order of apps.js.
+      const order = sec.order || [];
+      const rank = (app) => { const i = order.indexOf(app.id); return i < 0 ? order.length : i; };
+      const these = apps.filter((app) => (sec.id ? app.section === sec.id : !known.has(app.section))).sort((a, b) => rank(a) - rank(b));
       if (!these.length) return;
       const wrap = el("section", "sec");
       if (sec.name) wrap.appendChild(el("h2", "sec-h", sec.name));
@@ -325,15 +337,18 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
   window.addEventListener("storage", render);
 
-  /* ---------- tabs: Home, School, Calendar ----------
-     Home and Calendar are two views of this one page, switched by the bar along the bottom
+  /* ---------- tabs: Home, School, Calendar, Library ----------
+     Home, Calendar and Library are views of this one page, switched by the bar along the bottom
      (shared/tabbar.js); School is its own page, which shows the same bar. The address carries
-     #calendar (or #activity, for the Calendar's Activity view) while Calendar is showing (replaced,
-     not pushed: switching tabs is not a step back can undo), so a reload or a link to ../#calendar,
-     ../#activity or ../#activity=2026-11-21 opens on it (../#tab=calendar, School's Calendar tab,
-     opens it in whichever view was used last). Tapping the tab you are on goes back to
-     the top. Calendar draws itself and keeps the address in step with its view (calendar/app.js). */
-  const TABS = ["home", "calendar"];
+     #calendar (or #activity, for the Calendar's Activity view) while Calendar is showing, and
+     #library while Library is (replaced, not pushed: switching tabs is not a step back can undo),
+     so a reload or a link to ../#calendar, ../#activity, ../#activity=2026-11-21 or ../#library opens
+     on it (../#tab=calendar, School's Calendar tab, opens it in whichever view was used last).
+     Tapping the tab you are on goes back to the top. Calendar draws itself and keeps the address in
+     step with its view (calendar/app.js). An app opened from a tile and left by its Home button (a
+     plain link to ../) comes back to the tab its tile was on: the tile notes it for that one return. */
+  const TABS = ["home", "calendar", "library"];
+  const BACK = "music:backTab";
   const tabScroll = {};
   let tab = "home";
   const cal = self.MusicCalendar || null;
@@ -347,18 +362,26 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
     if (self.MusicTabbar) MusicTabbar.set(id);
     if (cal) { if (id === "calendar") cal.show(); else cal.hide(); }
     window.scrollTo(0, tabScroll[id] || 0);
-    if (id === "home" || !cal) try { history.replaceState(history.state, "", id === "home" ? location.pathname + location.search : "#" + id); } catch (e) {}
+    if (id !== "calendar" || !cal) try { history.replaceState(history.state, "", id === "home" ? location.pathname + location.search : "#" + id); } catch (e) {}
   }
   const CAL_LINK = /^#(calendar|activity)(=[\d-]+)?$/;
   function openLink() {
     if (location.hash === "#tab=calendar") { showTab("calendar"); return; }
+    if (location.hash === "#library" || location.hash === "#tab=library") { showTab("library"); return; }
     if (!CAL_LINK.test(location.hash)) return;
     if (cal) cal.route(location.hash);
     if (tab === "calendar") { if (cal) cal.show(); } else showTab("calendar");
   }
   if (self.MusicTabbar) MusicTabbar.mount("home", { inPage: TABS, onTab: showTab });
-  openLink();
+  let back = null;
+  try { back = sessionStorage.getItem(BACK); sessionStorage.removeItem(BACK); } catch (e) {}
+  if (!location.hash && back && back !== "home" && TABS.indexOf(back) >= 0) showTab(back); else openLink();
   window.addEventListener("hashchange", openLink);
+  document.addEventListener("click", (e) => {
+    if (e.target.closest && e.target.closest(".tile-open")) try { sessionStorage.setItem(BACK, tab); } catch (err) {}
+  });
+  // Back here with the page as it was (back gesture): it is already on the right tab.
+  window.addEventListener("pageshow", (e) => { if (e.persisted) try { sessionStorage.removeItem(BACK); } catch (err) {} });
   // Back on this page (from an app, or the phone woke up): Calendar checks whether School or the day moved on.
   window.addEventListener("pageshow", (e) => { if (e.persisted && tab === "calendar" && cal) cal.show(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && tab === "calendar" && cal) cal.show(); });
@@ -878,7 +901,7 @@ dialog h2{margin:0 0 .75rem;font:800 1.75rem/1 var(--display)}
 
   /* ---------- assistant ---------- */
   if (self.MusicAssistant) self.MusicAssistant.mount({ app: "home", button: $("ai-btn"),
-    context: () => (tab === "calendar" && cal ? cal.context() : "On the Music home screen") });
+    context: () => (tab === "calendar" && cal ? cal.context() : tab === "library" ? "On the Music home screen's Library tab" : "On the Music home screen") });
 
   /* ---------- offline ---------- */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
