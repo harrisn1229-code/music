@@ -15,13 +15,13 @@
    See README.md for what an app's own page needs (home button, shared
    install and offline files). */
 self.MUSIC = {
-  version: "1.46.0",
+  version: "1.47.0",
   // Files more than one app uses. Kept available offline like everything else.
   shared: ["shared/theory.js", "shared/icons.js", "shared/feelings.js", "shared/account.js", "shared/ai.js", "shared/assistant.js", "shared/settings.js", "shared/log.js", "shared/timer.js", "shared/tabbar.js", "shared/cloud-config.js", "shared/cloud.js", "shared/vendor/supabase.js", "shared/vendor/marked.min.js"],
   // The home screen's own tabs along the bottom, besides Home itself (the bar is shared/tabbar.js: Home,
   // School, Calendar, Library; School is its own page). A tab here is part of the home page, not an app:
   // index.html loads its files and draws it in place of the tiles. Saved for offline like everything else.
-  // Library has no files of its own: index.html draws the tiles of the sections below marked tab: "library".
+  // Library has no files of its own: index.html draws the tiles of the sections below marked tab: "library" (Songs, Reference).
   tabs: [
     { id: "calendar", name: "Calendar", files: ["calendar/app.js", "calendar/app.css"] },
     { id: "library", name: "Library", files: [] }
@@ -32,19 +32,20 @@ self.MUSIC = {
   sections: [
     { id: "apps", name: "Apps", order: ["looper", "playalong", "note-cards", "ear", "scratchpad", "barline"] },
     { id: "practice", name: "Tools" },
-    { id: "library", name: "Library", tab: "library", order: ["originals", "covers", "circle", "modes", "chords", "arps", "chains", "drills", "files"] }
+    { id: "songs", name: "Songs", tab: "library", order: ["originals", "covers"] },
+    { id: "reference", name: "Reference", tab: "library", order: ["circle", "modes", "chords", "arps", "chains", "drills", "files"] }
   ],
   // Tiles that open a page inside another app rather than an app of their own.
   // Not saved for offline here (the app they open does that). "icon" is a Library shelf icon.
   shortcuts: [
-    { id: "covers", name: "Covers", href: "school/library.html#songs", section: "library", color: "#2C7BD6", icon: "covers" },
+    { id: "covers", name: "Covers", href: "school/library.html#songs", section: "songs", color: "#2C7BD6", icon: "covers" },
     // Library's shelves, each a tile of its own in the Library tab (library/ itself has no front page).
-    { id: "modes", name: "Modes", href: "library/#/modes", section: "library", color: "#1E8A5A", icon: "modes" },
-    { id: "chords", name: "Chords", href: "library/#/chords", section: "library", color: "#0D9488", icon: "chords" },
-    { id: "arps", name: "Arpeggios", href: "library/#/arps", section: "library", color: "#C2417A", icon: "arps" },
-    { id: "chains", name: "Chains", href: "library/#/chains", section: "library", color: "#9F2D3F", icon: "chains" },
-    { id: "drills", name: "Drills", href: "school/library.html#drills", section: "library", color: "#C26A06", icon: "drills" },
-    { id: "files", name: "My files", href: "school/library.html#files", section: "library", color: "#4B5563", icon: "files" }
+    { id: "modes", name: "Modes", href: "library/#/modes", section: "reference", color: "#1E8A5A", icon: "modes" },
+    { id: "chords", name: "Chords", href: "library/#/chords", section: "reference", color: "#0D9488", icon: "chords" },
+    { id: "arps", name: "Arpeggios", href: "library/#/arps", section: "reference", color: "#C2417A", icon: "arps" },
+    { id: "chains", name: "Chains", href: "library/#/chains", section: "reference", color: "#9F2D3F", icon: "chains" },
+    { id: "drills", name: "Drills", href: "school/library.html#drills", section: "reference", color: "#C26A06", icon: "drills" },
+    { id: "files", name: "My files", href: "school/library.html#files", section: "reference", color: "#4B5563", icon: "files" }
   ],
   apps: [
     {
@@ -84,13 +85,13 @@ self.MUSIC = {
       about: "Your own songs: ideas, lyrics, notes and Barline charts",
       color: "#B3245B",
       icon: "icon-192.png",
-      section: "library",
+      section: "songs",
       sync: { at: "originals:syncedAt" },
       files: ["index.html", "app.js", "app.css", "icon.svg", "icon-192.png"]
     },
     {
       id: "library",
-      section: "library",
+      section: "reference",
       home: false,                          // its shelves are tiles of their own (shortcuts above)
       name: "Library",
       about: "Songs, drills, production chains, and every mode, chord and voicing in any key",
@@ -194,7 +195,7 @@ self.MUSIC = {
     },
     {
       id: "circle",
-      section: "library",
+      section: "reference",
       name: "Circle of Fifths",
       about: "Keys, signatures, scales, diatonic chords and progressions on the circle",
       color: "#5B3FA8",

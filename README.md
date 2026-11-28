@@ -2,7 +2,7 @@
 
 One music app with several tools inside it. Open Music, pick a tool. Along the bottom of the
 home screen and School is a bar of four tabs: Home (the tools, in two sections: Apps, then Tools),
-School, Calendar and Library (songs and reference).
+School, Calendar and Library (Songs, then Reference).
 
 Live at <https://harrisn1229-code.github.io/music/> (GitHub Pages, deployed from
 `main`).
@@ -93,7 +93,7 @@ ratings, so do not change how a key is built.
      token instead of keeping its own (see Sync between devices).
 3. Add an entry to `apps.js` (name, color, icon, the section its tile goes in, and every file the
    tool needs). The home screen shows the icon and the name, nothing else, grouped by `sections`:
-   Apps and Tools on Home, and Library, whose section is drawn on the Library tab (`tab: "library"`).
+   Apps and Tools on Home; Songs and Reference, drawn on the Library tab (`tab: "library"`).
    Within a section tiles follow its `order`, then the order of the list. `home: false` keeps a
    tool off the home screen (School is in the tab bar) while it is still saved offline and synced. Files used by more than
    one tool go in `shared/` and are listed under `shared` in `apps.js`.
@@ -106,8 +106,8 @@ The bar along the bottom (`shared/tabbar.js`) is on the home screen and on Schoo
 else: the tools are opened from Home or Library and go back to it. Home, Calendar and Library are
 views of the home page, switched in place; School is its own page (`school/`), so its tab is a link, and School's
 Calendar tab links to `../#tab=calendar` (Calendar in whichever view was used last) and its Library
-tab to `../#library`. Library is tiles like Home: Originals, Covers, Circle of Fifths and Library's
-shelves (the `library` section in `apps.js`). A tool's Home button is a plain link to `../`; the home
+tab to `../#library`. Library is tiles like Home, in two sections: Songs (Originals, Covers) and
+Reference (Circle of Fifths and Library's shelves). A tool's Home button is a plain link to `../`; the home
 page brings you back to the tab whose tile opened it (noted for that one return in `sessionStorage`). The bar
 carries its own colours and draws nothing inside a frame. Every page with it must run edge to edge
 (`viewport-fit=cover` in its viewport tag), or the bar loses its strip over the phone's home
@@ -205,7 +205,7 @@ it too; School's own progress (`school:progress`) no longer holds it, and any co
 older device, an old backup) is folded in on load.
 
 Library has no front page of its own (`library/` with no shelf opens the home screen's Library tab): each
-shelf is its own tile in that tab (`shortcuts` in `apps.js`): Modes, Chords and Arpeggios (`library/#/modes`
+shelf is its own tile in that tab's Reference section (`shortcuts` in `apps.js`): Modes, Chords and Arpeggios (`library/#/modes`
 etc.), Production chains, Drills and My files.
 Each page's bar shows that shelf's name and icon, with Home. All of them, and School, share one look — School's
 is `school/music-skin.css`, built from `school-src/Machine/Scripts/school-artifact/app-shell/music-skin.css`.
